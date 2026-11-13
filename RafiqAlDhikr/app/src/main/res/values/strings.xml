@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">رفيقك في الذكر</string>
+    <string name="notification_channel_general_name">تذكيرات العبادات</string>
+    <string name="notification_channel_general_desc">تنبيهات هادئة للأذكار والقرآن والعبادات اليومية والموسمية</string>
+    <string name="notification_channel_gentle_name">تذكيرات بصوت هادئ</string>
+    <string name="notification_channel_gentle_desc">تنبيهات مرفقة بصوت لطيف للتذكير بالذكر والورد</string>
+</resources>
