@@ -208,6 +208,54 @@ fun SettingsScreen(
                 }
             }
 
+            // Alarm diagnostics
+            item {
+                var diagLines by remember { mutableStateOf(com.rafiqaldhikr.app.notifications.AlarmDiagnostics.read(context)) }
+                RafiqCard {
+                    Text("سجل تشخيص التنبيهات", style = MaterialTheme.typography.titleMedium)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "للتحقق من سبب عدم وصول إشعار: «جُدول» يعني أن المنبّه سُجّل، و«وصل منبّه» يعني أن النظام أطلقه، و«نُشر» يعني أن الإشعار عُرض. " +
+                            "منبّه «جُدول» ولا يظهر له «وصل» يدل غالباً على أن نظام الهاتف قتل التطبيق أو منع المنبّهات.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "المنبّهات الدقيقة: ${if (permStatus.exactAlarmAllowed) "مسموحة" else "غير مسموحة"} • " +
+                            "استثناء البطارية: ${if (permStatus.ignoringBatteryOptimizations) "مفعّل" else "غير مفعّل"} • " +
+                            "إذن الإشعارات: ${if (permStatus.notificationsGranted) "ممنوح" else "غير ممنوح"}",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(
+                            onClick = { diagLines = com.rafiqaldhikr.app.notifications.AlarmDiagnostics.read(context) },
+                            modifier = Modifier.weight(1f)
+                        ) { Text("تحديث") }
+                        OutlinedButton(
+                            onClick = {
+                                com.rafiqaldhikr.app.notifications.AlarmDiagnostics.clear(context)
+                                diagLines = emptyList()
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) { Text("مسح") }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    if (diagLines.isEmpty()) {
+                        Text("لا توجد أحداث مسجلة بعد.", style = MaterialTheme.typography.bodySmall)
+                    } else {
+                        diagLines.take(40).forEach { line ->
+                            Text(
+                                text = line,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(vertical = 2.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
             // Local Backup & Restore
             item {
                 RafiqCard {

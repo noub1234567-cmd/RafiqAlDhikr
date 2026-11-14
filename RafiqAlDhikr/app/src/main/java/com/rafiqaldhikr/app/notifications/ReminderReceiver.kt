@@ -29,6 +29,12 @@ class ReminderReceiver : BroadcastReceiver() {
         val soundMode = runCatching { NotificationSoundMode.valueOf(soundStr) }
             .getOrDefault(NotificationSoundMode.NORMAL)
 
+        AlarmDiagnostics.record(
+            context,
+            "وصل منبّه [$kind#$targetId] «$title» — الإشعارات مفعّلة: " +
+                androidx.core.app.NotificationManagerCompat.from(context).areNotificationsEnabled()
+        )
+
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val db = app.container.database
@@ -36,8 +42,14 @@ class ReminderReceiver : BroadcastReceiver() {
                 var resolvedActivityId = activityId
 
                 // Stale alarms (deleted profile/item, restored backup, disabled reminder) must stay silent.
-                if (profileId > 0L && db.profileDao().getById(profileId) == null) return@launch
-                if (!isTargetStillActive(app, kind, targetId, profileId, activityId)) return@launch
+                if (profileId > 0L && db.profileDao().getById(profileId) == null) {
+                    AlarmDiagnostics.record(context, "تُجوهل [$kind#$targetId]: الملف الشخصي غير موجود")
+                    return@launch
+                }
+                if (!isTargetStillActive(app, kind, targetId, profileId, activityId)) {
+                    AlarmDiagnostics.record(context, "تُجوهل [$kind#$targetId]: العنصر محذوف أو التذكير معطّل")
+                    return@launch
+                }
 
                 if (kind == ReminderScheduler.KIND_ACTIVITY && activityId > 0L) {
                     val todayEpoch = LocalDate.now().toEpochDay()
@@ -48,6 +60,7 @@ class ReminderReceiver : BroadcastReceiver() {
                             resolvedLogId = existingLog.id
                             // Do not spam if user already completed today's occurrence
                             if (existingLog.status == ActivityStatus.COMPLETED) {
+                                AlarmDiagnostics.record(context, "تُجوهل [$kind#$targetId]: العبادة مكتملة اليوم")
                                 app.container.reminderScheduler.scheduleActivityReminder(activity)
                                 return@launch
                             }
@@ -72,9 +85,11 @@ class ReminderReceiver : BroadcastReceiver() {
                     val log = db.worshipDao().getLogById(targetId)
                     // Snoozes of non-activity reminders (adhkar, quran, ...) have no log; only activity snoozes do.
                     if (activityId > 0L && (log == null || log.status == ActivityStatus.COMPLETED)) {
+                        AlarmDiagnostics.record(context, "تُجوهلت غفوة [$kind#$targetId]: السجل محذوف أو مكتمل")
                         return@launch
                     }
                     if (activityId <= 0L && log?.status == ActivityStatus.COMPLETED) {
+                        AlarmDiagnostics.record(context, "تُجوهلت غفوة [$kind#$targetId]: مكتملة")
                         return@launch
                     }
                 } else {
@@ -98,6 +113,9 @@ class ReminderReceiver : BroadcastReceiver() {
                     logId = resolvedLogId,
                     profileId = profileId
                 )
+                AlarmDiagnostics.record(context, "نُشر الإشعار [$kind#$targetId] «$title»")
+            } catch (t: Throwable) {
+                AlarmDiagnostics.record(context, "خطأ في [$kind#$targetId]: ${t.javaClass.simpleName} ${t.message}")
             } finally {
                 pendingResult.finish()
             }

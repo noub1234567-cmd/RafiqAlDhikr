@@ -314,6 +314,12 @@ class ReminderScheduler(
         } else {
             alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pending)
         }
+        AlarmDiagnostics.record(
+            context,
+            "جُدول [$kind#$targetId] «$title» عند " +
+                java.text.SimpleDateFormat("MM-dd HH:mm:ss", java.util.Locale.US).format(java.util.Date(triggerAtMillis)) +
+                if (canExact) " (دقيق)" else " (غير دقيق!)"
+        )
     }
 
     fun cancelAlarm(requestCode: Int) {
