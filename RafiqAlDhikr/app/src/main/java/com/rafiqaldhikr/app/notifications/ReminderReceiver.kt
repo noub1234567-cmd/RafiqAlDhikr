@@ -29,6 +29,7 @@ class ReminderReceiver : BroadcastReceiver() {
         val soundMode = runCatching { NotificationSoundMode.valueOf(soundStr) }
             .getOrDefault(NotificationSoundMode.NORMAL)
 
+        AlarmState.markFired(context, notificationId)
         AlarmDiagnostics.record(
             context,
             "وصل منبّه [$kind#$targetId] «$title» — الإشعارات مفعّلة: " +

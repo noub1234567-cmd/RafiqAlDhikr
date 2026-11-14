@@ -35,6 +35,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -227,6 +229,33 @@ fun SettingsScreen(
                             "إذن الإشعارات: ${if (permStatus.notificationsGranted) "ممنوح" else "غير ممنوح"}",
                         style = MaterialTheme.typography.bodySmall
                     )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    var alarmClockMode by remember { mutableStateOf(com.rafiqaldhikr.app.notifications.AlarmState.useAlarmClock(context)) }
+                    val rescheduleScope = androidx.compose.runtime.rememberCoroutineScope()
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "منبّهات موثوقة (تظهر أيقونة منبّه في شريط الحالة)",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Switch(
+                            checked = alarmClockMode,
+                            onCheckedChange = { value ->
+                                alarmClockMode = value
+                                com.rafiqaldhikr.app.notifications.AlarmState.setUseAlarmClock(context, value)
+                                rescheduleScope.launch {
+                                    withContext(kotlinx.coroutines.Dispatchers.IO) {
+                                        (context.applicationContext as com.rafiqaldhikr.app.RafiqApplication)
+                                            .container.reminderScheduler.rescheduleAll()
+                                    }
+                                }
+                            }
+                        )
+                    }
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedButton(

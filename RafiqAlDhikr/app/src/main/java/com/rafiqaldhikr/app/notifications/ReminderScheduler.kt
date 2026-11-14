@@ -37,7 +37,34 @@ class ReminderScheduler(
 
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
+    /**
+     * Delivers alarms that were armed for a moment already in the past but never reached the app
+     * (the system dropped them while the app was closed). The normal receiver handles them.
+     */
+    fun catchUpMissedAlarms() {
+        val now = System.currentTimeMillis()
+        AlarmState.overdue(context, now).forEach { a ->
+            AlarmDiagnostics.record(context, "تعويض منبّه فائت [${a.kind}#${a.targetId}] «${a.title}»")
+            // Same code path as a real alarm; it also marks the alarm as fired.
+            context.sendBroadcast(
+                Intent(context, ReminderReceiver::class.java).apply {
+                    putExtra(NotificationHelper.EXTRA_KIND, a.kind)
+                    putExtra(NotificationHelper.EXTRA_TARGET_ID, a.targetId)
+                    putExtra(NotificationHelper.EXTRA_PROFILE_ID, a.profileId)
+                    putExtra(NotificationHelper.EXTRA_ACTIVITY_ID, a.activityId)
+                    putExtra(NotificationHelper.EXTRA_NOTIFICATION_ID, a.requestCode)
+                    putExtra(NotificationHelper.EXTRA_TITLE, a.title)
+                    putExtra(NotificationHelper.EXTRA_BODY, a.body)
+                    putExtra(NotificationHelper.EXTRA_SOUND_MODE, a.sound)
+                }
+            )
+            // Prevent re-delivery by a second rescheduleAll() before the receiver runs.
+            AlarmState.markFired(context, a.requestCode)
+        }
+    }
+
     suspend fun rescheduleAll() {
+        catchUpMissedAlarms()
         val now = System.currentTimeMillis()
 
         // 1. Worship activities
@@ -309,20 +336,37 @@ class ReminderScheduler(
             true
         }
 
-        if (canExact) {
+        val useAlarmClock = AlarmState.useAlarmClock(context)
+        if (useAlarmClock) {
+            // "Alarm clock" alarms are exempt from the exact-alarm permission and are the most
+            // reliable kind on aggressive OEM power managers (they also show a status-bar alarm icon).
+            val showIntent = PendingIntent.getActivity(
+                context,
+                0,
+                Intent(context, com.rafiqaldhikr.app.MainActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            alarmManager.setAlarmClock(AlarmManager.AlarmClockInfo(triggerAtMillis, showIntent), pending)
+        } else if (canExact) {
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pending)
         } else {
             alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pending)
         }
+        AlarmState.markArmed(
+            context, requestCode, triggerAtMillis, kind, targetId, profileId,
+            extraActivityId, title, body, soundMode.name
+        )
         AlarmDiagnostics.record(
             context,
             "جُدول [$kind#$targetId] «$title» عند " +
                 java.text.SimpleDateFormat("MM-dd HH:mm:ss", java.util.Locale.US).format(java.util.Date(triggerAtMillis)) +
-                if (canExact) " (دقيق)" else " (غير دقيق!)"
+                when { useAlarmClock -> " (منبّه ساعة)"; canExact -> " (دقيق)"; else -> " (غير دقيق!)" }
         )
     }
 
     fun cancelAlarm(requestCode: Int) {
+        AlarmState.clearArmed(context, requestCode)
         val intent = Intent(context, ReminderReceiver::class.java)
         val pending = PendingIntent.getBroadcast(
             context,
