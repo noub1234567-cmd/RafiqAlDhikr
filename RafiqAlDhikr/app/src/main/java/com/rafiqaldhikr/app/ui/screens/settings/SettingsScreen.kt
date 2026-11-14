@@ -35,6 +35,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
@@ -204,6 +206,99 @@ fun SettingsScreen(
                             onClick = { PermissionHelper.safeStart(context, PermissionHelper.openBatteryOptimizationSettingsIntent(context)) },
                             modifier = Modifier.fillMaxWidth()
                         ) { Text("إعدادات تحسين البطارية") }
+                    }
+                }
+            }
+
+            // Alarm diagnostics
+            item {
+                var diagLines by remember { mutableStateOf(com.rafiqaldhikr.app.notifications.AlarmDiagnostics.read(context)) }
+                var armedList by remember { mutableStateOf(com.rafiqaldhikr.app.notifications.AlarmState.armedAll(context)) }
+                RafiqCard {
+                    Text("سجل تشخيص التنبيهات", style = MaterialTheme.typography.titleMedium)
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "للتحقق من سبب عدم وصول إشعار: «جُدول» يعني أن المنبّه سُجّل، و«وصل منبّه» يعني أن النظام أطلقه، و«نُشر» يعني أن الإشعار عُرض. " +
+                            "منبّه «جُدول» ولا يظهر له «وصل» يدل غالباً على أن نظام الهاتف قتل التطبيق أو منع المنبّهات.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = "المنبّهات الدقيقة: ${if (permStatus.exactAlarmAllowed) "مسموحة" else "غير مسموحة"} • " +
+                            "استثناء البطارية: ${if (permStatus.ignoringBatteryOptimizations) "مفعّل" else "غير مفعّل"} • " +
+                            "إذن الإشعارات: ${if (permStatus.notificationsGranted) "ممنوح" else "غير ممنوح"}",
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    var alarmClockMode by remember { mutableStateOf(com.rafiqaldhikr.app.notifications.AlarmState.useAlarmClock(context)) }
+                    val rescheduleScope = androidx.compose.runtime.rememberCoroutineScope()
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = "منبّهات موثوقة (تظهر أيقونة منبّه في شريط الحالة)",
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Switch(
+                            checked = alarmClockMode,
+                            onCheckedChange = { value ->
+                                alarmClockMode = value
+                                com.rafiqaldhikr.app.notifications.AlarmState.setUseAlarmClock(context, value)
+                                rescheduleScope.launch {
+                                    withContext(kotlinx.coroutines.Dispatchers.IO) {
+                                        (context.applicationContext as com.rafiqaldhikr.app.RafiqApplication)
+                                            .container.reminderScheduler.rescheduleAll()
+                                    }
+                                }
+                            }
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(
+                            onClick = {
+                                diagLines = com.rafiqaldhikr.app.notifications.AlarmDiagnostics.read(context)
+                                armedList = com.rafiqaldhikr.app.notifications.AlarmState.armedAll(context)
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) { Text("تحديث") }
+                        OutlinedButton(
+                            onClick = {
+                                com.rafiqaldhikr.app.notifications.AlarmDiagnostics.clear(context)
+                                diagLines = emptyList()
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) { Text("مسح") }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("المنبّهات المضبوطة حالياً (${armedList.size})", style = MaterialTheme.typography.titleSmall)
+                    if (armedList.isEmpty()) {
+                        Text("لا يوجد أي منبّه مضبوط.", style = MaterialTheme.typography.bodySmall)
+                    } else {
+                        val fmt = java.text.SimpleDateFormat("MM-dd HH:mm", java.util.Locale.US)
+                        armedList.forEach { a ->
+                            Text(
+                                text = "${fmt.format(java.util.Date(a.trigger))} — [${a.kind}] ${a.title}",
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(vertical = 1.dp)
+                            )
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    if (diagLines.isEmpty()) {
+                        Text("لا توجد أحداث مسجلة بعد.", style = MaterialTheme.typography.bodySmall)
+                    } else {
+                        diagLines.take(40).forEach { line ->
+                            Text(
+                                text = line,
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(vertical = 2.dp)
+                            )
+                        }
                     }
                 }
             }
