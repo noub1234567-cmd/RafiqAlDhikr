@@ -71,6 +71,28 @@ class ReminderScheduler(
         }
     }
 
+    /**
+     * Re-arms ONLY the reminder that just fired.
+     * Calling [rescheduleAll] from a receiver pushed every other alarm that was due at the same
+     * moment (or in the same batch) to tomorrow, so only one notification was delivered.
+     */
+    suspend fun rescheduleOne(kind: String, targetId: Long, profileId: Long) {
+        val now = System.currentTimeMillis()
+        when (kind) {
+            KIND_ADHKAR -> database.adhkarDao().getAllEnabledReminders()
+                .firstOrNull { it.id == targetId }
+                ?.let { scheduleAdhkarReminder(it, now) }
+            KIND_QURAN -> database.quranDao().getGoal(profileId)
+                ?.let { scheduleQuranReminder(it, now) }
+            KIND_MEMORIZATION, KIND_REVISION -> database.memorizationDao().getPlanById(targetId)
+                ?.let { scheduleMemorizationReminders(it, now, onlyKind = kind) }
+            KIND_SEASONAL -> database.seasonalDao().getAll()
+                .firstOrNull { it.id == targetId }
+                ?.let { scheduleSeasonalReminder(it, now) }
+            else -> Unit // fasting reminders are one-shot: nothing to re-arm
+        }
+    }
+
     fun scheduleActivityReminder(activity: WorshipActivityEntity, nowMillis: Long = System.currentTimeMillis()) {
         val requestCode = requestCodeFor(KIND_ACTIVITY, activity.id)
         if (!activity.isEnabled || !activity.reminderEnabled) {
@@ -155,10 +177,16 @@ class ReminderScheduler(
         )
     }
 
-    fun scheduleMemorizationReminders(plan: MemorizationPlanEntity, nowMillis: Long = System.currentTimeMillis()) {
+    fun scheduleMemorizationReminders(
+        plan: MemorizationPlanEntity,
+        nowMillis: Long = System.currentTimeMillis(),
+        onlyKind: String? = null
+    ) {
         val memCode = requestCodeFor(KIND_MEMORIZATION, plan.id)
         val surahName = QuranSurahs.byNumber(plan.surahNumber).nameAr
-        if (plan.isActive && plan.memReminderEnabled) {
+        if (onlyKind == KIND_REVISION) {
+            // leave the memorization alarm untouched
+        } else if (plan.isActive && plan.memReminderEnabled) {
             val trigger = nextScheduledMillis(plan.memScheduleType, plan.memWeekdaysMask, plan.memReminderHour, plan.memReminderMinute, nowMillis)
             scheduleAlarm(
                 requestCode = memCode,
@@ -175,7 +203,9 @@ class ReminderScheduler(
         }
 
         val revCode = requestCodeFor(KIND_REVISION, plan.id)
-        if (plan.isActive && plan.revReminderEnabled) {
+        if (onlyKind == KIND_MEMORIZATION) {
+            // leave the revision alarm untouched
+        } else if (plan.isActive && plan.revReminderEnabled) {
             val trigger = nextScheduledMillis(plan.revScheduleType, plan.revWeekdaysMask, plan.revReminderHour, plan.revReminderMinute, nowMillis)
             scheduleAlarm(
                 requestCode = revCode,
