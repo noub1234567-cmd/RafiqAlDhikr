@@ -223,6 +223,7 @@ fun AdhkarScreen(
         }
     }
 
+    val toastContext = androidx.compose.ui.platform.LocalContext.current
     if (showReminderDialog) {
         AdhkarReminderDialog(
             reminder = currentReminder,
@@ -230,6 +231,12 @@ fun AdhkarScreen(
             onSave = {
                 viewModel.saveReminder(it)
                 showReminderDialog = false
+                android.widget.Toast.makeText(
+                    toastContext,
+                    if (it.enabled) "تم تفعيل تذكير ${it.category.labelAr} يومياً عند %02d:%02d".format(it.hour, it.minute)
+                    else "تذكير ${it.category.labelAr} غير مفعّل — فعّل المفتاح ثم احفظ",
+                    android.widget.Toast.LENGTH_LONG
+                ).show()
             }
         )
     }

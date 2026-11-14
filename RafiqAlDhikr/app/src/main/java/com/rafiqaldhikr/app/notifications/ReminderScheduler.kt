@@ -169,6 +169,7 @@ class ReminderScheduler(
         val requestCode = requestCodeFor(KIND_ADHKAR, reminder.profileId * 10 + reminder.category.ordinal)
         if (!reminder.enabled) {
             cancelAlarm(requestCode)
+            AlarmDiagnostics.record(context, "تذكير «${reminder.category.labelAr}» غير مفعّل — لم يُجدوَل")
             return
         }
         val trigger = nextDailyMillis(reminder.hour, reminder.minute, nowMillis)

@@ -213,6 +213,7 @@ fun SettingsScreen(
             // Alarm diagnostics
             item {
                 var diagLines by remember { mutableStateOf(com.rafiqaldhikr.app.notifications.AlarmDiagnostics.read(context)) }
+                var armedList by remember { mutableStateOf(com.rafiqaldhikr.app.notifications.AlarmState.armedAll(context)) }
                 RafiqCard {
                     Text("سجل تشخيص التنبيهات", style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(6.dp))
@@ -259,7 +260,10 @@ fun SettingsScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedButton(
-                            onClick = { diagLines = com.rafiqaldhikr.app.notifications.AlarmDiagnostics.read(context) },
+                            onClick = {
+                                diagLines = com.rafiqaldhikr.app.notifications.AlarmDiagnostics.read(context)
+                                armedList = com.rafiqaldhikr.app.notifications.AlarmState.armedAll(context)
+                            },
                             modifier = Modifier.weight(1f)
                         ) { Text("تحديث") }
                         OutlinedButton(
@@ -269,6 +273,20 @@ fun SettingsScreen(
                             },
                             modifier = Modifier.weight(1f)
                         ) { Text("مسح") }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("المنبّهات المضبوطة حالياً (${armedList.size})", style = MaterialTheme.typography.titleSmall)
+                    if (armedList.isEmpty()) {
+                        Text("لا يوجد أي منبّه مضبوط.", style = MaterialTheme.typography.bodySmall)
+                    } else {
+                        val fmt = java.text.SimpleDateFormat("MM-dd HH:mm", java.util.Locale.US)
+                        armedList.forEach { a ->
+                            Text(
+                                text = "${fmt.format(java.util.Date(a.trigger))} — [${a.kind}] ${a.title}",
+                                style = MaterialTheme.typography.bodySmall,
+                                modifier = Modifier.padding(vertical = 1.dp)
+                            )
+                        }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     if (diagLines.isEmpty()) {

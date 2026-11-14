@@ -48,6 +48,17 @@ object AlarmState {
         val profileId: Long, val activityId: Long, val title: String, val body: String, val sound: String
     )
 
+    /** Every alarm currently armed (soonest first), for the diagnostics screen. */
+    fun armedAll(context: Context): List<Armed> =
+        prefs(context).all.entries.mapNotNull { (key, value) ->
+            if (!key.startsWith(ARMED) || value !is String) return@mapNotNull null
+            runCatching {
+                val o = JSONObject(value)
+                Armed(key.removePrefix(ARMED).toInt(), o.getLong("t"), o.getString("k"), o.getLong("id"),
+                    o.getLong("p"), o.getLong("a"), o.getString("title"), o.getString("body"), o.getString("s"))
+            }.getOrNull()
+        }.sortedBy { it.trigger }
+
     /** Alarms that should have fired already (within the catch-up window) but never reached the receiver. */
     fun overdue(context: Context, now: Long): List<Armed> {
         val p = prefs(context)
