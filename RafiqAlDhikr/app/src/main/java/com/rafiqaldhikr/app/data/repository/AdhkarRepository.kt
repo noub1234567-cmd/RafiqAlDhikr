@@ -7,6 +7,7 @@ import com.rafiqaldhikr.app.data.local.db.entities.AdhkarProgressEntity
 import com.rafiqaldhikr.app.data.local.db.entities.AdhkarReminderEntity
 import com.rafiqaldhikr.app.notifications.ReminderScheduler
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.sync.withLock
 import java.time.LocalDate
 
 class AdhkarRepository(
@@ -14,6 +15,7 @@ class AdhkarRepository(
     private val scheduler: ReminderScheduler
 ) {
     private val dao = database.adhkarDao()
+    private val mutex = kotlinx.coroutines.sync.Mutex()
 
     fun observeEntries(profileId: Long): Flow<List<AdhkarEntryEntity>> =
         dao.observeEntries(profileId)
@@ -28,11 +30,11 @@ class AdhkarRepository(
         profileId: Long,
         entry: AdhkarEntryEntity,
         date: LocalDate = LocalDate.now()
-    ) {
+    ): Unit = mutex.withLock {
         val epochDay = date.toEpochDay()
         val existing = dao.getProgress(profileId, entry.id, epochDay)
         val current = existing?.currentCount ?: 0
-        if (current >= entry.targetCount && existing?.isCompleted == true) return
+        if (current >= entry.targetCount && existing?.isCompleted == true) return@withLock
         val nextCount = (current + 1).coerceAtMost(entry.targetCount)
         val completed = nextCount >= entry.targetCount
         val progress = (existing ?: AdhkarProgressEntity(

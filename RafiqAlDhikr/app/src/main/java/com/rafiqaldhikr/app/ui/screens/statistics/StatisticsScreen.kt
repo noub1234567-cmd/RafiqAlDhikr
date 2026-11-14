@@ -87,8 +87,8 @@ fun StatisticsScreen(
                 RafiqCard {
                     Text("القرآن والحفظ والصيام", style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(8.dp))
-                    StatRow("مجموع قراءة القرآن (٧ أيام)", ArabicFormatters.toArabicDigits(s.quranWeekTotal.toString()))
-                    StatRow("مجموع قراءة القرآن (٣٠ يوماً)", ArabicFormatters.toArabicDigits(s.quranMonthTotal.toString()))
+                    StatRow("مجموع قراءة القرآن (٧ أيام)", ArabicFormatters.formatAmountAr(s.quranWeekTotal))
+                    StatRow("مجموع قراءة القرآن (٣٠ يوماً)", ArabicFormatters.formatAmountAr(s.quranMonthTotal))
                     StatRow("جلسات الحفظ المسجلة", ArabicFormatters.toArabicDigits(s.memSessionsCount))
                     StatRow("جلسات المراجعة المسجلة", ArabicFormatters.toArabicDigits(s.revSessionsCount))
                     StatRow("أيام الصيام المكتملة", ArabicFormatters.toArabicDigits(s.completedFastingCount))

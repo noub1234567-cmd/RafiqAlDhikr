@@ -70,6 +70,15 @@ object PermissionHelper {
         }
     }
 
+    /** Starts a settings screen; falls back to app details when the OEM does not provide the requested one. */
+    fun safeStart(context: Context, intent: Intent) {
+        try {
+            context.startActivity(intent)
+        } catch (_: android.content.ActivityNotFoundException) {
+            runCatching { context.startActivity(openAppDetailsIntent(context)) }
+        }
+    }
+
     fun openAppDetailsIntent(context: Context): Intent {
         return Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
             data = Uri.parse("package:${context.packageName}")

@@ -34,6 +34,10 @@ class ReminderReceiver : BroadcastReceiver() {
                 val db = app.container.database
                 var resolvedLogId = -1L
 
+                // Stale alarms (deleted profile/item, restored backup, disabled reminder) must stay silent.
+                if (profileId > 0L && db.profileDao().getById(profileId) == null) return@launch
+                if (!isTargetStillActive(app, kind, targetId, profileId, activityId)) return@launch
+
                 if (kind == ReminderScheduler.KIND_ACTIVITY && activityId > 0L) {
                     val todayEpoch = LocalDate.now().toEpochDay()
                     val activity = db.worshipDao().getActivityById(activityId)
@@ -65,7 +69,11 @@ class ReminderReceiver : BroadcastReceiver() {
                 } else if (kind == ReminderScheduler.KIND_RESCHEDULED && targetId > 0L) {
                     resolvedLogId = targetId
                     val log = db.worshipDao().getLogById(targetId)
-                    if (log?.status == ActivityStatus.COMPLETED) {
+                    // Snoozes of non-activity reminders (adhkar, quran, ...) have no log; only activity snoozes do.
+                    if (activityId > 0L && (log == null || log.status == ActivityStatus.COMPLETED)) {
+                        return@launch
+                    }
+                    if (activityId <= 0L && log?.status == ActivityStatus.COMPLETED) {
                         return@launch
                     }
                 } else {
@@ -86,6 +94,35 @@ class ReminderReceiver : BroadcastReceiver() {
             } finally {
                 pendingResult.finish()
             }
+        }
+    }
+
+    private suspend fun isTargetStillActive(
+        app: RafiqApplication,
+        kind: String,
+        targetId: Long,
+        profileId: Long,
+        activityId: Long
+    ): Boolean {
+        val db = app.container.database
+        return when (kind) {
+            ReminderScheduler.KIND_ACTIVITY -> {
+                val a = db.worshipDao().getActivityById(activityId)
+                a != null && a.isEnabled && a.reminderEnabled
+            }
+            ReminderScheduler.KIND_ADHKAR ->
+                db.adhkarDao().getAllEnabledReminders().any { it.id == targetId }
+            ReminderScheduler.KIND_QURAN ->
+                db.quranDao().getGoal(profileId)?.reminderEnabled == true
+            ReminderScheduler.KIND_MEMORIZATION ->
+                db.memorizationDao().getPlanById(targetId)?.let { it.isActive && it.memReminderEnabled } == true
+            ReminderScheduler.KIND_REVISION ->
+                db.memorizationDao().getPlanById(targetId)?.let { it.isActive && it.revReminderEnabled } == true
+            ReminderScheduler.KIND_FASTING ->
+                db.fastingDao().getByDate(profileId, targetId)?.let { it.reminderEnabled && !it.isCompleted } == true
+            ReminderScheduler.KIND_SEASONAL ->
+                db.seasonalDao().getAll().any { it.id == targetId && it.isSelected && it.reminderEnabled }
+            else -> true
         }
     }
 }

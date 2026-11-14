@@ -184,24 +184,24 @@ fun SettingsScreen(
                                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                         notifPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                                     } else {
-                                        context.startActivity(PermissionHelper.openNotificationSettingsIntent(context))
+                                        PermissionHelper.safeStart(context, PermissionHelper.openNotificationSettingsIntent(context))
                                     }
                                 },
                                 modifier = Modifier.fillMaxWidth()
                             ) { Text("منح إذن الإشعارات") }
                         }
                         OutlinedButton(
-                            onClick = { context.startActivity(PermissionHelper.openNotificationSettingsIntent(context)) },
+                            onClick = { PermissionHelper.safeStart(context, PermissionHelper.openNotificationSettingsIntent(context)) },
                             modifier = Modifier.fillMaxWidth()
                         ) { Text("إعدادات إشعارات التطبيق") }
                         if (!permStatus.exactAlarmAllowed) {
                             OutlinedButton(
-                                onClick = { context.startActivity(PermissionHelper.openExactAlarmSettingsIntent(context)) },
+                                onClick = { PermissionHelper.safeStart(context, PermissionHelper.openExactAlarmSettingsIntent(context)) },
                                 modifier = Modifier.fillMaxWidth()
                             ) { Text("السماح بالتنبيهات الدقيقة") }
                         }
                         OutlinedButton(
-                            onClick = { context.startActivity(PermissionHelper.openBatteryOptimizationSettingsIntent(context)) },
+                            onClick = { PermissionHelper.safeStart(context, PermissionHelper.openBatteryOptimizationSettingsIntent(context)) },
                             modifier = Modifier.fillMaxWidth()
                         ) { Text("إعدادات تحسين البطارية") }
                     }

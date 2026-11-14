@@ -117,7 +117,7 @@ fun FastingScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         IconButton(onClick = { viewModel.previousMonth() }) {
-                            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "الشهر السابق")
+                            Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "الشهر السابق")
                         }
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Text(
@@ -131,7 +131,7 @@ fun FastingScreen(
                             )
                         }
                         IconButton(onClick = { viewModel.nextMonth() }) {
-                            Icon(Icons.AutoMirrored.Filled.KeyboardArrowLeft, contentDescription = "الشهر التالي")
+                            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = "الشهر التالي")
                         }
                     }
 

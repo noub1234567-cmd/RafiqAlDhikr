@@ -79,7 +79,7 @@ fun AdhkarScreen(
                 activeProfile = state.activeProfile,
                 onProfileClick = onOpenProfileSwitcher,
                 actions = {
-                    IconButton(onClick = { showReminderDialog = true }) {
+                    IconButton(enabled = state.activeProfile != null, onClick = { showReminderDialog = true }) {
                         Icon(Icons.Default.Alarm, contentDescription = "تذكير القسم")
                     }
                     IconButton(onClick = { viewModel.resetCategory() }) {
@@ -234,8 +234,9 @@ fun AdhkarScreen(
         )
     }
 
-    if (showAddDialog || editingEntry != null) {
-        val profileId = state.activeProfile?.id ?: 1L
+    val dialogProfileId = state.activeProfile?.id
+    if (dialogProfileId != null && (showAddDialog || editingEntry != null)) {
+        val profileId: Long = dialogProfileId
         AdhkarEditorDialog(
             profileId = profileId,
             category = state.selectedCategory,

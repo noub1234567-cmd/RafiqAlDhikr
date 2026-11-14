@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import com.rafiqaldhikr.app.core.calendar.todayFlow
 import java.time.LocalDate
 
 data class QuranUiState(
@@ -28,11 +29,13 @@ data class QuranUiState(
 @OptIn(ExperimentalCoroutinesApi::class)
 class QuranViewModel(private val container: AppContainer) : ViewModel() {
 
-    private val today = LocalDate.now()
+    private val today: LocalDate get() = LocalDate.now()
 
-    val uiState: StateFlow<QuranUiState> = container.profileRepository.activeProfileFlow
-        .filterNotNull()
-        .flatMapLatest { profile ->
+    val uiState: StateFlow<QuranUiState> = combine(
+        container.profileRepository.activeProfileFlow.filterNotNull(),
+        todayFlow()
+    ) { profile, day -> profile to day }
+        .flatMapLatest { (profile, today) ->
             combine(
                 container.quranRepository.observeGoal(profile.id),
                 container.quranRepository.observeLogs(profile.id)

@@ -155,7 +155,7 @@ fun DashboardScreen(
                                 style = MaterialTheme.typography.bodyMedium
                             )
                             Text(
-                                text = "القرآن: ${ArabicFormatters.toArabicDigits(state.quranDoneToday.toInt())}/${ArabicFormatters.toArabicDigits(state.quranTargetToday.toInt())} ${state.quranUnitAr}",
+                                text = "القرآن: ${ArabicFormatters.formatAmountAr(state.quranDoneToday)}/${ArabicFormatters.formatAmountAr(state.quranTargetToday)} ${state.quranUnitAr}",
                                 style = MaterialTheme.typography.bodyMedium
                             )
                         }

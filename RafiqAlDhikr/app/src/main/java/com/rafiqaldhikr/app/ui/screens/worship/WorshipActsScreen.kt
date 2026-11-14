@@ -122,8 +122,9 @@ fun WorshipActsScreen(
         }
     }
 
-    if (showCreateDialog || editingActivity != null) {
-        val profileId = state.activeProfile?.id ?: 1L
+    val dialogProfileId = state.activeProfile?.id
+    if (dialogProfileId != null && (showCreateDialog || editingActivity != null)) {
+        val profileId: Long = dialogProfileId
         ActivityEditorDialog(
             profileId = profileId,
             existing = editingActivity,

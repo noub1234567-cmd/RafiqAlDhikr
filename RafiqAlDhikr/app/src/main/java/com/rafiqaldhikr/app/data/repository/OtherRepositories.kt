@@ -68,18 +68,28 @@ data class ProfileStatisticsSnapshot(
 class StatisticsRepository(private val database: AppDatabase) {
 
     fun observeStatistics(profileId: Long): Flow<ProfileStatisticsSnapshot> {
-        val today = LocalDate.now()
-        val todayEpoch = today.toEpochDay()
-        val weekStartEpoch = today.minusDays(6).toEpochDay()
-        val monthStartEpoch = today.minusDays(29).toEpochDay()
-
         return combine(
             database.worshipDao().observeLogs(profileId),
             database.quranDao().observeLogs(profileId),
             database.memorizationDao().observeSessions(profileId),
             database.fastingDao().observeFastingDays(profileId),
-            database.tasbeehDao().observeLogs(profileId)
-        ) { activityLogs, quranLogs, memSessions, fastingDays, tasbeehLogs ->
+            database.tasbeehDao().observeLogs(profileId),
+            com.rafiqaldhikr.app.core.calendar.todayFlow()
+        ) { values ->
+            @Suppress("UNCHECKED_CAST")
+            val activityLogs = values[0] as List<com.rafiqaldhikr.app.data.local.db.entities.ActivityLogEntity>
+            @Suppress("UNCHECKED_CAST")
+            val quranLogs = values[1] as List<com.rafiqaldhikr.app.data.local.db.entities.QuranReadingLogEntity>
+            @Suppress("UNCHECKED_CAST")
+            val memSessions = values[2] as List<com.rafiqaldhikr.app.data.local.db.entities.MemorizationSessionEntity>
+            @Suppress("UNCHECKED_CAST")
+            val fastingDays = values[3] as List<com.rafiqaldhikr.app.data.local.db.entities.FastingDayEntity>
+            @Suppress("UNCHECKED_CAST")
+            val tasbeehLogs = values[4] as List<com.rafiqaldhikr.app.data.local.db.entities.TasbeehLogEntity>
+            val today = values[5] as LocalDate
+            val todayEpoch = today.toEpochDay()
+            val weekStartEpoch = today.minusDays(6).toEpochDay()
+            val monthStartEpoch = today.minusDays(29).toEpochDay()
 
             val todayLogs = activityLogs.filter { it.dateEpochDay == todayEpoch }
             val weekLogs = activityLogs.filter { it.dateEpochDay in weekStartEpoch..todayEpoch }

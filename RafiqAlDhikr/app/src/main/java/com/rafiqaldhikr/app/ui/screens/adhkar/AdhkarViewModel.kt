@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import com.rafiqaldhikr.app.core.calendar.todayFlow
 import java.time.LocalDate
 
 data class AdhkarUiState(
@@ -31,11 +32,13 @@ data class AdhkarUiState(
 class AdhkarViewModel(private val container: AppContainer) : ViewModel() {
 
     private val selectedCategoryFlow = MutableStateFlow(AdhkarCategory.MORNING)
-    private val today = LocalDate.now()
+    private val today: LocalDate get() = LocalDate.now()
 
-    val uiState: StateFlow<AdhkarUiState> = container.profileRepository.activeProfileFlow
-        .filterNotNull()
-        .flatMapLatest { profile ->
+    val uiState: StateFlow<AdhkarUiState> = combine(
+        container.profileRepository.activeProfileFlow.filterNotNull(),
+        todayFlow()
+    ) { profile, day -> profile to day }
+        .flatMapLatest { (profile, today) ->
             combine(
                 selectedCategoryFlow,
                 container.adhkarRepository.observeEntries(profile.id),

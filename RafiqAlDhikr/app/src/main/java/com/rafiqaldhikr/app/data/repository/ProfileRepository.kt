@@ -14,6 +14,7 @@ import com.rafiqaldhikr.app.data.local.db.entities.QuranGoalEntity
 import com.rafiqaldhikr.app.data.local.db.entities.TasbeehTypeEntity
 import com.rafiqaldhikr.app.data.local.db.entities.UserProfileEntity
 import com.rafiqaldhikr.app.data.local.db.entities.WorshipActivityEntity
+import androidx.room.withTransaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
@@ -22,7 +23,8 @@ import java.time.LocalDate
 
 class ProfileRepository(
     private val database: AppDatabase,
-    private val preferences: UserPreferencesDataStore
+    private val preferences: UserPreferencesDataStore,
+    private val scheduler: com.rafiqaldhikr.app.notifications.ReminderScheduler? = null
 ) {
     private val profileDao = database.profileDao()
 
@@ -62,16 +64,19 @@ class ProfileRepository(
         isDefault: Boolean = false
     ): Long {
         val trimmed = name.trim().ifBlank { "مستخدم جديد" }
-        val newId = profileDao.insert(
-            UserProfileEntity(
-                name = trimmed,
-                avatarColorHex = avatarColorHex,
-                note = note.trim(),
-                isDefault = isDefault
+        // One transaction: a failure while seeding must not leave a half-initialised profile behind.
+        return database.withTransaction {
+            val newId = profileDao.insert(
+                UserProfileEntity(
+                    name = trimmed,
+                    avatarColorHex = avatarColorHex,
+                    note = note.trim(),
+                    isDefault = isDefault
+                )
             )
-        )
-        seedProfileDefaults(newId)
-        return newId
+            seedProfileDefaults(newId)
+            newId
+        }
     }
 
     suspend fun updateProfile(profile: UserProfileEntity) {
@@ -87,6 +92,7 @@ class ProfileRepository(
     suspend fun deleteProfile(profile: UserProfileEntity): Boolean {
         val all = profileDao.getAll()
         if (all.size <= 1) return false
+        scheduler?.cancelAllForProfile(profile.id)
         profileDao.delete(profile)
         val remaining = profileDao.getAll()
         val currentActive = preferences.getSnapshot().activeProfileId

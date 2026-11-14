@@ -96,7 +96,7 @@ fun QuranScreen(
                         Column {
                             Text(goal?.goalType?.labelAr ?: "صفحات يومية", style = MaterialTheme.typography.titleMedium)
                             Text(
-                                text = "الهدف اليومي: ${ArabicFormatters.toArabicDigits(target.toString())} $unitLabel",
+                                text = "الهدف اليومي: ${ArabicFormatters.formatAmountAr(target)} $unitLabel",
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
@@ -112,7 +112,7 @@ fun QuranScreen(
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
-                        text = "أُنجز اليوم: ${ArabicFormatters.toArabicDigits(state.todayTotal.toString())} من ${ArabicFormatters.toArabicDigits(target.toString())} $unitLabel",
+                        text = "أُنجز اليوم: ${ArabicFormatters.formatAmountAr(state.todayTotal)} من ${ArabicFormatters.formatAmountAr(target)} $unitLabel",
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.primary
                     )
@@ -150,7 +150,7 @@ fun QuranScreen(
                     Spacer(modifier = Modifier.height(8.dp))
                     Button(
                         onClick = {
-                            val amt = customAmount.toDoubleOrNull() ?: 1.0
+                            val amt = com.rafiqaldhikr.app.core.calendar.ArabicFormatters.parseDoubleOrNull(customAmount) ?: 1.0
                             if (amt > 0) {
                                 viewModel.logReading(amt, note)
                                 note = ""
@@ -171,8 +171,8 @@ fun QuranScreen(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text("خلال ٧ أيام: ${ArabicFormatters.toArabicDigits(state.weekTotal.toString())} $unitLabel")
-                        Text("خلال ٣٠ يوماً: ${ArabicFormatters.toArabicDigits(state.monthTotal.toString())} $unitLabel")
+                        Text("خلال ٧ أيام: ${ArabicFormatters.formatAmountAr(state.weekTotal)} $unitLabel")
+                        Text("خلال ٣٠ يوماً: ${ArabicFormatters.formatAmountAr(state.monthTotal)} $unitLabel")
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     OutlinedButton(onClick = onOpenMemorization, modifier = Modifier.fillMaxWidth()) {
@@ -201,7 +201,7 @@ fun QuranScreen(
                         ) {
                             Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = "${ArabicFormatters.toArabicDigits(log.amountRead.toString())} ${log.unitLabel}",
+                                    text = "${ArabicFormatters.formatAmountAr(log.amountRead)} ${log.unitLabel}",
                                     style = MaterialTheme.typography.titleMedium
                                 )
                                 Text(
@@ -310,7 +310,7 @@ private fun QuranGoalEditorDialog(
                 onSave(
                     goal.copy(
                         goalType = goalType,
-                        targetAmount = (targetText.toDoubleOrNull() ?: 4.0).coerceAtLeast(0.5),
+                        targetAmount = (com.rafiqaldhikr.app.core.calendar.ArabicFormatters.parseDoubleOrNull(targetText) ?: 4.0).coerceAtLeast(0.5),
                         customUnitLabel = customUnit.ifBlank { "وحدة" },
                         reminderEnabled = reminderEnabled,
                         reminderHour = hour,

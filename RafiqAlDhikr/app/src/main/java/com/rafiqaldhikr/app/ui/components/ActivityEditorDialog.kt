@@ -50,7 +50,13 @@ fun ActivityEditorDialog(
     var scheduleType by remember { mutableStateOf(existing?.scheduleType ?: ScheduleType.DAILY) }
     var weekdaysMask by remember { mutableIntStateOf(existing?.weekdaysMask ?: 0b1111111) }
     var intervalDays by remember { mutableStateOf((existing?.customIntervalDays ?: 2).toString()) }
-    var oneTimeDaysOffset by remember { mutableStateOf("0") }
+    var oneTimeDaysOffset by remember {
+        mutableStateOf(
+            existing?.oneTimeDateEpochDay
+                ?.let { (it - LocalDate.now().toEpochDay()).coerceAtLeast(0L).toString() }
+                ?: "0"
+        )
+    }
     var reminderEnabled by remember { mutableStateOf(existing?.reminderEnabled ?: true) }
     var hour by remember { mutableIntStateOf(existing?.reminderHour ?: 9) }
     var minute by remember { mutableIntStateOf(existing?.reminderMinute ?: 0) }
@@ -218,8 +224,13 @@ fun ActivityEditorDialog(
                 onClick = {
                     val todayEpoch = LocalDate.now().toEpochDay()
                     val oneTimeEpoch = if (scheduleType == ScheduleType.ONE_TIME) {
-                        existing?.oneTimeDateEpochDay ?: (todayEpoch + (oneTimeDaysOffset.toLongOrNull() ?: 0L))
+                        todayEpoch + (oneTimeDaysOffset.toLongOrNull() ?: 0L)
                     } else null
+                    val newInterval = (intervalDays.toIntOrNull() ?: 1).coerceAtLeast(1)
+                    val scheduleChanged = existing != null &&
+                        (existing.scheduleType != scheduleType ||
+                            existing.customIntervalDays != newInterval ||
+                            existing.anchorEpochDay <= 0L)
                     onSave(
                         (existing ?: WorshipActivityEntity(
                             profileId = profileId,
@@ -233,7 +244,8 @@ fun ActivityEditorDialog(
                             scheduleType = scheduleType,
                             weekdaysMask = if (weekdaysMask == 0) 0b1111111 else weekdaysMask,
                             oneTimeDateEpochDay = oneTimeEpoch,
-                            customIntervalDays = (intervalDays.toIntOrNull() ?: 1).coerceAtLeast(1),
+                            customIntervalDays = newInterval,
+                            anchorEpochDay = if (scheduleChanged) todayEpoch else (existing?.anchorEpochDay ?: todayEpoch),
                             reminderEnabled = reminderEnabled,
                             reminderHour = hour.coerceIn(0, 23),
                             reminderMinute = minute.coerceIn(0, 59),

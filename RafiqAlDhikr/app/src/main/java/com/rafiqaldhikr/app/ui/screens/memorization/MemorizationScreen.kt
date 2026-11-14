@@ -188,8 +188,9 @@ fun MemorizationScreen(
         }
     }
 
-    if (showPlanEditor || editingPlan != null) {
-        val profileId = state.activeProfile?.id ?: 1L
+    val dialogProfileId = state.activeProfile?.id
+    if (dialogProfileId != null && (showPlanEditor || editingPlan != null)) {
+        val profileId: Long = dialogProfileId
         PlanEditorDialog(
             profileId = profileId,
             existing = editingPlan,

@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import com.rafiqaldhikr.app.core.calendar.todayFlow
 import java.time.LocalDate
 
 data class TasbeehUiState(
@@ -30,13 +31,14 @@ data class TasbeehUiState(
 class TasbeehViewModel(private val container: AppContainer) : ViewModel() {
 
     private val selectedTypeIdFlow = MutableStateFlow<Long?>(null)
-    private val today = LocalDate.now()
+    private val today: LocalDate get() = LocalDate.now()
 
     val uiState: StateFlow<TasbeehUiState> = combine(
         container.profileRepository.activeProfileFlow.filterNotNull(),
-        container.preferences.settingsFlow
-    ) { profile, settings -> profile to settings.tasbeehHapticEnabled }
-        .flatMapLatest { (profile, haptic) ->
+        container.preferences.settingsFlow,
+        todayFlow()
+    ) { profile, settings, day -> Triple(profile, settings.tasbeehHapticEnabled, day) }
+        .flatMapLatest { (profile, haptic, today) ->
             combine(
                 container.tasbeehRepository.observeTypes(profile.id),
                 container.tasbeehRepository.observeTodayLogs(profile.id, today),

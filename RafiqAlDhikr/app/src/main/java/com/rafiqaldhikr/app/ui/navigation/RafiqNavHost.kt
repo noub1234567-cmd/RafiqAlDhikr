@@ -1,6 +1,7 @@
 package com.rafiqaldhikr.app.ui.navigation
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
@@ -115,7 +116,7 @@ fun RafiqNavHost(container: AppContainer) {
             }
         }
     ) { innerPadding ->
-        Box(modifier = Modifier.padding(innerPadding)) {
+        Box(modifier = Modifier.padding(innerPadding).consumeWindowInsets(innerPadding)) {
             NavHost(
                 navController = navController,
                 startDestination = NavRoute.Dashboard.route
