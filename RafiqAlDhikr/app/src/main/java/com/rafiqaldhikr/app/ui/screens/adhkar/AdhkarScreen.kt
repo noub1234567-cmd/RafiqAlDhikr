@@ -267,7 +267,8 @@ private fun AdhkarReminderDialog(
     onDismiss: () -> Unit,
     onSave: (AdhkarReminderEntity) -> Unit
 ) {
-    var enabled by remember { mutableStateOf(reminder.enabled) }
+    // Opening the dialog means "set a reminder": start enabled so saving cannot silently leave it off.
+    var enabled by remember { mutableStateOf(true) }
     var hour by remember { mutableIntStateOf(reminder.hour) }
     var minute by remember { mutableIntStateOf(reminder.minute) }
     var soundMode by remember { mutableStateOf(reminder.soundMode) }
@@ -282,7 +283,7 @@ private fun AdhkarReminderDialog(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
-                    Text("تفعيل التذكير اليومي")
+                    Text(if (enabled) "التذكير اليومي: مفعّل" else "التذكير اليومي: متوقف")
                     Switch(checked = enabled, onCheckedChange = { enabled = it })
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
