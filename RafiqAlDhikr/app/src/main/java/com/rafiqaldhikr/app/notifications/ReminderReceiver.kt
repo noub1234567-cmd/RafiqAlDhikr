@@ -33,6 +33,7 @@ class ReminderReceiver : BroadcastReceiver() {
             try {
                 val db = app.container.database
                 var resolvedLogId = -1L
+                var resolvedActivityId = activityId
 
                 // Stale alarms (deleted profile/item, restored backup, disabled reminder) must stay silent.
                 if (profileId > 0L && db.profileDao().getById(profileId) == null) return@launch
@@ -77,8 +78,14 @@ class ReminderReceiver : BroadcastReceiver() {
                         return@launch
                     }
                 } else {
-                    // Reschedule recurring non-activity reminders for next day
-                    app.container.reminderScheduler.rescheduleAll()
+                    // Record this reminder in the history (completed / missed list)
+                    val sysLog = runCatching { logSystemReminder(db, kind, targetId, profileId, title) }.getOrNull()
+                    if (sysLog != null) {
+                        resolvedActivityId = sysLog.first
+                        resolvedLogId = sysLog.second
+                    }
+                    // Re-arm only this reminder; rescheduleAll() would move other alarms due now to tomorrow
+                    app.container.reminderScheduler.rescheduleOne(kind, targetId, profileId)
                 }
 
                 NotificationHelper.showReminderNotification(
@@ -87,7 +94,7 @@ class ReminderReceiver : BroadcastReceiver() {
                     title = title,
                     body = body,
                     soundMode = soundMode,
-                    activityId = activityId,
+                    activityId = resolvedActivityId,
                     logId = resolvedLogId,
                     profileId = profileId
                 )
@@ -95,6 +102,58 @@ class ReminderReceiver : BroadcastReceiver() {
                 pendingResult.finish()
             }
         }
+    }
+
+    /**
+     * Adhkar / quran / memorization / revision reminders have no WorshipActivity of their own.
+     * A hidden, disabled activity ("sys-<kind>-<id>") carries today's log so it shows in the history.
+     * Returns (activityId, logId) or null for kinds that are not recorded.
+     */
+    private suspend fun logSystemReminder(
+        db: com.rafiqaldhikr.app.data.local.db.AppDatabase,
+        kind: String,
+        targetId: Long,
+        profileId: Long,
+        title: String
+    ): Pair<Long, Long>? {
+        val category = when (kind) {
+            ReminderScheduler.KIND_ADHKAR -> com.rafiqaldhikr.app.core.model.ActivityCategory.ADHKAR
+            ReminderScheduler.KIND_QURAN -> com.rafiqaldhikr.app.core.model.ActivityCategory.QURAN
+            ReminderScheduler.KIND_MEMORIZATION,
+            ReminderScheduler.KIND_REVISION -> com.rafiqaldhikr.app.core.model.ActivityCategory.MEMORIZATION
+            else -> return null
+        }
+        if (profileId <= 0L) return null
+        val dao = db.worshipDao()
+        val key = "sys-$kind-$targetId"
+        val activity = dao.getActivityByTemplateKey(profileId, key) ?: run {
+            val newId = dao.insertActivity(
+                com.rafiqaldhikr.app.data.local.db.entities.WorshipActivityEntity(
+                    profileId = profileId,
+                    templateKey = key,
+                    title = title,
+                    category = category,
+                    isEnabled = false,
+                    reminderEnabled = false
+                )
+            )
+            dao.getActivityById(newId) ?: return null
+        }
+        val todayEpoch = LocalDate.now().toEpochDay()
+        val existing = dao.getLogForActivityDay(profileId, activity.id, todayEpoch)
+        if (existing != null) return activity.id to existing.id
+        val logId = dao.insertLog(
+            ActivityLogEntity(
+                profileId = profileId,
+                activityId = activity.id,
+                activityTitleSnapshot = title,
+                categorySnapshot = category,
+                dateEpochDay = todayEpoch,
+                scheduledAtMillis = System.currentTimeMillis(),
+                status = ActivityStatus.PENDING
+            )
+        )
+        return activity.id to logId
     }
 
     private suspend fun isTargetStillActive(
