@@ -53,7 +53,8 @@ class WorshipRepository(
         val now = System.currentTimeMillis()
         val activities = dao.getActivitiesByProfile(profileId)
         for (activity in activities) {
-            if (MissedActivityEvaluator.isScheduledOnDate(activity, date) &&
+            if (activity.reminderEnabled &&
+                MissedActivityEvaluator.isScheduledOnDate(activity, date) &&
                 !isSlotBeforeCreation(activity, date)
             ) {
                 ensureLogExistsForDate(activity, date)
@@ -136,7 +137,9 @@ class WorshipRepository(
         val today = LocalDate.now()
         val epochDay = today.toEpochDay()
         val existing = dao.getLogForActivityDay(activity.profileId, activity.id, epochDay)
-        val scheduledToday = MissedActivityEvaluator.isScheduledOnDate(activity, today)
+        // Worship without a reminder never enters the history.
+        val scheduledToday = activity.reminderEnabled &&
+            MissedActivityEvaluator.isScheduledOnDate(activity, today)
         if (existing == null) {
             if (scheduledToday && !isSlotBeforeCreation(activity, today)) {
                 ensureLogExistsForDate(activity, today)
