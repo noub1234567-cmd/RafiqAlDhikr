@@ -159,7 +159,7 @@ class ReminderScheduler(
         val memCode = requestCodeFor(KIND_MEMORIZATION, plan.id)
         val surahName = QuranSurahs.byNumber(plan.surahNumber).nameAr
         if (plan.isActive && plan.memReminderEnabled) {
-            val trigger = nextDailyMillis(plan.memReminderHour, plan.memReminderMinute, nowMillis)
+            val trigger = nextScheduledMillis(plan.memScheduleType, plan.memWeekdaysMask, plan.memReminderHour, plan.memReminderMinute, nowMillis)
             scheduleAlarm(
                 requestCode = memCode,
                 triggerAtMillis = trigger,
@@ -176,7 +176,7 @@ class ReminderScheduler(
 
         val revCode = requestCodeFor(KIND_REVISION, plan.id)
         if (plan.isActive && plan.revReminderEnabled) {
-            val trigger = nextDailyMillis(plan.revReminderHour, plan.revReminderMinute, nowMillis)
+            val trigger = nextScheduledMillis(plan.revScheduleType, plan.revWeekdaysMask, plan.revReminderHour, plan.revReminderMinute, nowMillis)
             scheduleAlarm(
                 requestCode = revCode,
                 triggerAtMillis = trigger,
@@ -227,15 +227,19 @@ class ReminderScheduler(
             cancelAlarm(code)
             return
         }
-        val trigger = nextDailyMillis(selection.reminderHour, selection.reminderMinute, nowMillis)
+        val trigger = nextSeasonMillis(selection, nowMillis) ?: run {
+            cancelAlarm(code)
+            return
+        }
+        val seasonTitle = com.rafiqaldhikr.app.core.model.SeasonalCatalog.byId(selection.seasonId)?.title
         scheduleAlarm(
             requestCode = code,
             triggerAtMillis = trigger,
             kind = KIND_SEASONAL,
             targetId = selection.id,
             profileId = selection.profileId,
-            title = "تذكير موسمي بالعبادة",
-            body = "تذكير بالعمل الصالح ضمن مواسم الخير المختارة.",
+            title = seasonTitle ?: "تذكير موسمي بالعبادة",
+            body = "تذكير بالعمل الصالح في موسم ${seasonTitle ?: "الخير"}.",
             soundMode = NotificationSoundMode.GENTLE_SOUND
         )
     }
@@ -306,6 +310,76 @@ class ReminderScheduler(
             target = target.plusDays(1)
         }
         return target.toInstant().toEpochMilli()
+    }
+
+    /** Next trigger honouring the weekday mask (bit0=Monday..bit6=Sunday) for weekday-based schedules. */
+    private fun nextScheduledMillis(
+        type: com.rafiqaldhikr.app.core.model.ScheduleType,
+        weekdaysMask: Int,
+        hour: Int,
+        minute: Int,
+        nowMillis: Long
+    ): Long {
+        val usesMask = (type == com.rafiqaldhikr.app.core.model.ScheduleType.SPECIFIC_WEEKDAYS ||
+            type == com.rafiqaldhikr.app.core.model.ScheduleType.WEEKLY) && (weekdaysMask and 0b1111111) != 0
+        if (!usesMask) return nextDailyMillis(hour, minute, nowMillis)
+        val zone = ZoneId.systemDefault()
+        val today = java.time.Instant.ofEpochMilli(nowMillis).atZone(zone).toLocalDate()
+        for (offset in 0L..7L) {
+            val date = today.plusDays(offset)
+            if ((weekdaysMask and (1 shl (date.dayOfWeek.value - 1))) == 0) continue
+            val millis = date.atTime(hour.coerceIn(0, 23), minute.coerceIn(0, 59))
+                .atZone(zone).toInstant().toEpochMilli()
+            if (millis > nowMillis) return millis
+        }
+        return nextDailyMillis(hour, minute, nowMillis)
+    }
+
+    /** Next trigger that falls inside the selected season's Hijri window, or null if none within ~13 months. */
+    private fun nextSeasonMillis(selection: SeasonalSelectionEntity, nowMillis: Long): Long? {
+        val zone = ZoneId.systemDefault()
+        val today = java.time.Instant.ofEpochMilli(nowMillis).atZone(zone).toLocalDate()
+        for (offset in 0L..400L) {
+            val date = today.plusDays(offset)
+            val hijri = com.rafiqaldhikr.app.core.calendar.HijriCalendarHelper.toHijri(date)
+            if (!com.rafiqaldhikr.app.core.model.SeasonalCatalog.isInSeason(selection.seasonId, hijri.month, hijri.day)) continue
+            val millis = date.atTime(selection.reminderHour.coerceIn(0, 23), selection.reminderMinute.coerceIn(0, 59))
+                .atZone(zone).toInstant().toEpochMilli()
+            if (millis > nowMillis) return millis
+        }
+        return null
+    }
+
+    fun cancelRescheduledReminder(logId: Long) {
+        cancelAlarm(requestCodeFor(KIND_RESCHEDULED, logId))
+    }
+
+    /** Cancels every alarm belonging to [profileId] (call BEFORE deleting its rows). */
+    suspend fun cancelAllForProfile(profileId: Long) {
+        database.worshipDao().getActivitiesByProfile(profileId).forEach {
+            cancelAlarm(requestCodeFor(KIND_ACTIVITY, it.id))
+        }
+        database.worshipDao().getAllLogs().filter { it.profileId == profileId }.forEach {
+            cancelAlarm(requestCodeFor(KIND_RESCHEDULED, it.id))
+        }
+        database.adhkarDao().getAllReminders().filter { it.profileId == profileId }.forEach {
+            cancelAlarm(requestCodeFor(KIND_ADHKAR, it.profileId * 10 + it.category.ordinal))
+        }
+        cancelAlarm(requestCodeFor(KIND_QURAN, profileId))
+        database.memorizationDao().getAllPlans().filter { it.profileId == profileId }.forEach {
+            cancelAlarm(requestCodeFor(KIND_MEMORIZATION, it.id))
+            cancelAlarm(requestCodeFor(KIND_REVISION, it.id))
+        }
+        database.fastingDao().getAll().filter { it.profileId == profileId }.forEach {
+            cancelAlarm(requestCodeFor(KIND_FASTING, it.profileId * 100000 + (it.dateEpochDay % 100000)))
+        }
+        database.seasonalDao().getAll().filter { it.profileId == profileId }.forEach {
+            cancelAlarm(requestCodeFor(KIND_SEASONAL, it.id))
+        }
+    }
+
+    suspend fun cancelAllForAllProfiles() {
+        database.profileDao().getAll().forEach { cancelAllForProfile(it.id) }
     }
 
     private fun requestCodeFor(kind: String, id: Long): Int {

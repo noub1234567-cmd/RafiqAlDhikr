@@ -40,7 +40,7 @@ class AppContainerImpl(context: Context) : AppContainer {
     override val preferences: UserPreferencesDataStore by lazy { UserPreferencesDataStore(appContext) }
     override val reminderScheduler: ReminderScheduler by lazy { ReminderScheduler(appContext, database) }
 
-    override val profileRepository: ProfileRepository by lazy { ProfileRepository(database, preferences) }
+    override val profileRepository: ProfileRepository by lazy { ProfileRepository(database, preferences, reminderScheduler) }
     override val worshipRepository: WorshipRepository by lazy { WorshipRepository(database, reminderScheduler) }
     override val adhkarRepository: AdhkarRepository by lazy { AdhkarRepository(database, reminderScheduler) }
     override val quranRepository: QuranRepository by lazy { QuranRepository(database, reminderScheduler) }

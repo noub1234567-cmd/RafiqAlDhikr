@@ -16,6 +16,18 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         val app = application as RafiqApplication
+
+        if (savedInstanceState == null && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            val granted = androidx.core.content.ContextCompat.checkSelfPermission(
+                this, android.Manifest.permission.POST_NOTIFICATIONS
+            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            if (!granted) {
+                registerForActivityResult(
+                    androidx.activity.result.contract.ActivityResultContracts.RequestPermission()
+                ) { }.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+
         setContent {
             val settings by app.container.preferences.settingsFlow
                 .collectAsStateWithLifecycle(initialValue = AppSettingsSnapshot())

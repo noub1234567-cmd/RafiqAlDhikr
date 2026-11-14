@@ -4,19 +4,21 @@ import com.rafiqaldhikr.app.data.local.db.AppDatabase
 import com.rafiqaldhikr.app.data.local.db.entities.TasbeehLogEntity
 import com.rafiqaldhikr.app.data.local.db.entities.TasbeehTypeEntity
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.sync.withLock
 import java.time.LocalDate
 
 class TasbeehRepository(
     private val database: AppDatabase
 ) {
     private val dao = database.tasbeehDao()
+    private val mutex = kotlinx.coroutines.sync.Mutex()
 
     fun observeTypes(profileId: Long): Flow<List<TasbeehTypeEntity>> = dao.observeTypes(profileId)
     fun observeAllLogs(profileId: Long): Flow<List<TasbeehLogEntity>> = dao.observeLogs(profileId)
     fun observeTodayLogs(profileId: Long, date: LocalDate = LocalDate.now()): Flow<List<TasbeehLogEntity>> =
         dao.observeLogsForDay(profileId, date.toEpochDay())
 
-    suspend fun increment(profileId: Long, typeId: Long, date: LocalDate = LocalDate.now()) {
+    suspend fun increment(profileId: Long, typeId: Long, date: LocalDate = LocalDate.now()): Unit = mutex.withLock {
         val epochDay = date.toEpochDay()
         val existing = dao.getLogForDay(profileId, typeId, epochDay)
         val updated = (existing ?: TasbeehLogEntity(

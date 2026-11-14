@@ -238,8 +238,9 @@ fun TasbeehScreen(
         )
     }
 
-    if (showAddTypeDialog) {
-        val profileId = state.activeProfile?.id ?: 1L
+    val dialogProfileId = state.activeProfile?.id
+    if (dialogProfileId != null && (showAddTypeDialog)) {
+        val profileId: Long = dialogProfileId
         var title by remember { mutableStateOf("") }
         var phrase by remember { mutableStateOf("") }
         var targetText by remember { mutableStateOf("100") }

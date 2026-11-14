@@ -85,6 +85,7 @@ fun SeasonsScreen(
                             )
                         }
                         Switch(
+                            enabled = state.activeProfile != null,
                             checked = sel.isSelected,
                             onCheckedChange = { checked ->
                                 viewModel.saveSelection(sel.copy(isSelected = checked))

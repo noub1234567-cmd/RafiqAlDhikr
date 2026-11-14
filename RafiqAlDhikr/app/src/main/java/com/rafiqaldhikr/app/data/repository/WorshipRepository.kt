@@ -32,7 +32,7 @@ class WorshipRepository(
             activity.id
         }
         val saved = dao.getActivityById(id) ?: activity.copy(id = id)
-        ensureTodayLogExists(saved)
+        refreshTodayLog(saved)
         scheduler.scheduleActivityReminder(saved)
         return id
     }
@@ -53,7 +53,9 @@ class WorshipRepository(
         val now = System.currentTimeMillis()
         val activities = dao.getActivitiesByProfile(profileId)
         for (activity in activities) {
-            if (MissedActivityEvaluator.isScheduledOnDate(activity, date)) {
+            if (MissedActivityEvaluator.isScheduledOnDate(activity, date) &&
+                !isSlotBeforeCreation(activity, date)
+            ) {
                 ensureLogExistsForDate(activity, date)
             }
         }
@@ -121,14 +123,40 @@ class WorshipRepository(
     }
 
     suspend fun deleteLog(log: ActivityLogEntity) {
+        scheduler.cancelRescheduledReminder(log.id)
         dao.deleteLog(log)
     }
 
-    private suspend fun ensureTodayLogExists(activity: WorshipActivityEntity) {
+    /** A slot that was already in the past when the activity was created must not become an instant "missed". */
+    private fun isSlotBeforeCreation(activity: WorshipActivityEntity, date: LocalDate): Boolean =
+        MissedActivityEvaluator.scheduledMillisForDate(activity, date) < activity.createdAt
+
+    /** Keeps today's log in sync after an activity is created or edited. */
+    private suspend fun refreshTodayLog(activity: WorshipActivityEntity) {
         val today = LocalDate.now()
-        if (MissedActivityEvaluator.isScheduledOnDate(activity, today)) {
-            ensureLogExistsForDate(activity, today)
+        val epochDay = today.toEpochDay()
+        val existing = dao.getLogForActivityDay(activity.profileId, activity.id, epochDay)
+        val scheduledToday = MissedActivityEvaluator.isScheduledOnDate(activity, today)
+        if (existing == null) {
+            if (scheduledToday && !isSlotBeforeCreation(activity, today)) {
+                ensureLogExistsForDate(activity, today)
+            }
+            return
         }
+        if (existing.status == ActivityStatus.COMPLETED) return
+        if (!scheduledToday) {
+            dao.deleteLog(existing)
+            return
+        }
+        val newScheduled = MissedActivityEvaluator.scheduledMillisForDate(activity, today)
+        val refreshed = existing.copy(
+            activityTitleSnapshot = activity.title,
+            categorySnapshot = activity.category,
+            scheduledAtMillis = newScheduled,
+            status = ActivityStatus.PENDING,
+            rescheduledToMillis = null
+        )
+        dao.updateLog(MissedActivityEvaluator.evaluateStatus(refreshed, System.currentTimeMillis()))
     }
 
     private suspend fun ensureLogExistsForDate(

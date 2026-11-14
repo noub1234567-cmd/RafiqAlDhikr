@@ -89,4 +89,18 @@ object SeasonalCatalog {
             )
         )
     )
+
+    fun byId(id: String): SeasonalWorshipItem? = seasons.firstOrNull { it.id == id }
+
+    /** Whether the season is active on the given Hijri month/day (month 1..12). */
+    fun isInSeason(seasonId: String, hijriMonth: Int, hijriDay: Int): Boolean = when (seasonId) {
+        "ramadan" -> hijriMonth == 9
+        "last_ten_ramadan" -> hijriMonth == 9 && hijriDay >= 21
+        "dhul_hijjah_ten" -> hijriMonth == 12 && hijriDay in 1..10
+        "arafah" -> hijriMonth == 12 && hijriDay == 9
+        "ashura" -> hijriMonth == 1 && hijriDay in 9..10
+        "sacred_months" -> hijriMonth == 11 || hijriMonth == 12 || hijriMonth == 1 || hijriMonth == 7
+        "hajj_season" -> hijriMonth == 12 && hijriDay in 1..13
+        else -> true
+    }
 }

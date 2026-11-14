@@ -212,7 +212,7 @@ object VerifiedAdhkarCatalog {
             title = "التهليل",
             arabicText = TAHLIL_TEN,
             targetCount = 10,
-            sourceReference = "صحيح البخاري (٣٢٩٣) وصحيح مسلم (٢٦٩١)"
+            sourceReference = "صحيح البخاري (٦٤٠٤) وصحيح مسلم (٢٦٩٣)"
         ),
         VerifiedDhikrTemplate(
             key = "general_istighfar",
@@ -232,7 +232,7 @@ object VerifiedAdhkarCatalog {
         )
     )
 
-    val dailySuggestions: List<Pair<String, String>> = listOf(
+    val dailySuggestions: List<String> = listOf(
         "قراءة وردك اليومي من القرآن الكريم بتدبّر وهدوء",
         "المحافظة على ركعتي الضحى عند تيسر الوقت",
         "الإكثار من الاستغفار والصلاة على النبي ﷺ",

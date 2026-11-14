@@ -158,8 +158,9 @@ fun DuaScreen(
         }
     }
 
-    if (showAdd || editingDua != null) {
-        val profileId = state.activeProfile?.id ?: 1L
+    val dialogProfileId = state.activeProfile?.id
+    if (dialogProfileId != null && (showAdd || editingDua != null)) {
+        val profileId: Long = dialogProfileId
         DuaEditorDialog(
             profileId = profileId,
             existing = editingDua,

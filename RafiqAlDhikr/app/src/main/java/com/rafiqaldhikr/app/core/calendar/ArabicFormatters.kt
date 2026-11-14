@@ -23,6 +23,28 @@ object ArabicFormatters {
         DayOfWeek.FRIDAY to "الجمعة"
     )
 
+    /** Parses user input that may contain Arabic-Indic digits or an Arabic decimal separator; null if invalid/non-finite. */
+    fun parseDoubleOrNull(input: String): Double? {
+        val normalized = buildString {
+            for (ch in input.trim()) {
+                when (ch) {
+                    in '٠'..'٩' -> append('0' + (ch - '٠'))
+                    in '۰'..'۹' -> append('0' + (ch - '۰'))
+                    '٫', '،', ',' -> append('.')
+                    else -> append(ch)
+                }
+            }
+        }
+        return normalized.toDoubleOrNull()?.takeIf { it.isFinite() }
+    }
+
+    /** Formats a quantity without trailing ".0", using Arabic digits and the Arabic decimal separator. */
+    fun formatAmountAr(value: Double): String {
+        val text = if (value % 1.0 == 0.0) value.toLong().toString()
+        else "%.2f".format(java.util.Locale.US, value).trimEnd('0').trimEnd('.')
+        return toArabicDigits(text).replace('.', '٫')
+    }
+
     fun toArabicDigits(value: Int): String = toArabicDigits(value.toString())
 
     fun toArabicDigits(value: Long): String = toArabicDigits(value.toString())

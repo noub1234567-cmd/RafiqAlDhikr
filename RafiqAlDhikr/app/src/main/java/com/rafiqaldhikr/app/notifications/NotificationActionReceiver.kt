@@ -15,9 +15,9 @@ class NotificationActionReceiver : BroadcastReceiver() {
 
     override fun onReceive(context: Context, intent: Intent) {
         val app = context.applicationContext as RafiqApplication
+        val action = intent.action ?: return
         val pendingResult = goAsync()
 
-        val action = intent.action ?: return
         val notificationId = intent.getIntExtra(NotificationHelper.EXTRA_NOTIFICATION_ID, -1)
         val logId = intent.getLongExtra(NotificationHelper.EXTRA_LOG_ID, -1L)
         val activityId = intent.getLongExtra(NotificationHelper.EXTRA_ACTIVITY_ID, -1L)

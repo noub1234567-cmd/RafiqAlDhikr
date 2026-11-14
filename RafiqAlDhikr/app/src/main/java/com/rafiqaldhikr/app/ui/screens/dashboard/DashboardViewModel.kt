@@ -21,6 +21,7 @@ import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import com.rafiqaldhikr.app.core.calendar.todayFlow
 import java.time.LocalDate
 
 data class DashboardUiState(
@@ -44,13 +45,14 @@ data class DashboardUiState(
 @OptIn(ExperimentalCoroutinesApi::class)
 class DashboardViewModel(private val container: AppContainer) : ViewModel() {
 
-    private val today = LocalDate.now()
+    private val today: LocalDate get() = LocalDate.now()
 
     val uiState: StateFlow<DashboardUiState> = combine(
         container.profileRepository.activeProfileFlow.filterNotNull(),
-        container.preferences.settingsFlow
-    ) { profile, settings -> profile to settings }
-        .flatMapLatest { (profile, settings) ->
+        container.preferences.settingsFlow,
+        todayFlow()
+    ) { profile, settings, day -> Triple(profile, settings, day) }
+        .flatMapLatest { (profile, settings, today) ->
             viewModelScope.launch {
                 container.worshipRepository.ensureTodayLogsAndEvaluate(profile.id, today)
             }

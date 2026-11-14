@@ -60,7 +60,7 @@ object BackupCodec {
 
         val payloadJson = json.encodeToString(parsed.payload)
         val actualHash = sha256(payloadJson)
-        if (parsed.payloadSha256.isNotBlank() && parsed.payloadSha256 != actualHash) {
+        if (parsed.payloadSha256.isBlank() || parsed.payloadSha256 != actualHash) {
             return BackupValidationResult.Invalid("فشل التحقق من سلامة الملف؛ يبدو أن البيانات قد تغيرت أو تعرضت للتلف.")
         }
 
@@ -73,7 +73,28 @@ object BackupCodec {
             parsed.payload.adhkarEntries.any { it.profileId !in profileIds } ||
             parsed.payload.duaEntries.any { it.profileId !in profileIds } ||
             parsed.payload.fastingDays.any { it.profileId !in profileIds } ||
-            parsed.payload.tasbeehTypes.any { it.profileId !in profileIds }
+            parsed.payload.tasbeehTypes.any { it.profileId !in profileIds } ||
+            parsed.payload.activityLogs.any { it.profileId !in profileIds } ||
+            parsed.payload.adhkarProgress.any { it.profileId !in profileIds } ||
+            parsed.payload.adhkarReminders.any { it.profileId !in profileIds } ||
+            parsed.payload.quranGoals.any { it.profileId !in profileIds } ||
+            parsed.payload.quranReadingLogs.any { it.profileId !in profileIds } ||
+            parsed.payload.memorizationPlans.any { it.profileId !in profileIds } ||
+            parsed.payload.memorizationSessions.any { it.profileId !in profileIds } ||
+            parsed.payload.tasbeehLogs.any { it.profileId !in profileIds } ||
+            parsed.payload.seasonalSelections.any { it.profileId !in profileIds }
+
+        val activityIds = parsed.payload.worshipActivities.map { it.id }.toSet()
+        val adhkarIds = parsed.payload.adhkarEntries.map { it.id }.toSet()
+        val planIds = parsed.payload.memorizationPlans.map { it.id }.toSet()
+        val tasbeehIds = parsed.payload.tasbeehTypes.map { it.id }.toSet()
+        val hasBrokenLink = parsed.payload.activityLogs.any { it.activityId !in activityIds } ||
+            parsed.payload.adhkarProgress.any { it.adhkarEntryId !in adhkarIds } ||
+            parsed.payload.memorizationSessions.any { it.planId !in planIds } ||
+            parsed.payload.tasbeehLogs.any { it.tasbeehTypeId !in tasbeehIds }
+        if (hasBrokenLink) {
+            return BackupValidationResult.Invalid("بنية الملف غير متسقة (سجلات مرتبطة بعناصر غير موجودة).")
+        }
 
         if (hasOrphan) {
             return BackupValidationResult.Invalid("بنية الملف غير متسقة (وجود سجلات غير مرتبطة بملف شخصي).")
@@ -131,6 +152,7 @@ class BackupManager(
 
     suspend fun restoreValidatedBackup(backup: RafiqBackupFile): Result<Unit> = runCatching {
         val p = backup.payload
+        scheduler.cancelAllForAllProfiles()
         database.withTransaction {
             // CASCADE deletes child tables automatically when deleting all profiles
             database.profileDao().deleteAll()
