@@ -140,6 +140,13 @@ class BackupManager(
         } ?: error("تعذّر فتح الملف للحفظ.")
     }
 
+    /** Validates the newest automatic backup so it can go through the normal restore confirmation. */
+    fun readAndValidateFile(file: java.io.File): BackupValidationResult {
+        val raw = runCatching { file.readText(Charsets.UTF_8) }.getOrNull()
+            ?: return BackupValidationResult.Invalid("تعذّر قراءة النسخة التلقائية.")
+        return BackupCodec.decodeAndValidate(raw)
+    }
+
     suspend fun readAndValidateFromUri(uri: Uri): BackupValidationResult {
         val raw = runCatching {
             context.contentResolver.openInputStream(uri)?.use { stream ->

@@ -12,6 +12,9 @@ import java.time.ZonedDateTime
 
 object MissedActivityEvaluator {
 
+    /** An activity is only counted as missed this long after its reminder time. */
+    const val DEFAULT_GRACE_MILLIS: Long = 2L * 60 * 60 * 1000
+
     fun isScheduledOnDate(activity: WorshipActivityEntity, date: LocalDate): Boolean {
         if (!activity.isEnabled) return false
         val epochDay = date.toEpochDay()
@@ -82,16 +85,23 @@ object MissedActivityEvaluator {
     /**
      * Evaluates an existing [ActivityLogEntity] against [nowMillis].
      * - If already COMPLETED, returns unchanged.
-     * - If PENDING and scheduled time has passed, marks as MISSED.
+     * - If PENDING and the scheduled time plus [graceMillis] has passed, marks as MISSED.
      * - If RESCHEDULED and the rescheduled time has also passed without completion, marks as MISSED.
      */
-    fun evaluateStatus(log: ActivityLogEntity, nowMillis: Long): ActivityLogEntity {
+    fun evaluateStatus(
+        log: ActivityLogEntity,
+        nowMillis: Long,
+        graceMillis: Long = DEFAULT_GRACE_MILLIS
+    ): ActivityLogEntity {
         if (log.status == ActivityStatus.COMPLETED) return log
         val effectiveDeadline = when (log.status) {
             ActivityStatus.RESCHEDULED -> log.rescheduledToMillis ?: log.scheduledAtMillis
             else -> log.scheduledAtMillis
         }
-        return if (nowMillis > effectiveDeadline && log.status != ActivityStatus.MISSED) {
+        // The grace period only softens the original schedule; a time the user picked when
+        // rescheduling is a deliberate deadline and has none.
+        val grace = if (log.status == ActivityStatus.RESCHEDULED) 0L else graceMillis
+        return if (nowMillis > effectiveDeadline + grace && log.status != ActivityStatus.MISSED) {
             log.copy(status = ActivityStatus.MISSED)
         } else {
             log

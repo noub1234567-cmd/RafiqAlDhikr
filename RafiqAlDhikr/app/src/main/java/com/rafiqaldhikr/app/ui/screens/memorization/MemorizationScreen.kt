@@ -59,6 +59,8 @@ fun MemorizationScreen(
     viewModel: MemorizationViewModel,
     onBack: () -> Unit
 ) {
+    val confirm = com.rafiqaldhikr.app.ui.components.rememberConfirm()
+    com.rafiqaldhikr.app.ui.components.ConfirmHost(confirm)
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var showPlanEditor by remember { mutableStateOf(false) }
     var editingPlan by remember { mutableStateOf<MemorizationPlanEntity?>(null) }
@@ -119,7 +121,7 @@ fun MemorizationScreen(
                                 IconButton(onClick = { editingPlan = plan }) {
                                     Icon(Icons.Default.Edit, contentDescription = "تعديل")
                                 }
-                                IconButton(onClick = { viewModel.deletePlan(plan) }) {
+                                IconButton(onClick = { confirm.ask("سيُحذف هذا البرنامج مع جلساته. هل تريد المتابعة؟") { viewModel.deletePlan(plan) } }) {
                                     Icon(Icons.Default.Delete, contentDescription = "حذف")
                                 }
                             }
@@ -177,7 +179,7 @@ fun MemorizationScreen(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
-                            IconButton(onClick = { viewModel.deleteSession(s) }) {
+                            IconButton(onClick = { confirm.ask("هل تريد حذف هذه الجلسة؟") { viewModel.deleteSession(s) } }) {
                                 Icon(Icons.Default.Delete, contentDescription = "حذف")
                             }
                         }

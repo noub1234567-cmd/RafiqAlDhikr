@@ -172,7 +172,12 @@ class ReminderScheduler(
             AlarmDiagnostics.record(context, "تذكير «${reminder.category.labelAr}» غير مفعّل — لم يُجدوَل")
             return
         }
-        val trigger = nextDailyMillis(reminder.hour, reminder.minute, nowMillis)
+        // A reminder linked to a prayer follows that prayer's time as it changes through the year.
+        val prayerLink = com.rafiqaldhikr.app.core.prayer.PrayerSettings
+            .link(context, reminder.profileId, reminder.category.name)
+        val trigger = prayerLink
+            ?.let { com.rafiqaldhikr.app.core.prayer.PrayerSettings.nextTrigger(context, it, nowMillis) }
+            ?: nextDailyMillis(reminder.hour, reminder.minute, nowMillis)
         scheduleAlarm(
             requestCode = requestCode,
             triggerAtMillis = trigger,
