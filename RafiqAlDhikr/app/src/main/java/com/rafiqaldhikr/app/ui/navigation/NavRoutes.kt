@@ -15,5 +15,7 @@ sealed class NavRoute(val route: String, val labelAr: String) {
     data object History : NavRoute("history", "السجل")
     data object Statistics : NavRoute("statistics", "الإحصائيات")
     data object Profiles : NavRoute("profiles", "الملفات الشخصية")
+    data object PrayerTracker : NavRoute("prayer_tracker", "متابعة الصلاة")
+    data object Qibla : NavRoute("qibla", "اتجاه القبلة")
     data object Settings : NavRoute("settings", "الإعدادات")
 }

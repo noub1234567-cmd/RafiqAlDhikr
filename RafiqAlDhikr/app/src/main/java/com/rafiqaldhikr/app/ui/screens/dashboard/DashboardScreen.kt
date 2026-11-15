@@ -93,6 +93,12 @@ fun DashboardScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+            item {
+                com.rafiqaldhikr.app.ui.components.NextPrayerCard(
+                    onClick = { onNavigate(com.rafiqaldhikr.app.ui.navigation.NavRoute.PrayerTracker.route) }
+                )
+            }
+
             // Welcome & Hijri/Gregorian Dates Card
             item {
                 RafiqCard(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.55f)) {

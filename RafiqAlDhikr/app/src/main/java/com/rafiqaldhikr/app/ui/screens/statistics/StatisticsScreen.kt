@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -74,6 +75,18 @@ fun StatisticsScreen(
             }
 
             item {
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    StatBox(
+                        title = "سلسلة الأذكار (صباح ومساء)",
+                        value = "${ArabicFormatters.toArabicDigits(s.adhkarStreak)} يوم",
+                        modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+
+            item { WeeklySummaryCard(s) }
+
+            item {
                 RafiqCard {
                     Text("العبادات اليومية والأسبوعية والشهرية", style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(8.dp))
@@ -115,5 +128,50 @@ private fun StatRow(label: String, value: String) {
     ) {
         Text(label, style = MaterialTheme.typography.bodyMedium)
         Text(value, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
+    }
+}
+
+@Composable
+private fun WeeklySummaryCard(s: com.rafiqaldhikr.app.data.repository.ProfileStatisticsSnapshot) {
+    val days = s.dailyCompleted.size
+    val maxValue = (0 until days).maxOfOrNull { s.dailyCompleted[it] + s.dailyMissed[it] }?.coerceAtLeast(1) ?: 1
+    val best = (0 until days).maxByOrNull { s.dailyCompleted[it] }?.takeIf { s.dailyCompleted[it] > 0 }
+    fun dayName(i: Int) = java.time.LocalDate.ofEpochDay(s.windowStartEpochDay + i)
+        .dayOfWeek.getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale("ar"))
+
+    RafiqCard {
+        Text("ملخص الأسبوع", style = MaterialTheme.typography.titleMedium)
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = if (best != null) "أفضل أيامك: ${dayName(best)} (${ArabicFormatters.toArabicDigits(s.dailyCompleted[best])} مكتملة)"
+            else "لا توجد عبادات مكتملة هذا الأسبوع بعد — ابدأ بواحدة صغيرة.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+        for (i in 0 until days) {
+            val done = s.dailyCompleted[i]
+            val missed = s.dailyMissed[i]
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp),
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            ) {
+                Text(dayName(i), style = MaterialTheme.typography.bodySmall, modifier = Modifier.width(64.dp))
+                androidx.compose.material3.LinearProgressIndicator(
+                    progress = { done / maxValue.toFloat() },
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = "${ArabicFormatters.toArabicDigits(done)} / ${ArabicFormatters.toArabicDigits(missed)}",
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+        }
+        Text(
+            "الرقم الأول مكتمل والثاني فائت.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }

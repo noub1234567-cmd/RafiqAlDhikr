@@ -45,7 +45,10 @@ import com.rafiqaldhikr.app.ui.screens.history.HistoryViewModel
 import com.rafiqaldhikr.app.ui.screens.memorization.MemorizationScreen
 import com.rafiqaldhikr.app.ui.screens.memorization.MemorizationViewModel
 import com.rafiqaldhikr.app.ui.screens.more.MoreScreen
+import com.rafiqaldhikr.app.ui.screens.prayer.PrayerTrackerScreen
+import com.rafiqaldhikr.app.ui.screens.prayer.PrayerTrackerViewModel
 import com.rafiqaldhikr.app.ui.screens.profiles.ProfilesScreen
+import com.rafiqaldhikr.app.ui.screens.qibla.QiblaScreen
 import com.rafiqaldhikr.app.ui.screens.profiles.ProfilesViewModel
 import com.rafiqaldhikr.app.ui.screens.quran.QuranScreen
 import com.rafiqaldhikr.app.ui.screens.quran.QuranViewModel
@@ -193,6 +196,13 @@ fun RafiqNavHost(container: AppContainer) {
                 composable(NavRoute.Profiles.route) {
                     val vm: ProfilesViewModel = viewModel(factory = factory)
                     ProfilesScreen(viewModel = vm, onBack = { navController.popBackStack() })
+                }
+                composable(NavRoute.PrayerTracker.route) {
+                    val vm: PrayerTrackerViewModel = viewModel(factory = factory)
+                    PrayerTrackerScreen(viewModel = vm, onBack = { navController.popBackStack() })
+                }
+                composable(NavRoute.Qibla.route) {
+                    QiblaScreen(onBack = { navController.popBackStack() })
                 }
                 composable(NavRoute.Settings.route) {
                     val vm: SettingsViewModel = viewModel(factory = factory)

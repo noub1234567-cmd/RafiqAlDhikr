@@ -9,6 +9,7 @@ import com.rafiqaldhikr.app.data.local.db.entities.DuaEntryEntity
 import com.rafiqaldhikr.app.data.local.db.entities.FastingDayEntity
 import com.rafiqaldhikr.app.data.local.db.entities.MemorizationPlanEntity
 import com.rafiqaldhikr.app.data.local.db.entities.MemorizationSessionEntity
+import com.rafiqaldhikr.app.data.local.db.entities.PrayerLogEntity
 import com.rafiqaldhikr.app.data.local.db.entities.QuranGoalEntity
 import com.rafiqaldhikr.app.data.local.db.entities.QuranReadingLogEntity
 import com.rafiqaldhikr.app.data.local.db.entities.SeasonalSelectionEntity
@@ -34,7 +35,14 @@ data class BackupPayload(
     val tasbeehTypes: List<TasbeehTypeEntity> = emptyList(),
     val tasbeehLogs: List<TasbeehLogEntity> = emptyList(),
     val duaEntries: List<DuaEntryEntity> = emptyList(),
-    val seasonalSelections: List<SeasonalSelectionEntity> = emptyList()
+    val seasonalSelections: List<SeasonalSelectionEntity> = emptyList(),
+    /**
+     * Omitted from the JSON while empty, so the SHA-256 of a backup made before this field existed
+     * is unchanged when it is re-encoded for verification.
+     */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val prayerLogs: List<PrayerLogEntity> = emptyList()
 )
 
 @Serializable

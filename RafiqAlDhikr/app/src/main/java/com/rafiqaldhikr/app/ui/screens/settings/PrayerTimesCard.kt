@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -16,6 +17,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -55,6 +57,11 @@ fun PrayerTimesCard() {
             }
         }
     }
+
+    var adhan by remember {
+        mutableStateOf(PrayerSettings.fardPrayers.associateWith { PrayerSettings.adhanEnabled(context, it) })
+    }
+    var lead by remember { mutableStateOf(PrayerSettings.adhanLeadMinutes(context)) }
 
     val times = remember(cityIndex, method) { PrayerSettings.timesFor(context, LocalDate.now()) }
 
@@ -98,6 +105,45 @@ fun PrayerTimesCard() {
                     Text(p.labelAr, style = MaterialTheme.typography.bodyMedium)
                     Text("%02d:%02d".format(t.hour, t.minute), style = MaterialTheme.typography.bodyMedium)
                 }
+            }
+        }
+        Spacer(modifier = Modifier.height(12.dp))
+        Text("تنبيه الأذان", style = MaterialTheme.typography.titleSmall)
+        Text(
+            "إشعار عند موعد كل صلاة تختارها. هذا تذكير بالموعد وليس صوت الأذان.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+        PrayerSettings.fardPrayers.forEach { p ->
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(p.labelAr, style = MaterialTheme.typography.bodyMedium)
+                Switch(
+                    checked = adhan[p] == true,
+                    onCheckedChange = { on ->
+                        PrayerSettings.setAdhanEnabled(context, p, on)
+                        adhan = adhan + (p to on)
+                        rearm()
+                    }
+                )
+            }
+        }
+        Spacer(modifier = Modifier.height(6.dp))
+        Text("وقت التنبيه", style = MaterialTheme.typography.labelLarge)
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            listOf(0, 5, 10, 15, 30).forEach { m ->
+                FilterChip(
+                    selected = lead == m,
+                    onClick = {
+                        lead = m
+                        PrayerSettings.setAdhanLeadMinutes(context, m)
+                        rearm()
+                    },
+                    label = { Text(if (m == 0) "عند الأذان" else "قبل $m د") }
+                )
             }
         }
     }

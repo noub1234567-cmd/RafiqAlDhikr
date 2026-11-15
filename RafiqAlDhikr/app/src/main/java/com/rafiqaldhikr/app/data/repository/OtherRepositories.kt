@@ -62,7 +62,13 @@ data class ProfileStatisticsSnapshot(
     val memSessionsCount: Int = 0,
     val revSessionsCount: Int = 0,
     val completedFastingCount: Int = 0,
-    val totalTasbeehToday: Int = 0
+    val totalTasbeehToday: Int = 0,
+    /** Consecutive days with all morning and evening adhkar completed. */
+    val adhkarStreak: Int = 0,
+    /** First day (epoch day) of the 7-day window the two lists below describe, oldest first. */
+    val windowStartEpochDay: Long = 0L,
+    val dailyCompleted: List<Int> = List(7) { 0 },
+    val dailyMissed: List<Int> = List(7) { 0 }
 )
 
 class StatisticsRepository(private val database: AppDatabase) {
@@ -74,7 +80,9 @@ class StatisticsRepository(private val database: AppDatabase) {
             database.memorizationDao().observeSessions(profileId),
             database.fastingDao().observeFastingDays(profileId),
             database.tasbeehDao().observeLogs(profileId),
-            com.rafiqaldhikr.app.core.calendar.todayFlow()
+            com.rafiqaldhikr.app.core.calendar.todayFlow(),
+            database.adhkarDao().observeEntries(profileId),
+            database.adhkarDao().observeAllProgress(profileId)
         ) { values ->
             @Suppress("UNCHECKED_CAST")
             val activityLogs = values[0] as List<com.rafiqaldhikr.app.data.local.db.entities.ActivityLogEntity>
@@ -87,6 +95,10 @@ class StatisticsRepository(private val database: AppDatabase) {
             @Suppress("UNCHECKED_CAST")
             val tasbeehLogs = values[4] as List<com.rafiqaldhikr.app.data.local.db.entities.TasbeehLogEntity>
             val today = values[5] as LocalDate
+            @Suppress("UNCHECKED_CAST")
+            val adhkarEntries = values[6] as List<com.rafiqaldhikr.app.data.local.db.entities.AdhkarEntryEntity>
+            @Suppress("UNCHECKED_CAST")
+            val adhkarProgress = values[7] as List<com.rafiqaldhikr.app.data.local.db.entities.AdhkarProgressEntity>
             val todayEpoch = today.toEpochDay()
             val weekStartEpoch = today.minusDays(6).toEpochDay()
             val monthStartEpoch = today.minusDays(29).toEpochDay()
@@ -125,7 +137,15 @@ class StatisticsRepository(private val database: AppDatabase) {
                 memSessionsCount = memSessions.count { !it.isRevision },
                 revSessionsCount = memSessions.count { it.isRevision },
                 completedFastingCount = fastingDays.count { it.isCompleted },
-                totalTasbeehToday = tasbeehLogs.filter { it.dateEpochDay == todayEpoch }.sumOf { it.count }
+                totalTasbeehToday = tasbeehLogs.filter { it.dateEpochDay == todayEpoch }.sumOf { it.count },
+                adhkarStreak = com.rafiqaldhikr.app.core.stats.AdhkarStreak.compute(adhkarEntries, adhkarProgress, today),
+                windowStartEpochDay = weekStartEpoch,
+                dailyCompleted = (weekStartEpoch..todayEpoch).map { d ->
+                    weekLogs.count { it.dateEpochDay == d && it.status == ActivityStatus.COMPLETED }
+                },
+                dailyMissed = (weekStartEpoch..todayEpoch).map { d ->
+                    weekLogs.count { it.dateEpochDay == d && it.status == ActivityStatus.MISSED }
+                }
             )
         }
     }

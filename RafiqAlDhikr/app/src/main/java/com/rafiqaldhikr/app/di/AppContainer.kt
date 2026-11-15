@@ -12,6 +12,7 @@ import com.rafiqaldhikr.app.data.repository.ProfileRepository
 import com.rafiqaldhikr.app.data.repository.QuranRepository
 import com.rafiqaldhikr.app.data.repository.SeasonalRepository
 import com.rafiqaldhikr.app.data.repository.StatisticsRepository
+import com.rafiqaldhikr.app.data.repository.PrayerLogRepository
 import com.rafiqaldhikr.app.data.repository.TasbeehRepository
 import com.rafiqaldhikr.app.data.repository.WorshipRepository
 import com.rafiqaldhikr.app.notifications.ReminderScheduler
@@ -30,6 +31,7 @@ interface AppContainer {
     val duaRepository: DuaRepository
     val seasonalRepository: SeasonalRepository
     val statisticsRepository: StatisticsRepository
+    val prayerLogRepository: PrayerLogRepository
     val backupManager: BackupManager
 }
 
@@ -50,6 +52,7 @@ class AppContainerImpl(context: Context) : AppContainer {
     override val duaRepository: DuaRepository by lazy { DuaRepository(database) }
     override val seasonalRepository: SeasonalRepository by lazy { SeasonalRepository(database, reminderScheduler) }
     override val statisticsRepository: StatisticsRepository by lazy { StatisticsRepository(database) }
+    override val prayerLogRepository: PrayerLogRepository by lazy { PrayerLogRepository(database) }
     override val backupManager: BackupManager by lazy {
         BackupManager(appContext, database, preferences, reminderScheduler)
     }

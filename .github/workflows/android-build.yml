@@ -27,12 +27,24 @@ jobs:
       - name: Unit tests and debug build
         run: ./gradlew testDebugUnitTest assembleDebug --stacktrace
 
+      - name: Check migration SQL against Room schema
+        run: python3 .github/check_migration.py
+        working-directory: .
+
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: test-reports
           path: RafiqAlDhikr/app/build/reports/tests
+
+      - name: Upload Room schemas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: room-schemas
+          path: RafiqAlDhikr/app/schemas
+          if-no-files-found: ignore
 
       - name: Upload debug APK
         if: success()
