@@ -59,6 +59,8 @@ fun AdhkarScreen(
     viewModel: AdhkarViewModel,
     onOpenProfileSwitcher: () -> Unit
 ) {
+    val confirm = com.rafiqaldhikr.app.ui.components.rememberConfirm()
+    com.rafiqaldhikr.app.ui.components.ConfirmHost(confirm)
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var showReminderDialog by remember { mutableStateOf(false) }
     var editingEntry by remember { mutableStateOf<AdhkarEntryEntity?>(null) }
@@ -82,7 +84,7 @@ fun AdhkarScreen(
                     IconButton(enabled = state.activeProfile != null, onClick = { showReminderDialog = true }) {
                         Icon(Icons.Default.Alarm, contentDescription = "تذكير القسم")
                     }
-                    IconButton(onClick = { viewModel.resetCategory() }) {
+                    IconButton(onClick = { confirm.ask("سيُصفَّر عدّاد هذا القسم لليوم. هل تريد المتابعة؟") { viewModel.resetCategory() } }) {
                         Icon(Icons.Default.Refresh, contentDescription = "إعادة تعيين عداد اليوم")
                     }
                 }
@@ -170,7 +172,7 @@ fun AdhkarScreen(
                                     Icon(Icons.Default.Edit, contentDescription = "تعديل", modifier = Modifier.size(18.dp))
                                 }
                                 if (entry.isCustom) {
-                                    IconButton(onClick = { viewModel.deleteEntry(entry) }) {
+                                    IconButton(onClick = { confirm.ask("هل تريد حذف هذا الذكر؟") { viewModel.deleteEntry(entry) } }) {
                                         Icon(Icons.Default.Delete, contentDescription = "حذف", modifier = Modifier.size(18.dp))
                                     }
                                 }

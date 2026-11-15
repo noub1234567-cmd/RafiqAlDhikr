@@ -54,6 +54,8 @@ fun DuaScreen(
     viewModel: DuaViewModel,
     onBack: () -> Unit
 ) {
+    val confirm = com.rafiqaldhikr.app.ui.components.rememberConfirm()
+    com.rafiqaldhikr.app.ui.components.ConfirmHost(confirm)
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var showAdd by remember { mutableStateOf(false) }
     var editingDua by remember { mutableStateOf<DuaEntryEntity?>(null) }
@@ -143,7 +145,7 @@ fun DuaScreen(
                                     IconButton(onClick = { editingDua = dua }) {
                                         Icon(Icons.Default.Edit, contentDescription = "تعديل")
                                     }
-                                    IconButton(onClick = { viewModel.deleteDua(dua) }) {
+                                    IconButton(onClick = { confirm.ask("هل تريد حذف هذا الدعاء؟") { viewModel.deleteDua(dua) } }) {
                                         Icon(Icons.Default.Delete, contentDescription = "حذف")
                                     }
                                 }

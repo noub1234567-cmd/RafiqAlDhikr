@@ -324,6 +324,36 @@ fun SettingsScreen(
                             modifier = Modifier.weight(1f)
                         ) { Text("استعادة نسخة") }
                     }
+                    Spacer(modifier = Modifier.height(12.dp))
+                    var autoBackupOn by remember { mutableStateOf(com.rafiqaldhikr.app.data.backup.AutoBackup.isEnabled(context)) }
+                    val latestAuto = com.rafiqaldhikr.app.data.backup.AutoBackup.latest(context)
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text("نسخ احتياطي تلقائي أسبوعي", modifier = Modifier.weight(1f))
+                        Switch(
+                            checked = autoBackupOn,
+                            onCheckedChange = {
+                                autoBackupOn = it
+                                com.rafiqaldhikr.app.data.backup.AutoBackup.setEnabled(context, it)
+                            }
+                        )
+                    }
+                    Text(
+                        text = (if (latestAuto != null) "آخر نسخة تلقائية: ${com.rafiqaldhikr.app.data.backup.AutoBackup.describe(latestAuto)}. " else "لم تُنشأ نسخة تلقائية بعد. ") +
+                            "تُحفظ في مجلد التطبيق وتحمي من الحذف العرضي، لكنها تُحذف مع التطبيق؛ للنقل بين هاتفين استخدم «تصدير نسخة».",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    if (latestAuto != null) {
+                        Spacer(modifier = Modifier.height(6.dp))
+                        OutlinedButton(
+                            onClick = { viewModel.inspectLatestAutoBackup(context) },
+                            modifier = Modifier.fillMaxWidth()
+                        ) { Text("استعادة من آخر نسخة تلقائية") }
+                    }
                 }
             }
 

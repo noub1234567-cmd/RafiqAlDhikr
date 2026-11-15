@@ -22,6 +22,7 @@ class RafiqApplication : Application() {
         container = AppContainerImpl(this)
         NotificationHelper.ensureChannels(this)
         MissedActivityWorker.enqueuePeriodic(this)
+        com.rafiqaldhikr.app.notifications.AutoBackupWorker.enqueuePeriodic(this)
 
         appScope.launch {
             container.profileRepository.ensureInitialized()

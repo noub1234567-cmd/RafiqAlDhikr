@@ -48,6 +48,8 @@ fun WorshipActsScreen(
     viewModel: WorshipActsViewModel,
     onBack: () -> Unit
 ) {
+    val confirm = com.rafiqaldhikr.app.ui.components.rememberConfirm()
+    com.rafiqaldhikr.app.ui.components.ConfirmHost(confirm)
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var showCreateDialog by remember { mutableStateOf(false) }
     var editingActivity by remember { mutableStateOf<WorshipActivityEntity?>(null) }
@@ -96,7 +98,7 @@ fun WorshipActsScreen(
                         activity = act,
                         onToggle = { viewModel.toggleEnabled(act, it) },
                         onEdit = { editingActivity = act },
-                        onDelete = { viewModel.deleteActivity(act) },
+                        onDelete = { confirm.ask("سيُحذف هذا النشاط مع كل سجلّه. هل تريد المتابعة؟") { viewModel.deleteActivity(act) } },
                         onCompleteToday = { viewModel.markCompletedToday(act) }
                     )
                 }

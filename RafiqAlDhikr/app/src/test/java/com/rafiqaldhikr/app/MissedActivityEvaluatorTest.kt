@@ -72,7 +72,13 @@ class MissedActivityEvaluatorTest {
         val beforeDeadline = MissedActivityEvaluator.evaluateStatus(log, scheduled - 1000L)
         assertEquals(ActivityStatus.PENDING, beforeDeadline.status)
 
-        val afterDeadline = MissedActivityEvaluator.evaluateStatus(log, scheduled + 1000L)
+        // Inside the grace window the activity is still pending.
+        val insideGrace = MissedActivityEvaluator.evaluateStatus(log, scheduled + 1000L)
+        assertEquals(ActivityStatus.PENDING, insideGrace.status)
+
+        val afterDeadline = MissedActivityEvaluator.evaluateStatus(
+            log, scheduled + MissedActivityEvaluator.DEFAULT_GRACE_MILLIS + 1000L
+        )
         assertEquals(ActivityStatus.MISSED, afterDeadline.status)
         assertNull(afterDeadline.completedAtMillis)
     }
