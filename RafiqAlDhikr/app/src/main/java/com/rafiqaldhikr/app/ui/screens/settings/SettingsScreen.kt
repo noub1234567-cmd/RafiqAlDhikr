@@ -122,6 +122,9 @@ fun SettingsScreen(
                 }
             }
 
+            // Prayer times
+            item { PrayerTimesCard() }
+
             // Hijri offset & Haptic
             item {
                 RafiqCard {

@@ -11,6 +11,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -230,13 +232,16 @@ fun AdhkarScreen(
         AdhkarReminderDialog(
             reminder = currentReminder,
             onDismiss = { showReminderDialog = false },
-            onSave = {
-                viewModel.saveReminder(it)
+            onSave = { r, link ->
+                com.rafiqaldhikr.app.core.prayer.PrayerSettings
+                    .setLink(toastContext, r.profileId, r.category.name, link)
+                viewModel.saveReminder(r)
                 showReminderDialog = false
                 android.widget.Toast.makeText(
                     toastContext,
-                    if (it.enabled) "تم تفعيل تذكير ${it.category.labelAr} يومياً عند %02d:%02d".format(it.hour, it.minute)
-                    else "تذكير ${it.category.labelAr} غير مفعّل — فعّل المفتاح ثم احفظ",
+                    if (r.enabled) "تم تفعيل تذكير ${r.category.labelAr} يومياً عند %02d:%02d".format(r.hour, r.minute) +
+                        (if (link != null) " (يتبع وقت الصلاة)" else "")
+                    else "تذكير ${r.category.labelAr} غير مفعّل — فعّل المفتاح ثم احفظ",
                     android.widget.Toast.LENGTH_LONG
                 ).show()
             }
@@ -267,19 +272,33 @@ fun AdhkarScreen(
 private fun AdhkarReminderDialog(
     reminder: AdhkarReminderEntity,
     onDismiss: () -> Unit,
-    onSave: (AdhkarReminderEntity) -> Unit
+    onSave: (AdhkarReminderEntity, com.rafiqaldhikr.app.core.prayer.PrayerLink?) -> Unit
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val initialLink = remember {
+        com.rafiqaldhikr.app.core.prayer.PrayerSettings.link(context, reminder.profileId, reminder.category.name)
+    }
     // Opening the dialog means "set a reminder": start enabled so saving cannot silently leave it off.
     var enabled by remember { mutableStateOf(true) }
     var hour by remember { mutableIntStateOf(reminder.hour) }
     var minute by remember { mutableIntStateOf(reminder.minute) }
     var soundMode by remember { mutableStateOf(reminder.soundMode) }
+    var anchor by remember { mutableStateOf(initialLink?.anchor) }
+    var offset by remember { mutableIntStateOf(initialLink?.offsetMinutes ?: 0) }
+
+    val prayerToday = remember { com.rafiqaldhikr.app.core.prayer.PrayerSettings.timesFor(context, java.time.LocalDate.now()) }
+    val linkedTime = anchor?.let { a ->
+        prayerToday?.get(a)?.plusMinutes(offset.toLong())
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("تذكير ${reminder.category.labelAr}") },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.verticalScroll(androidx.compose.foundation.rememberScrollState())
+            ) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
@@ -288,23 +307,58 @@ private fun AdhkarReminderDialog(
                     Text(if (enabled) "التذكير اليومي: مفعّل" else "التذكير اليومي: متوقف")
                     Switch(checked = enabled, onCheckedChange = { enabled = it })
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text("وقت التذكير", style = MaterialTheme.typography.labelLarge)
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.horizontalScroll(androidx.compose.foundation.rememberScrollState())
+                ) {
+                    FilterChip(selected = anchor == null, onClick = { anchor = null }, label = { Text("وقت ثابت") })
+                    listOf(
+                        com.rafiqaldhikr.app.core.prayer.Prayer.FAJR,
+                        com.rafiqaldhikr.app.core.prayer.Prayer.DHUHR,
+                        com.rafiqaldhikr.app.core.prayer.Prayer.ASR,
+                        com.rafiqaldhikr.app.core.prayer.Prayer.MAGHRIB,
+                        com.rafiqaldhikr.app.core.prayer.Prayer.ISHA
+                    ).forEach { pr ->
+                        FilterChip(selected = anchor == pr, onClick = { anchor = pr }, label = { Text("بعد ${pr.labelAr}") })
+                    }
+                }
+                if (anchor == null) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedTextField(
+                            value = hour.toString(),
+                            onValueChange = { hour = (it.filter(Char::isDigit).toIntOrNull() ?: 0).coerceIn(0, 23) },
+                            label = { Text("الساعة (٠-٢٣)") },
+                            singleLine = true,
+                            modifier = Modifier.weight(1f)
+                        )
+                        OutlinedTextField(
+                            value = minute.toString(),
+                            onValueChange = { minute = (it.filter(Char::isDigit).toIntOrNull() ?: 0).coerceIn(0, 59) },
+                            label = { Text("الدقيقة (٠-٥٩)") },
+                            singleLine = true,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                } else {
                     OutlinedTextField(
-                        value = hour.toString(),
-                        onValueChange = { hour = (it.filter(Char::isDigit).toIntOrNull() ?: 0).coerceIn(0, 23) },
-                        label = { Text("الساعة (٠-٢٣)") },
+                        value = offset.toString(),
+                        onValueChange = { offset = (it.filter(Char::isDigit).toIntOrNull() ?: 0).coerceIn(0, 240) },
+                        label = { Text("بعد الصلاة بـ (دقائق)") },
                         singleLine = true,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.fillMaxWidth()
                     )
-                    OutlinedTextField(
-                        value = minute.toString(),
-                        onValueChange = { minute = (it.filter(Char::isDigit).toIntOrNull() ?: 0).coerceIn(0, 59) },
-                        label = { Text("الدقيقة (٠-٥٩)") },
-                        singleLine = true,
-                        modifier = Modifier.weight(1f)
+                    Text(
+                        text = (linkedTime?.let { "اليوم: %02d:%02d".format(it.hour, it.minute) } ?: "تعذّر حساب الوقت") +
+                            " — المدينة: ${com.rafiqaldhikr.app.core.prayer.PrayerSettings.city(context).nameAr}. يتبع التذكير وقت الصلاة كل يوم تلقائياً (تغيّر المدينة من الإعدادات).",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.horizontalScroll(androidx.compose.foundation.rememberScrollState())
+                ) {
                     NotificationSoundMode.entries.forEach { mode ->
                         FilterChip(
                             selected = soundMode == mode,
@@ -317,7 +371,18 @@ private fun AdhkarReminderDialog(
         },
         confirmButton = {
             Button(onClick = {
-                onSave(reminder.copy(enabled = enabled, hour = hour, minute = minute, soundMode = soundMode))
+                val a = anchor
+                val link = a?.let { com.rafiqaldhikr.app.core.prayer.PrayerLink(it, offset) }
+                val shown = linkedTime
+                onSave(
+                    reminder.copy(
+                        enabled = enabled,
+                        hour = shown?.hour ?: hour,
+                        minute = shown?.minute ?: minute,
+                        soundMode = soundMode
+                    ),
+                    link
+                )
             }) { Text("حفظ") }
         },
         dismissButton = {
