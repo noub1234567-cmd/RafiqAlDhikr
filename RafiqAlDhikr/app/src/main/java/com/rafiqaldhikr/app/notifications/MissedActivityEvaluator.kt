@@ -98,7 +98,10 @@ object MissedActivityEvaluator {
             ActivityStatus.RESCHEDULED -> log.rescheduledToMillis ?: log.scheduledAtMillis
             else -> log.scheduledAtMillis
         }
-        return if (nowMillis > effectiveDeadline + graceMillis && log.status != ActivityStatus.MISSED) {
+        // The grace period only softens the original schedule; a time the user picked when
+        // rescheduling is a deliberate deadline and has none.
+        val grace = if (log.status == ActivityStatus.RESCHEDULED) 0L else graceMillis
+        return if (nowMillis > effectiveDeadline + grace && log.status != ActivityStatus.MISSED) {
             log.copy(status = ActivityStatus.MISSED)
         } else {
             log
