@@ -5,6 +5,10 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.os.Build
+import com.rafiqaldhikr.app.core.special.SpecialReminder
+import com.rafiqaldhikr.app.core.special.SpecialReminders
+import com.rafiqaldhikr.app.core.prayer.Prayer
+import com.rafiqaldhikr.app.core.prayer.PrayerSettings
 import com.rafiqaldhikr.app.core.model.AdhkarCategory
 import com.rafiqaldhikr.app.core.model.NotificationSoundMode
 import com.rafiqaldhikr.app.core.model.QuranSurahs
@@ -26,6 +30,8 @@ class ReminderScheduler(
 ) {
     companion object {
         const val KIND_ACTIVITY = "activity"
+        const val KIND_PRAYER = "prayer"
+        const val KIND_SPECIAL = "special"
         const val KIND_ADHKAR = "adhkar"
         const val KIND_QURAN = "quran"
         const val KIND_MEMORIZATION = "memorization"
@@ -96,6 +102,70 @@ class ReminderScheduler(
         database.seasonalDao().getAllEnabledReminders().forEach { sel ->
             scheduleSeasonalReminder(sel, now)
         }
+
+        // 7. Adhan (prayer-time) reminders
+        schedulePrayerAlarms(now)
+
+        // 8. Friday / Monday-Thursday / white-days reminders
+        scheduleSpecialAlarms(now)
+    }
+
+    fun scheduleSpecialAlarms(nowMillis: Long = System.currentTimeMillis()) {
+        SpecialReminder.entries.forEach { scheduleSpecialAlarm(it, nowMillis) }
+    }
+
+    fun scheduleSpecialAlarm(r: SpecialReminder, nowMillis: Long = System.currentTimeMillis()) {
+        val requestCode = requestCodeFor(KIND_SPECIAL, r.ordinal.toLong())
+        if (!SpecialReminders.isEnabled(context, r)) {
+            cancelAlarm(requestCode)
+            return
+        }
+        val next = SpecialReminders.nextTrigger(r, nowMillis) ?: run {
+            cancelAlarm(requestCode)
+            return
+        }
+        scheduleAlarm(
+            requestCode = requestCode,
+            triggerAtMillis = next.triggerAtMillis,
+            kind = KIND_SPECIAL,
+            targetId = r.ordinal.toLong(),
+            profileId = -1L,
+            title = next.title,
+            body = next.body,
+            soundMode = NotificationSoundMode.GENTLE_SOUND
+        )
+    }
+
+    /** Arms or cancels the adhan reminder of every prayer according to the saved settings. */
+    fun schedulePrayerAlarms(nowMillis: Long = System.currentTimeMillis()) {
+        PrayerSettings.fardPrayers.forEach { schedulePrayerAlarm(it, nowMillis) }
+    }
+
+    fun schedulePrayerAlarm(prayer: Prayer, nowMillis: Long = System.currentTimeMillis()) {
+        val requestCode = requestCodeFor(KIND_PRAYER, prayer.ordinal.toLong())
+        if (!PrayerSettings.adhanEnabled(context, prayer)) {
+            cancelAlarm(requestCode)
+            return
+        }
+        val trigger = PrayerSettings.nextAdhanTrigger(context, prayer, nowMillis) ?: run {
+            cancelAlarm(requestCode)
+            return
+        }
+        val lead = PrayerSettings.adhanLeadMinutes(context)
+        val city = PrayerSettings.city(context)
+        val prayerTime = java.time.Instant.ofEpochMilli(trigger + lead * 60_000L)
+            .atZone(java.time.ZoneId.of(city.zoneId))
+        val hhmm = "%02d:%02d".format(prayerTime.hour, prayerTime.minute)
+        scheduleAlarm(
+            requestCode = requestCode,
+            triggerAtMillis = trigger,
+            kind = KIND_PRAYER,
+            targetId = prayer.ordinal.toLong(),
+            profileId = -1L,
+            title = if (lead == 0) "حان موعد أذان ${prayer.labelAr}" else "اقترب أذان ${prayer.labelAr}",
+            body = if (lead == 0) "${city.nameAr} — $hhmm" else "بعد $lead دقيقة (${city.nameAr} — $hhmm)",
+            soundMode = NotificationSoundMode.NORMAL
+        )
     }
 
     /**
@@ -116,6 +186,8 @@ class ReminderScheduler(
             KIND_SEASONAL -> database.seasonalDao().getAll()
                 .firstOrNull { it.id == targetId }
                 ?.let { scheduleSeasonalReminder(it, now) }
+            KIND_PRAYER -> Prayer.entries.getOrNull(targetId.toInt())?.let { schedulePrayerAlarm(it, now) }
+            KIND_SPECIAL -> SpecialReminder.entries.getOrNull(targetId.toInt())?.let { scheduleSpecialAlarm(it, now) }
             else -> Unit // fasting reminders are one-shot: nothing to re-arm
         }
     }

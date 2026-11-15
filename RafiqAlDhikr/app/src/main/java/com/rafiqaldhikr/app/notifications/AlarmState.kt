@@ -14,6 +14,8 @@ object AlarmState {
     private const val FIRED = "fired_"
     private const val OPT_ALARM_CLOCK = "use_alarm_clock"
     /** A reminder older than this is no longer worth delivering. */
+    const val PRAYER_CATCH_UP_WINDOW_MS = 15L * 60 * 1000
+    const val SPECIAL_CATCH_UP_WINDOW_MS = 60L * 60 * 1000
     const val CATCH_UP_WINDOW_MS = 6L * 60 * 60 * 1000
 
     private fun prefs(context: Context) =
@@ -69,7 +71,13 @@ object AlarmState {
                 val o = JSONObject(value)
                 val trigger = o.getLong("t")
                 val lastFired = p.getLong(FIRED + code, 0L)
-                if (trigger < now && now - trigger <= CATCH_UP_WINDOW_MS && lastFired < trigger) {
+                // A prayer-time reminder delivered hours late is worse than none.
+                val window = when (o.getString("k")) {
+                    ReminderScheduler.KIND_PRAYER -> PRAYER_CATCH_UP_WINDOW_MS
+                    ReminderScheduler.KIND_SPECIAL -> SPECIAL_CATCH_UP_WINDOW_MS
+                    else -> CATCH_UP_WINDOW_MS
+                }
+                if (trigger < now && now - trigger <= window && lastFired < trigger) {
                     Armed(code, trigger, o.getString("k"), o.getLong("id"), o.getLong("p"),
                         o.getLong("a"), o.getString("title"), o.getString("body"), o.getString("s"))
                 } else null

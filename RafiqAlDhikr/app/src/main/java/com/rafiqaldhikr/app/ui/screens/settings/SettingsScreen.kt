@@ -124,6 +124,7 @@ fun SettingsScreen(
 
             // Prayer times
             item { PrayerTimesCard() }
+            item { SpecialRemindersCard() }
 
             // Hijri offset & Haptic
             item {

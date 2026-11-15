@@ -200,6 +200,12 @@ class ReminderReceiver : BroadcastReceiver() {
                 db.fastingDao().getByDate(profileId, targetId)?.let { it.reminderEnabled && !it.isCompleted } == true
             ReminderScheduler.KIND_SEASONAL ->
                 db.seasonalDao().getAll().any { it.id == targetId && it.isSelected && it.reminderEnabled }
+            ReminderScheduler.KIND_PRAYER ->
+                com.rafiqaldhikr.app.core.prayer.Prayer.entries.getOrNull(targetId.toInt())
+                    ?.let { com.rafiqaldhikr.app.core.prayer.PrayerSettings.adhanEnabled(app, it) } == true
+            ReminderScheduler.KIND_SPECIAL ->
+                com.rafiqaldhikr.app.core.special.SpecialReminder.entries.getOrNull(targetId.toInt())
+                    ?.let { com.rafiqaldhikr.app.core.special.SpecialReminders.isEnabled(app, it) } == true
             else -> true
         }
     }

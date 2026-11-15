@@ -74,4 +74,44 @@ object PrayerSettings {
         }
         return null
     }
+
+    /** The five daily prayers (no sunrise). */
+    val fardPrayers = listOf(Prayer.FAJR, Prayer.DHUHR, Prayer.ASR, Prayer.MAGHRIB, Prayer.ISHA)
+
+    /** Next of the five prayers after [nowMillis] and its time, or null if it cannot be computed. */
+    fun nextPrayer(context: Context, nowMillis: Long): Pair<Prayer, Long>? {
+        val c = city(context)
+        val zone = ZoneId.of(c.zoneId)
+        val today = java.time.Instant.ofEpochMilli(nowMillis).atZone(zone).toLocalDate()
+        for (offset in 0L..1L) {
+            val times = PrayerCalculator.compute(
+                today.plusDays(offset), c.latitude, c.longitude, zone, method(context)
+            ) ?: continue
+            val next = fardPrayers
+                .map { it to times.getValue(it).toInstant().toEpochMilli() }
+                .firstOrNull { it.second > nowMillis }
+            if (next != null) return next
+        }
+        return null
+    }
+
+    // ---- Adhan (prayer-time) reminders -------------------------------------------------
+
+    fun adhanEnabled(context: Context, prayer: Prayer): Boolean =
+        prefs(context).getBoolean("adhan_${prayer.name}", false)
+
+    fun setAdhanEnabled(context: Context, prayer: Prayer, value: Boolean) {
+        prefs(context).edit().putBoolean("adhan_${prayer.name}", value).apply()
+    }
+
+    /** Minutes before the prayer at which the adhan reminder fires (0 = at the prayer time). */
+    fun adhanLeadMinutes(context: Context): Int = prefs(context).getInt("adhan_lead", 0).coerceIn(0, 60)
+
+    fun setAdhanLeadMinutes(context: Context, minutes: Int) {
+        prefs(context).edit().putInt("adhan_lead", minutes.coerceIn(0, 60)).apply()
+    }
+
+    /** Next moment the adhan reminder of [prayer] should fire, or null if it cannot be computed. */
+    fun nextAdhanTrigger(context: Context, prayer: Prayer, nowMillis: Long): Long? =
+        nextTrigger(context, PrayerLink(prayer, -adhanLeadMinutes(context)), nowMillis)
 }

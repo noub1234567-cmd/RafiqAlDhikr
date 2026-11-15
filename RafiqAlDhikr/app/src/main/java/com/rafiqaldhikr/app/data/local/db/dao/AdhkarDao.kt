@@ -41,6 +41,9 @@ interface AdhkarDao {
     @Query("SELECT * FROM adhkar_progress WHERE profileId = :profileId AND adhkarEntryId = :entryId AND dateEpochDay = :dateEpochDay LIMIT 1")
     suspend fun getProgress(profileId: Long, entryId: Long, dateEpochDay: Long): AdhkarProgressEntity?
 
+    @Query("SELECT * FROM adhkar_progress WHERE profileId = :profileId")
+    fun observeAllProgress(profileId: Long): Flow<List<AdhkarProgressEntity>>
+
     @Query("SELECT * FROM adhkar_progress")
     suspend fun getAllProgress(): List<AdhkarProgressEntity>
 
