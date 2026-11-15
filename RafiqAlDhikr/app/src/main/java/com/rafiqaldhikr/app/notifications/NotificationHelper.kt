@@ -19,6 +19,9 @@ import com.rafiqaldhikr.app.core.model.NotificationSoundMode
 
 object NotificationHelper {
 
+    const val GROUP_REMINDERS = "rafiq_reminders_group"
+    /** Negative, so it can never collide with the (non-negative) alarm request codes. */
+    const val SUMMARY_NOTIFICATION_ID = -1001
     const val CHANNEL_NORMAL = "rafiq_reminders_normal"
     const val CHANNEL_GENTLE = "rafiq_reminders_gentle"
 
@@ -114,6 +117,7 @@ object NotificationHelper {
             .setStyle(NotificationCompat.BigTextStyle().bigText(body))
             .setContentIntent(openPending)
             .setAutoCancel(true)
+            .setGroup(GROUP_REMINDERS)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
 
         // Snooze 15 min action (never marks completed!)
@@ -171,6 +175,25 @@ object NotificationHelper {
             builder.addAction(0, "تم الإنجاز", completePending)
         }
 
-        NotificationManagerCompat.from(context).notify(notificationId, builder.build())
+        val manager = NotificationManagerCompat.from(context)
+        manager.notify(notificationId, builder.build())
+        postGroupSummary(context, manager, channelId)
+    }
+
+    /**
+     * When several reminders arrive together they collapse under one summary instead of
+     * stacking separately. The summary is silent so it never rings a second time.
+     */
+    private fun postGroupSummary(context: Context, manager: NotificationManagerCompat, channelId: String) {
+        val summary = NotificationCompat.Builder(context, channelId)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle("رفيق الذكر")
+            .setContentText("تذكيرات اليوم")
+            .setGroup(GROUP_REMINDERS)
+            .setGroupSummary(true)
+            .setGroupAlertBehavior(NotificationCompat.GROUP_ALERT_CHILDREN)
+            .setAutoCancel(true)
+            .build()
+        manager.notify(SUMMARY_NOTIFICATION_ID, summary)
     }
 }

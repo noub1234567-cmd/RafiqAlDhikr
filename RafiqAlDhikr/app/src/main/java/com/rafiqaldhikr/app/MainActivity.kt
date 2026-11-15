@@ -37,4 +37,10 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onStop() {
+        super.onStop()
+        // Keep the home-screen widget in step with what the user just did.
+        com.rafiqaldhikr.app.widget.TodayWidgetProvider.refresh(this)
+    }
 }
