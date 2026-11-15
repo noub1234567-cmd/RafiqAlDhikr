@@ -11,6 +11,7 @@ import com.rafiqaldhikr.app.data.local.db.dao.AdhkarDao
 import com.rafiqaldhikr.app.data.local.db.dao.DuaDao
 import com.rafiqaldhikr.app.data.local.db.dao.FastingDao
 import com.rafiqaldhikr.app.data.local.db.dao.MemorizationDao
+import com.rafiqaldhikr.app.data.local.db.dao.PrayerLogDao
 import com.rafiqaldhikr.app.data.local.db.dao.ProfileDao
 import com.rafiqaldhikr.app.data.local.db.dao.QuranDao
 import com.rafiqaldhikr.app.data.local.db.dao.SeasonalDao
@@ -24,6 +25,7 @@ import com.rafiqaldhikr.app.data.local.db.entities.DuaEntryEntity
 import com.rafiqaldhikr.app.data.local.db.entities.FastingDayEntity
 import com.rafiqaldhikr.app.data.local.db.entities.MemorizationPlanEntity
 import com.rafiqaldhikr.app.data.local.db.entities.MemorizationSessionEntity
+import com.rafiqaldhikr.app.data.local.db.entities.PrayerLogEntity
 import com.rafiqaldhikr.app.data.local.db.entities.QuranGoalEntity
 import com.rafiqaldhikr.app.data.local.db.entities.QuranReadingLogEntity
 import com.rafiqaldhikr.app.data.local.db.entities.SeasonalSelectionEntity
@@ -48,9 +50,10 @@ import com.rafiqaldhikr.app.data.local.db.entities.WorshipActivityEntity
         TasbeehTypeEntity::class,
         TasbeehLogEntity::class,
         DuaEntryEntity::class,
-        SeasonalSelectionEntity::class
+        SeasonalSelectionEntity::class,
+        PrayerLogEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -64,18 +67,28 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun tasbeehDao(): TasbeehDao
     abstract fun duaDao(): DuaDao
     abstract fun seasonalDao(): SeasonalDao
+    abstract fun prayerLogDao(): PrayerLogDao
 
     companion object {
         const val DATABASE_NAME = "rafiq_al_dhikr.db"
 
-        /**
-         * Example forward migration template preserved for future schema upgrades.
-         */
+        /** Version 2 adds the prayer tracker table; existing data is untouched. */
         val MIGRATION_1_2 = object : Migration(1, 2) {
             override fun migrate(db: SupportSQLiteDatabase) {
-                // Future schema changes will be applied safely without destructive fallback.
+                db.execSQL(PRAYER_LOGS_CREATE_SQL)
+                db.execSQL(PRAYER_LOGS_INDEX_SQL)
             }
         }
+
+        const val PRAYER_LOGS_CREATE_SQL =
+            "CREATE TABLE IF NOT EXISTS `prayer_logs` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`profileId` INTEGER NOT NULL, `dateEpochDay` INTEGER NOT NULL, `itemKey` TEXT NOT NULL, " +
+                "`completedAtMillis` INTEGER NOT NULL, FOREIGN KEY(`profileId`) REFERENCES `user_profiles`(`id`) " +
+                "ON UPDATE NO ACTION ON DELETE CASCADE )"
+
+        const val PRAYER_LOGS_INDEX_SQL =
+            "CREATE UNIQUE INDEX IF NOT EXISTS `index_prayer_logs_profileId_dateEpochDay_itemKey` " +
+                "ON `prayer_logs` (`profileId`, `dateEpochDay`, `itemKey`)"
 
         fun create(context: Context): AppDatabase {
             return Room.databaseBuilder(

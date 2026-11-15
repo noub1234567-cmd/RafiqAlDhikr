@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Book
 import androidx.compose.material.icons.filled.Checklist
 import androidx.compose.material.icons.filled.EventAvailable
 import androidx.compose.material.icons.filled.Fingerprint
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.Settings
@@ -50,6 +51,7 @@ fun MoreScreen(
     onNavigate: (String) -> Unit
 ) {
     val items = listOf(
+        MoreMenuItem("متابعة الصلاة", "الفرائض والسنن الرواتب والوتر والضحى بنقرة واحدة", Icons.Default.CheckCircle, NavRoute.PrayerTracker.route),
         MoreMenuItem("حفظ القرآن ومراجعته", "خطط الحفظ وجلسات المراجعة والتذكيرات المستقلة", Icons.Default.Book, NavRoute.Memorization.route),
         MoreMenuItem("المسبحة والاستغفار", "عدّاد إلكتروني وأذكار مخصصة وسجل يومي", Icons.Default.Fingerprint, NavRoute.Tasbeeh.route),
         MoreMenuItem("دفتر الأدعية الشخصي", "أدعيتك الخاصة والمفضلة والبحث المحلي", Icons.Default.VolunteerActivism, NavRoute.Dua.route),

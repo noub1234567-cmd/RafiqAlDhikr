@@ -10,6 +10,7 @@ import com.rafiqaldhikr.app.ui.screens.dua.DuaViewModel
 import com.rafiqaldhikr.app.ui.screens.fasting.FastingViewModel
 import com.rafiqaldhikr.app.ui.screens.history.HistoryViewModel
 import com.rafiqaldhikr.app.ui.screens.memorization.MemorizationViewModel
+import com.rafiqaldhikr.app.ui.screens.prayer.PrayerTrackerViewModel
 import com.rafiqaldhikr.app.ui.screens.profiles.ProfilesViewModel
 import com.rafiqaldhikr.app.ui.screens.quran.QuranViewModel
 import com.rafiqaldhikr.app.ui.screens.seasons.SeasonsViewModel
@@ -34,6 +35,7 @@ class AppViewModelFactory(private val container: AppContainer) : ViewModelProvid
             HistoryViewModel::class.java -> HistoryViewModel(container)
             StatisticsViewModel::class.java -> StatisticsViewModel(container)
             ProfilesViewModel::class.java -> ProfilesViewModel(container)
+            PrayerTrackerViewModel::class.java -> PrayerTrackerViewModel(container)
             SettingsViewModel::class.java -> SettingsViewModel(container)
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         } as T

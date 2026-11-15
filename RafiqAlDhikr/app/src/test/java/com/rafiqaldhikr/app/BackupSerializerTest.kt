@@ -73,4 +73,33 @@ class BackupSerializerTest {
         val result = BackupCodec.decodeAndValidate(encoded)
         assertTrue(result is BackupValidationResult.Invalid)
     }
+
+    @Test
+    fun `backup without prayer logs keeps the pre-tracker format and still validates`() {
+        val payload = BackupPayload(
+            profiles = listOf(UserProfileEntity(id = 1, name = "أحمد", isDefault = true))
+        )
+        val encoded = BackupCodec.encodeBackup(payload, AppSettingsSnapshot(activeProfileId = 1))
+
+        // Older backups have no such field; their checksum must still match after re-encoding.
+        assertTrue(!encoded.contains("prayerLogs"))
+        assertTrue(BackupCodec.decodeAndValidate(encoded) is BackupValidationResult.Valid)
+    }
+
+    @Test
+    fun `prayer logs round trip through a backup`() {
+        val payload = BackupPayload(
+            profiles = listOf(UserProfileEntity(id = 1, name = "أحمد", isDefault = true)),
+            prayerLogs = listOf(
+                com.rafiqaldhikr.app.data.local.db.entities.PrayerLogEntity(
+                    id = 1, profileId = 1, dateEpochDay = 20000L, itemKey = "FAJR", completedAtMillis = 5L
+                )
+            )
+        )
+        val result = BackupCodec.decodeAndValidate(
+            BackupCodec.encodeBackup(payload, AppSettingsSnapshot(activeProfileId = 1))
+        )
+        assertTrue(result is BackupValidationResult.Valid)
+        assertEquals(1, (result as BackupValidationResult.Valid).backup.payload.prayerLogs.size)
+    }
 }
