@@ -61,6 +61,8 @@ fun TasbeehScreen(
     onBack: (() -> Unit)? = null,
     onOpenProfileSwitcher: () -> Unit
 ) {
+    val confirm = com.rafiqaldhikr.app.ui.components.rememberConfirm()
+    com.rafiqaldhikr.app.ui.components.ConfirmHost(confirm)
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val haptic = LocalHapticFeedback.current
     var showResetConfirm by remember { mutableStateOf(false) }
@@ -176,7 +178,7 @@ fun TasbeehScreen(
                                     Text("تصفير عداد اليوم")
                                 }
                                 if (!selectedType.isBuiltIn) {
-                                    IconButton(onClick = { viewModel.deleteType(selectedType) }) {
+                                    IconButton(onClick = { confirm.ask("هل تريد حذف هذا الذكر المخصص؟") { viewModel.deleteType(selectedType) } }) {
                                         Icon(Icons.Default.Delete, contentDescription = "حذف الذكر المخصص")
                                     }
                                 }

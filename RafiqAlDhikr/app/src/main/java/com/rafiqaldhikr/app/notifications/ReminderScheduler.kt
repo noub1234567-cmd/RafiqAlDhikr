@@ -37,7 +37,34 @@ class ReminderScheduler(
 
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
+    /**
+     * Delivers alarms that were armed for a moment already in the past but never reached the app
+     * (the system dropped them while the app was closed). The normal receiver handles them.
+     */
+    fun catchUpMissedAlarms() {
+        val now = System.currentTimeMillis()
+        AlarmState.overdue(context, now).forEach { a ->
+            AlarmDiagnostics.record(context, "تعويض منبّه فائت [${a.kind}#${a.targetId}] «${a.title}»")
+            // Same code path as a real alarm; it also marks the alarm as fired.
+            context.sendBroadcast(
+                Intent(context, ReminderReceiver::class.java).apply {
+                    putExtra(NotificationHelper.EXTRA_KIND, a.kind)
+                    putExtra(NotificationHelper.EXTRA_TARGET_ID, a.targetId)
+                    putExtra(NotificationHelper.EXTRA_PROFILE_ID, a.profileId)
+                    putExtra(NotificationHelper.EXTRA_ACTIVITY_ID, a.activityId)
+                    putExtra(NotificationHelper.EXTRA_NOTIFICATION_ID, a.requestCode)
+                    putExtra(NotificationHelper.EXTRA_TITLE, a.title)
+                    putExtra(NotificationHelper.EXTRA_BODY, a.body)
+                    putExtra(NotificationHelper.EXTRA_SOUND_MODE, a.sound)
+                }
+            )
+            // Prevent re-delivery by a second rescheduleAll() before the receiver runs.
+            AlarmState.markFired(context, a.requestCode)
+        }
+    }
+
     suspend fun rescheduleAll() {
+        catchUpMissedAlarms()
         val now = System.currentTimeMillis()
 
         // 1. Worship activities
@@ -68,6 +95,28 @@ class ReminderScheduler(
         // 6. Seasonal reminders
         database.seasonalDao().getAllEnabledReminders().forEach { sel ->
             scheduleSeasonalReminder(sel, now)
+        }
+    }
+
+    /**
+     * Re-arms ONLY the reminder that just fired.
+     * Calling [rescheduleAll] from a receiver pushed every other alarm that was due at the same
+     * moment (or in the same batch) to tomorrow, so only one notification was delivered.
+     */
+    suspend fun rescheduleOne(kind: String, targetId: Long, profileId: Long) {
+        val now = System.currentTimeMillis()
+        when (kind) {
+            KIND_ADHKAR -> database.adhkarDao().getAllEnabledReminders()
+                .firstOrNull { it.id == targetId }
+                ?.let { scheduleAdhkarReminder(it, now) }
+            KIND_QURAN -> database.quranDao().getGoal(profileId)
+                ?.let { scheduleQuranReminder(it, now) }
+            KIND_MEMORIZATION, KIND_REVISION -> database.memorizationDao().getPlanById(targetId)
+                ?.let { scheduleMemorizationReminders(it, now, onlyKind = kind) }
+            KIND_SEASONAL -> database.seasonalDao().getAll()
+                .firstOrNull { it.id == targetId }
+                ?.let { scheduleSeasonalReminder(it, now) }
+            else -> Unit // fasting reminders are one-shot: nothing to re-arm
         }
     }
 
@@ -120,9 +169,15 @@ class ReminderScheduler(
         val requestCode = requestCodeFor(KIND_ADHKAR, reminder.profileId * 10 + reminder.category.ordinal)
         if (!reminder.enabled) {
             cancelAlarm(requestCode)
+            AlarmDiagnostics.record(context, "تذكير «${reminder.category.labelAr}» غير مفعّل — لم يُجدوَل")
             return
         }
-        val trigger = nextDailyMillis(reminder.hour, reminder.minute, nowMillis)
+        // A reminder linked to a prayer follows that prayer's time as it changes through the year.
+        val prayerLink = com.rafiqaldhikr.app.core.prayer.PrayerSettings
+            .link(context, reminder.profileId, reminder.category.name)
+        val trigger = prayerLink
+            ?.let { com.rafiqaldhikr.app.core.prayer.PrayerSettings.nextTrigger(context, it, nowMillis) }
+            ?: nextDailyMillis(reminder.hour, reminder.minute, nowMillis)
         scheduleAlarm(
             requestCode = requestCode,
             triggerAtMillis = trigger,
@@ -155,10 +210,16 @@ class ReminderScheduler(
         )
     }
 
-    fun scheduleMemorizationReminders(plan: MemorizationPlanEntity, nowMillis: Long = System.currentTimeMillis()) {
+    fun scheduleMemorizationReminders(
+        plan: MemorizationPlanEntity,
+        nowMillis: Long = System.currentTimeMillis(),
+        onlyKind: String? = null
+    ) {
         val memCode = requestCodeFor(KIND_MEMORIZATION, plan.id)
         val surahName = QuranSurahs.byNumber(plan.surahNumber).nameAr
-        if (plan.isActive && plan.memReminderEnabled) {
+        if (onlyKind == KIND_REVISION) {
+            // leave the memorization alarm untouched
+        } else if (plan.isActive && plan.memReminderEnabled) {
             val trigger = nextScheduledMillis(plan.memScheduleType, plan.memWeekdaysMask, plan.memReminderHour, plan.memReminderMinute, nowMillis)
             scheduleAlarm(
                 requestCode = memCode,
@@ -175,7 +236,9 @@ class ReminderScheduler(
         }
 
         val revCode = requestCodeFor(KIND_REVISION, plan.id)
-        if (plan.isActive && plan.revReminderEnabled) {
+        if (onlyKind == KIND_MEMORIZATION) {
+            // leave the revision alarm untouched
+        } else if (plan.isActive && plan.revReminderEnabled) {
             val trigger = nextScheduledMillis(plan.revScheduleType, plan.revWeekdaysMask, plan.revReminderHour, plan.revReminderMinute, nowMillis)
             scheduleAlarm(
                 requestCode = revCode,
@@ -279,14 +342,37 @@ class ReminderScheduler(
             true
         }
 
-        if (canExact) {
+        val useAlarmClock = AlarmState.useAlarmClock(context)
+        if (useAlarmClock) {
+            // "Alarm clock" alarms are exempt from the exact-alarm permission and are the most
+            // reliable kind on aggressive OEM power managers (they also show a status-bar alarm icon).
+            val showIntent = PendingIntent.getActivity(
+                context,
+                0,
+                Intent(context, com.rafiqaldhikr.app.MainActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_SINGLE_TOP),
+                PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+            )
+            alarmManager.setAlarmClock(AlarmManager.AlarmClockInfo(triggerAtMillis, showIntent), pending)
+        } else if (canExact) {
             alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pending)
         } else {
             alarmManager.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pending)
         }
+        AlarmState.markArmed(
+            context, requestCode, triggerAtMillis, kind, targetId, profileId,
+            extraActivityId, title, body, soundMode.name
+        )
+        AlarmDiagnostics.record(
+            context,
+            "جُدول [$kind#$targetId] «$title» عند " +
+                java.text.SimpleDateFormat("MM-dd HH:mm:ss", java.util.Locale.US).format(java.util.Date(triggerAtMillis)) +
+                when { useAlarmClock -> " (منبّه ساعة)"; canExact -> " (دقيق)"; else -> " (غير دقيق!)" }
+        )
     }
 
     fun cancelAlarm(requestCode: Int) {
+        AlarmState.clearArmed(context, requestCode)
         val intent = Intent(context, ReminderReceiver::class.java)
         val pending = PendingIntent.getBroadcast(
             context,

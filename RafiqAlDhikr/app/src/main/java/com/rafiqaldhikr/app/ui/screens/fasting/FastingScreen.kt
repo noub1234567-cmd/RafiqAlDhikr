@@ -66,6 +66,8 @@ fun FastingScreen(
     viewModel: FastingViewModel,
     onOpenProfileSwitcher: () -> Unit
 ) {
+    val confirm = com.rafiqaldhikr.app.ui.components.rememberConfirm()
+    com.rafiqaldhikr.app.ui.components.ConfirmHost(confirm)
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var selectedDate by remember { mutableStateOf<LocalDate?>(null) }
     var showOffsetDialog by remember { mutableStateOf(false) }
@@ -238,7 +240,7 @@ fun FastingScreen(
                                 checked = item.isCompleted,
                                 onCheckedChange = { viewModel.markCompleted(item, it) }
                             )
-                            IconButton(onClick = { viewModel.removeDay(item) }) {
+                            IconButton(onClick = { confirm.ask("هل تريد حذف هذا اليوم؟") { viewModel.removeDay(item) } }) {
                                 Icon(Icons.Default.Delete, contentDescription = "حذف")
                             }
                         }

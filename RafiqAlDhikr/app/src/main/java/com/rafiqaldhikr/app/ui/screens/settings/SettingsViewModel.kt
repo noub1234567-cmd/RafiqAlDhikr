@@ -66,6 +66,20 @@ class SettingsViewModel(private val container: AppContainer) : ViewModel() {
         }
     }
 
+    fun inspectLatestAutoBackup(context: android.content.Context) {
+        val file = com.rafiqaldhikr.app.data.backup.AutoBackup.latest(context)
+        if (file == null) {
+            messageFlow.value = "لا توجد نسخة تلقائية بعد."
+            return
+        }
+        viewModelScope.launch {
+            when (val res = container.backupManager.readAndValidateFile(file)) {
+                is BackupValidationResult.Valid -> pendingBackupFlow.value = res.backup
+                is BackupValidationResult.Invalid -> messageFlow.value = res.reasonAr
+            }
+        }
+    }
+
     fun confirmRestore() {
         val backup = pendingBackupFlow.value ?: return
         pendingBackupFlow.value = null

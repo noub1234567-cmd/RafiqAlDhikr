@@ -12,7 +12,8 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface WorshipDao {
-    @Query("SELECT * FROM worship_activities WHERE profileId = :profileId ORDER BY isOptionalBuiltIn ASC, createdAt ASC")
+    // Hidden "sys-" rows only carry history logs for adhkar / quran / memorization reminders.
+    @Query("SELECT * FROM worship_activities WHERE profileId = :profileId AND (templateKey IS NULL OR templateKey NOT LIKE 'sys-%') ORDER BY isOptionalBuiltIn ASC, createdAt ASC")
     fun observeActivities(profileId: Long): Flow<List<WorshipActivityEntity>>
 
     @Query("SELECT * FROM worship_activities WHERE profileId = :profileId")
@@ -23,6 +24,9 @@ interface WorshipDao {
 
     @Query("SELECT * FROM worship_activities")
     suspend fun getAllActivities(): List<WorshipActivityEntity>
+
+    @Query("SELECT * FROM worship_activities WHERE profileId = :profileId AND templateKey = :key LIMIT 1")
+    suspend fun getActivityByTemplateKey(profileId: Long, key: String): WorshipActivityEntity?
 
     @Query("SELECT * FROM worship_activities WHERE id = :id LIMIT 1")
     suspend fun getActivityById(id: Long): WorshipActivityEntity?

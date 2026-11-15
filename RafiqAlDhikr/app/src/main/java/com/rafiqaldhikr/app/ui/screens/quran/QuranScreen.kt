@@ -55,6 +55,8 @@ fun QuranScreen(
     onOpenProfileSwitcher: () -> Unit,
     onOpenMemorization: () -> Unit
 ) {
+    val confirm = com.rafiqaldhikr.app.ui.components.rememberConfirm()
+    com.rafiqaldhikr.app.ui.components.ConfirmHost(confirm)
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val goal = state.goal
     var showGoalDialog by remember { mutableStateOf(false) }
@@ -211,7 +213,7 @@ fun QuranScreen(
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
-                            IconButton(onClick = { viewModel.deleteLog(log) }) {
+                            IconButton(onClick = { confirm.ask("هل تريد حذف سجل القراءة هذا؟") { viewModel.deleteLog(log) } }) {
                                 Icon(Icons.Default.Delete, contentDescription = "حذف السجل")
                             }
                         }
