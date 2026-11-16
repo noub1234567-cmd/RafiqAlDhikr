@@ -197,6 +197,10 @@ fun RafiqNavHost(container: AppContainer) {
                     val vm: ProfilesViewModel = viewModel(factory = factory)
                     ProfilesScreen(viewModel = vm, onBack = { navController.popBackStack() })
                 }
+                composable(NavRoute.YearLog.route) {
+                    val vm: com.rafiqaldhikr.app.ui.screens.yearlog.YearLogViewModel = viewModel(factory = factory)
+                    com.rafiqaldhikr.app.ui.screens.yearlog.YearLogScreen(viewModel = vm, onBack = { navController.popBackStack() })
+                }
                 composable(NavRoute.Ramadan.route) {
                     val vm: com.rafiqaldhikr.app.ui.screens.ramadan.RamadanViewModel = viewModel(factory = factory)
                     com.rafiqaldhikr.app.ui.screens.ramadan.RamadanScreen(
