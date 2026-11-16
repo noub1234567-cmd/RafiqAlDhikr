@@ -45,4 +45,44 @@ class SpecialRemindersTest {
         val hijriDay = HijriCalendarHelper.toHijri(tomorrow).day
         assertTrue("tomorrow should be Hijri 13-15 but was $hijriDay", hijriDay in 13..15)
     }
+
+    /** First date in 2027 whose Hijri month/day match (self-consistent with the app's own Hijri helper). */
+    private fun firstDate(month: Int, day: Int): LocalDate =
+        generateSequence(LocalDate.of(2027, 1, 1)) { it.plusDays(1) }
+            .first { val h = HijriCalendarHelper.toHijri(it); h.month == month && h.day == day }
+
+    @Test
+    fun arafahReminderFiresTheEveningOf8DhulHijjah() {
+        val eve = firstDate(12, 8)
+        assertTrue(SpecialReminders.firesOn(SpecialReminder.ARAFAH_FAST, eve))
+        assertTrue(!SpecialReminders.firesOn(SpecialReminder.ARAFAH_FAST, eve.minusDays(1)))
+        assertTrue(!SpecialReminders.firesOn(SpecialReminder.ARAFAH_FAST, eve.plusDays(1)))
+    }
+
+    @Test
+    fun ashuraReminderFiresBeforeThe9thAnd10thOfMuharram() {
+        val eight = firstDate(1, 8)
+        assertTrue(SpecialReminders.firesOn(SpecialReminder.ASHURA_FAST, eight))
+        assertTrue(SpecialReminders.firesOn(SpecialReminder.ASHURA_FAST, eight.plusDays(1)))
+        assertTrue(!SpecialReminders.firesOn(SpecialReminder.ASHURA_FAST, eight.plusDays(2)))
+        assertTrue(!SpecialReminders.firesOn(SpecialReminder.ASHURA_FAST, eight.minusDays(1)))
+    }
+
+    @Test
+    fun shawwalReminderSkipsEidAndRepeatsWeekly() {
+        val firstShawwal = firstDate(10, 1)
+        // The evening before Eid is not a reminder day; the 1st evening is (fast on the 2nd).
+        assertTrue(!SpecialReminders.firesOn(SpecialReminder.SHAWWAL_SIX, firstShawwal.minusDays(1)))
+        assertTrue(SpecialReminders.firesOn(SpecialReminder.SHAWWAL_SIX, firstShawwal))
+        assertTrue(SpecialReminders.firesOn(SpecialReminder.SHAWWAL_SIX, firstShawwal.plusDays(7)))
+        assertTrue(!SpecialReminders.firesOn(SpecialReminder.SHAWWAL_SIX, firstShawwal.plusDays(3)))
+    }
+
+    @Test
+    fun existingReminderOrdinalsAreUnchanged() {
+        assertEquals(
+            listOf("FRIDAY_KAHF", "MON_THU_FAST", "WHITE_DAYS", "ARAFAH_FAST", "ASHURA_FAST", "SHAWWAL_SIX"),
+            SpecialReminder.entries.map { it.name }
+        )
+    }
 }

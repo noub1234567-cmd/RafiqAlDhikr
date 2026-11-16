@@ -117,6 +117,7 @@ class MainActivity : ComponentActivity() {
         if (!awaitingCredential) lastStopMillis = System.currentTimeMillis()
         // Keep the home-screen widget in step with what the user just did.
         com.rafiqaldhikr.app.widget.TodayWidgetProvider.refresh(this)
+        com.rafiqaldhikr.app.widget.NextPrayerWidgetProvider.refresh(this)
         com.rafiqaldhikr.app.widget.TasbeehWidgetProvider.refresh(this)
     }
 
