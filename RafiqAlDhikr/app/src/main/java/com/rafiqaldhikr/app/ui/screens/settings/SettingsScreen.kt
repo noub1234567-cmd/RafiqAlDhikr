@@ -280,6 +280,14 @@ fun SettingsScreen(
                         ) { Text("مسح") }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedButton(
+                        onClick = {
+                            com.rafiqaldhikr.app.core.health.Onboarding.setDone(context, false)
+                            (context as? android.app.Activity)?.recreate()
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) { Text("فتح دليل التهيئة (الأذونات والبطارية)") }
+                    Spacer(modifier = Modifier.height(8.dp))
                     Text("المنبّهات المضبوطة حالياً (${armedList.size})", style = MaterialTheme.typography.titleSmall)
                     if (armedList.isEmpty()) {
                         Text("لا يوجد أي منبّه مضبوط.", style = MaterialTheme.typography.bodySmall)

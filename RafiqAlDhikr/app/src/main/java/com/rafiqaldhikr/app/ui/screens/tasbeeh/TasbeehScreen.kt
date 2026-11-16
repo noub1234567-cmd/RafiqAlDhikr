@@ -74,6 +74,37 @@ fun TasbeehScreen(
     val progress = (currentCount.toFloat() / target).coerceIn(0f, 1f)
     val todayTotalAll = state.todayCounts.values.sum()
 
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val view = androidx.compose.ui.platform.LocalView.current
+    var volumeKeys by remember { mutableStateOf(com.rafiqaldhikr.app.core.tasbeeh.TasbeehPrefs.volumeKeysEnabled(context)) }
+
+    // Keep the screen on while counting.
+    androidx.compose.runtime.DisposableEffect(view) {
+        view.keepScreenOn = true
+        onDispose { view.keepScreenOn = false }
+    }
+
+    // Volume buttons count (both up and down) while this screen is open.
+    val currentHaptic by androidx.compose.runtime.rememberUpdatedState(state.hapticEnabled)
+    androidx.compose.runtime.DisposableEffect(volumeKeys) {
+        com.rafiqaldhikr.app.core.tasbeeh.VolumeKeyBridge.handler = if (volumeKeys) {
+            {
+                if (currentHaptic) haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                viewModel.incrementSelected()
+            }
+        } else null
+        onDispose { com.rafiqaldhikr.app.core.tasbeeh.VolumeKeyBridge.handler = null }
+    }
+
+    // The home-screen widget counts the dhikr that was used last here.
+    androidx.compose.runtime.LaunchedEffect(selectedType?.id, state.activeProfile?.id) {
+        val pid = state.activeProfile?.id
+        val tid = selectedType?.id
+        if (pid != null && tid != null) {
+            com.rafiqaldhikr.app.core.tasbeeh.TasbeehPrefs.setLastTypeId(context, pid, tid)
+        }
+    }
+
     Scaffold(
         topBar = {
             RafiqTopBar(
@@ -94,6 +125,27 @@ fun TasbeehScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        "العدّ بأزرار الصوت (تبقى الشاشة مضاءة)",
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.weight(1f)
+                    )
+                    androidx.compose.material3.Switch(
+                        checked = volumeKeys,
+                        onCheckedChange = {
+                            volumeKeys = it
+                            com.rafiqaldhikr.app.core.tasbeeh.TasbeehPrefs.setVolumeKeysEnabled(context, it)
+                        }
+                    )
+                }
+            }
+
             item {
                 LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     items(state.types, key = { it.id }) { type ->

@@ -98,7 +98,12 @@ class MainActivity : ComponentActivity() {
                 .collectAsStateWithLifecycle(initialValue = AppSettingsSnapshot())
 
             RafiqAlDhikrTheme(themeMode = settings.themeMode) {
-                if (unlocked) {
+                var onboardingDone by androidx.compose.runtime.remember {
+                    androidx.compose.runtime.mutableStateOf(com.rafiqaldhikr.app.core.health.Onboarding.isDone(this@MainActivity))
+                }
+                if (unlocked && !onboardingDone) {
+                    com.rafiqaldhikr.app.ui.screens.onboarding.OnboardingScreen(onFinish = { onboardingDone = true })
+                } else if (unlocked) {
                     RafiqNavHost(container = app.container)
                 } else {
                     com.rafiqaldhikr.app.ui.components.LockScreen(onUnlock = { requestUnlock() })
@@ -112,5 +117,27 @@ class MainActivity : ComponentActivity() {
         if (!awaitingCredential) lastStopMillis = System.currentTimeMillis()
         // Keep the home-screen widget in step with what the user just did.
         com.rafiqaldhikr.app.widget.TodayWidgetProvider.refresh(this)
+        com.rafiqaldhikr.app.widget.TasbeehWidgetProvider.refresh(this)
+    }
+
+    // Volume buttons count tasbeeh while that screen is open (see VolumeKeyBridge).
+    override fun onKeyDown(keyCode: Int, event: android.view.KeyEvent?): Boolean {
+        val handler = com.rafiqaldhikr.app.core.tasbeeh.VolumeKeyBridge.handler
+        if (handler != null &&
+            (keyCode == android.view.KeyEvent.KEYCODE_VOLUME_UP || keyCode == android.view.KeyEvent.KEYCODE_VOLUME_DOWN)
+        ) {
+            if (event?.repeatCount == 0) handler()
+            return true
+        }
+        return super.onKeyDown(keyCode, event)
+    }
+
+    override fun onKeyUp(keyCode: Int, event: android.view.KeyEvent?): Boolean {
+        if (com.rafiqaldhikr.app.core.tasbeeh.VolumeKeyBridge.handler != null &&
+            (keyCode == android.view.KeyEvent.KEYCODE_VOLUME_UP || keyCode == android.view.KeyEvent.KEYCODE_VOLUME_DOWN)
+        ) {
+            return true
+        }
+        return super.onKeyUp(keyCode, event)
     }
 }
