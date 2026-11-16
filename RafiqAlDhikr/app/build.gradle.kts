@@ -23,6 +23,17 @@ android {
         }
     }
 
+    // A fixed debug key shared by every build (local and CI). Without it each CI run signs with a fresh
+    // random key and Android refuses to update the installed app. Debug only: never used for release.
+    signingConfigs {
+        getByName("debug") {
+            storeFile = file("debug.keystore")
+            storePassword = "android"
+            keyAlias = "androiddebugkey"
+            keyPassword = "android"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true

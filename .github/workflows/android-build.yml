@@ -31,6 +31,11 @@ jobs:
         run: python3 .github/check_migration.py
         working-directory: .
 
+      - name: Show debug APK signing certificate
+        run: |
+          APKSIGNER=$(ls $ANDROID_HOME/build-tools/*/apksigner | tail -1)
+          $APKSIGNER verify --print-certs app/build/outputs/apk/debug/app-debug.apk | grep -i "SHA-256" || true
+
       - name: Upload test reports
         if: always()
         uses: actions/upload-artifact@v4
