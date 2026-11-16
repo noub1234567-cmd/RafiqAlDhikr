@@ -26,6 +26,7 @@ class RafiqApplication : Application() {
 
         appScope.launch {
             container.profileRepository.ensureInitialized()
+            runCatching { com.rafiqaldhikr.app.data.repository.AdhkarCatalogSync.run(this@RafiqApplication, container.database) }
             container.worshipRepository.evaluateMissedActivitiesForAllProfiles()
             // Alarms are lost after a force-stop; re-arm them whenever the app process starts.
             container.reminderScheduler.rescheduleAll()

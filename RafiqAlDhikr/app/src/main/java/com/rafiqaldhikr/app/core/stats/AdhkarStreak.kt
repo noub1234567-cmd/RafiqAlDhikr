@@ -13,13 +13,26 @@ import java.time.LocalDate
 object AdhkarStreak {
     private val tracked = listOf(AdhkarCategory.MORNING, AdhkarCategory.EVENING)
 
+    /**
+     * The entries that count toward the daily streak of [category]: the original curated set when present, so
+     * adding the long Hisn al-Muslim lists does not make a complete day unreachable. Falls back to every entry of
+     * the category when none of the original ones remain (all deleted or replaced by custom ones).
+     */
+    fun trackedEntries(entries: List<AdhkarEntryEntity>, category: AdhkarCategory): List<AdhkarEntryEntity> {
+        val inCategory = entries.filter { it.category == category }
+        val core = inCategory.filter { it.templateKey != null && it.templateKey in coreKeys }
+        return core.ifEmpty { inCategory }
+    }
+
+    private val coreKeys: Set<String> get() = com.rafiqaldhikr.app.core.model.VerifiedAdhkarCatalog.coreKeys
+
     fun compute(
         entries: List<AdhkarEntryEntity>,
         progress: List<AdhkarProgressEntity>,
         today: LocalDate
     ): Int {
         val required = tracked
-            .map { cat -> cat to entries.filter { it.category == cat }.map { it.id }.toSet() }
+            .map { cat -> cat to trackedEntries(entries, cat).map { it.id }.toSet() }
             .filter { it.second.isNotEmpty() }
         if (required.isEmpty()) return 0
 

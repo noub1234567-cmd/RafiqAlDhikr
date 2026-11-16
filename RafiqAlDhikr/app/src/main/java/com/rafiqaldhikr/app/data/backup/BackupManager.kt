@@ -194,6 +194,9 @@ class BackupManager(
         preferences.setHijriOffsetDays(backup.settings.hijriOffsetDays)
         preferences.setTasbeehHapticEnabled(backup.settings.tasbeehHapticEnabled)
 
+        com.rafiqaldhikr.app.data.repository.AdhkarCatalogSync.forgetAll(context)
+        runCatching { com.rafiqaldhikr.app.data.repository.AdhkarCatalogSync.run(context, database) }
+
         scheduler.rescheduleAll()
     }
 }

@@ -36,7 +36,13 @@ object VerifiedAdhkarCatalog {
     private const val TAHLIL_TEN =
         "لَا إِلَهَ إِلَّا اللَّهُ وَحْدَهُ لَا شَرِيكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيرٌ."
 
-    val defaultEntries: List<VerifiedDhikrTemplate> = listOf(
+    /** Everything a new profile starts with: the original curated set plus the Hisn al-Muslim adhkar. */
+    val defaultEntries: List<VerifiedDhikrTemplate> by lazy { coreEntries + HisnAdhkarCatalog.entries }
+
+    /** Template keys of the original set. Daily-completion streaks are measured on these so the long Hisn lists do not break them. */
+    val coreKeys: Set<String> by lazy { coreEntries.map { it.key }.toSet() }
+
+    val coreEntries: List<VerifiedDhikrTemplate> = listOf(
         // أذكار الصباح
         VerifiedDhikrTemplate(
             key = "morning_kursi",

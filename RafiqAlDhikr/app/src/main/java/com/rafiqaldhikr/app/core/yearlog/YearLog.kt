@@ -2,6 +2,7 @@ package com.rafiqaldhikr.app.core.yearlog
 
 import com.rafiqaldhikr.app.core.model.ActivityStatus
 import com.rafiqaldhikr.app.core.model.AdhkarCategory
+import com.rafiqaldhikr.app.core.stats.AdhkarStreak
 import com.rafiqaldhikr.app.data.local.db.entities.ActivityLogEntity
 import com.rafiqaldhikr.app.data.local.db.entities.AdhkarEntryEntity
 import com.rafiqaldhikr.app.data.local.db.entities.AdhkarProgressEntity
@@ -66,8 +67,8 @@ object YearLog {
                 .mapValues { (_, v) -> levelFromRatio(v.map { it.itemKey }.toSet().size / 5.0) }
         }
         LogKind.ADHKAR -> {
-            val tracked = input.adhkarEntries
-                .filter { it.category == AdhkarCategory.MORNING || it.category == AdhkarCategory.EVENING }
+            val tracked = listOf(AdhkarCategory.MORNING, AdhkarCategory.EVENING)
+                .flatMap { AdhkarStreak.trackedEntries(input.adhkarEntries, it) }
                 .map { it.id }.toSet()
             if (tracked.isEmpty()) emptyMap()
             else input.adhkarProgress.filter { it.isCompleted && it.adhkarEntryId in tracked }
