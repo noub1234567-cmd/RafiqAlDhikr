@@ -52,6 +52,7 @@ fun MoreScreen(
     onNavigate: (String) -> Unit
 ) {
     val items = listOf(
+        MoreMenuItem("ختمة القرآن", "موضع القراءة بالسورة والآية والورد اليومي لإنهاء الختمة", Icons.Default.CheckCircle, NavRoute.Khatma.route),
         MoreMenuItem("متابعة الصلاة", "الفرائض والسنن الرواتب والوتر والضحى بنقرة واحدة", Icons.Default.CheckCircle, NavRoute.PrayerTracker.route),
         MoreMenuItem("اتجاه القبلة", "بوصلة تعتمد المدينة المختارة في الإعدادات", Icons.Default.Place, NavRoute.Qibla.route),
         MoreMenuItem("حفظ القرآن ومراجعته", "خطط الحفظ وجلسات المراجعة والتذكيرات المستقلة", Icons.Default.Book, NavRoute.Memorization.route),

@@ -11,6 +11,7 @@ import com.rafiqaldhikr.app.data.local.db.dao.AdhkarDao
 import com.rafiqaldhikr.app.data.local.db.dao.DuaDao
 import com.rafiqaldhikr.app.data.local.db.dao.FastingDao
 import com.rafiqaldhikr.app.data.local.db.dao.MemorizationDao
+import com.rafiqaldhikr.app.data.local.db.dao.KhatmaDao
 import com.rafiqaldhikr.app.data.local.db.dao.PrayerLogDao
 import com.rafiqaldhikr.app.data.local.db.dao.ProfileDao
 import com.rafiqaldhikr.app.data.local.db.dao.QuranDao
@@ -25,6 +26,7 @@ import com.rafiqaldhikr.app.data.local.db.entities.DuaEntryEntity
 import com.rafiqaldhikr.app.data.local.db.entities.FastingDayEntity
 import com.rafiqaldhikr.app.data.local.db.entities.MemorizationPlanEntity
 import com.rafiqaldhikr.app.data.local.db.entities.MemorizationSessionEntity
+import com.rafiqaldhikr.app.data.local.db.entities.KhatmaEntity
 import com.rafiqaldhikr.app.data.local.db.entities.PrayerLogEntity
 import com.rafiqaldhikr.app.data.local.db.entities.QuranGoalEntity
 import com.rafiqaldhikr.app.data.local.db.entities.QuranReadingLogEntity
@@ -51,9 +53,10 @@ import com.rafiqaldhikr.app.data.local.db.entities.WorshipActivityEntity
         TasbeehLogEntity::class,
         DuaEntryEntity::class,
         SeasonalSelectionEntity::class,
-        PrayerLogEntity::class
+        PrayerLogEntity::class,
+        KhatmaEntity::class
     ],
-    version = 2,
+    version = 3,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -68,6 +71,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun duaDao(): DuaDao
     abstract fun seasonalDao(): SeasonalDao
     abstract fun prayerLogDao(): PrayerLogDao
+    abstract fun khatmaDao(): KhatmaDao
 
     companion object {
         const val DATABASE_NAME = "rafiq_al_dhikr.db"
@@ -79,6 +83,23 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL(PRAYER_LOGS_INDEX_SQL)
             }
         }
+
+        /** Version 3 adds the khatma table; existing data is untouched. */
+        val MIGRATION_2_3 = object : Migration(2, 3) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(KHATMAS_CREATE_SQL)
+                db.execSQL(KHATMAS_INDEX_SQL)
+            }
+        }
+
+        const val KHATMAS_CREATE_SQL =
+            "CREATE TABLE IF NOT EXISTS `khatmas` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`profileId` INTEGER NOT NULL, `title` TEXT NOT NULL, `startEpochDay` INTEGER NOT NULL, " +
+                "`targetEpochDay` INTEGER NOT NULL, `readAyahs` INTEGER NOT NULL, `finishedEpochDay` INTEGER NOT NULL, " +
+                "FOREIGN KEY(`profileId`) REFERENCES `user_profiles`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )"
+
+        const val KHATMAS_INDEX_SQL =
+            "CREATE INDEX IF NOT EXISTS `index_khatmas_profileId` ON `khatmas` (`profileId`)"
 
         const val PRAYER_LOGS_CREATE_SQL =
             "CREATE TABLE IF NOT EXISTS `prayer_logs` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
@@ -96,7 +117,7 @@ abstract class AppDatabase : RoomDatabase() {
                 AppDatabase::class.java,
                 DATABASE_NAME
             )
-                .addMigrations(MIGRATION_1_2)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
                 .build()
         }
     }
