@@ -46,4 +46,23 @@ class AdhkarStreakTest {
         val progress = listOf(done(1, 1), done(1, 2), done(2, 2))
         assertEquals(0, AdhkarStreak.compute(entries, progress, today))
     }
+
+    @Test
+    fun streakIgnoresNonCoreTemplateEntriesWhenCoreExists() {
+        val core = entry(1, AdhkarCategory.MORNING).copy(templateKey = "morning_kursi")
+        val extra = entry(2, AdhkarCategory.MORNING).copy(templateKey = "morning_afini")
+        val evening = entry(3, AdhkarCategory.EVENING).copy(templateKey = "evening_kursi")
+        val all = listOf(core, extra, evening)
+        val progress = listOf(done(1, 0), done(3, 0), done(1, 1), done(3, 1))
+        // The Hisn entry (id 2) was never completed, yet the two days count.
+        assertEquals(2, AdhkarStreak.compute(all, progress, today))
+    }
+
+    @Test
+    fun streakFallsBackToAllEntriesWithoutCoreOnes() {
+        val a = entry(1, AdhkarCategory.MORNING).copy(templateKey = "morning_afini")
+        val b = entry(2, AdhkarCategory.MORNING).copy(templateKey = "morning_hasbiya")
+        val progress = listOf(done(1, 0))
+        assertEquals(0, AdhkarStreak.compute(listOf(a, b), progress, today))
+    }
 }

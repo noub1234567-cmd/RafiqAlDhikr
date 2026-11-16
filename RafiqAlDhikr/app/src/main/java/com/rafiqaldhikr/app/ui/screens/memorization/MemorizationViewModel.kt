@@ -50,6 +50,16 @@ class MemorizationViewModel(private val container: AppContainer) : ViewModel() {
         }
     }
 
+    /** Records a review of one due block; [hard] sends it back to the shortest interval. */
+    fun reviewChunk(plan: MemorizationPlanEntity, from: Int, to: Int, hard: Boolean) {
+        viewModelScope.launch {
+            container.memorizationRepository.recordSession(
+                plan, true, from, to,
+                if (hard) com.rafiqaldhikr.app.core.memorization.ReviewScheduler.HARD_NOTE else ""
+            )
+        }
+    }
+
     fun deleteSession(session: MemorizationSessionEntity) {
         viewModelScope.launch { container.memorizationRepository.deleteSession(session) }
     }

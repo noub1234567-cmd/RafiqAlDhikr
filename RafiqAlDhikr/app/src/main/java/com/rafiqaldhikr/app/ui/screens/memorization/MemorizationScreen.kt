@@ -143,6 +143,37 @@ fun MemorizationScreen(
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
+                        val todayEpoch = remember { java.time.LocalDate.now().toEpochDay() }
+                        val due = remember(plan, state.sessions) {
+                            com.rafiqaldhikr.app.core.memorization.ReviewScheduler.dueChunks(plan, state.sessions, todayEpoch)
+                        }
+                        if (due.isNotEmpty()) {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Text(
+                                text = "مراجعة اليوم (${ArabicFormatters.toArabicDigits(due.size)} مقاطع مستحقة)",
+                                style = MaterialTheme.typography.titleSmall
+                            )
+                            due.take(3).forEach { c ->
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Text(
+                                        text = "الآيات ${ArabicFormatters.toArabicDigits(c.fromAyah)}–${ArabicFormatters.toArabicDigits(c.toAyah)}" +
+                                            if (c.overdueDays(todayEpoch) > 0) " • متأخر ${ArabicFormatters.toArabicDigits(c.overdueDays(todayEpoch).toInt())} يوماً" else "",
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                    TextButton(onClick = { viewModel.reviewChunk(plan, c.fromAyah, c.toAyah, false) }) { Text("سهل") }
+                                    TextButton(onClick = { viewModel.reviewChunk(plan, c.fromAyah, c.toAyah, true) }) { Text("صعب") }
+                                }
+                            }
+                        } else if (plan.currentAyah >= plan.startAyah) {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            Text("لا مراجعة مستحقة اليوم، أحسنت.", style = MaterialTheme.typography.bodyMedium)
+                        }
+
                         Spacer(modifier = Modifier.height(10.dp))
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Button(
