@@ -104,6 +104,18 @@ fun DashboardScreen(
                 )
             }
 
+            val ramadan = com.rafiqaldhikr.app.core.ramadan.RamadanCalendar.statusFor(
+                java.time.LocalDate.now(), state.hijriOffsetDays
+            )
+            if (com.rafiqaldhikr.app.ui.components.showRamadanCard(ramadan)) {
+                item {
+                    com.rafiqaldhikr.app.ui.components.RamadanCard(
+                        status = ramadan,
+                        onClick = { onNavigate(com.rafiqaldhikr.app.ui.navigation.NavRoute.Ramadan.route) }
+                    )
+                }
+            }
+
             item { com.rafiqaldhikr.app.ui.components.DhikrOfTheDayCard() }
 
             // Welcome & Hijri/Gregorian Dates Card
