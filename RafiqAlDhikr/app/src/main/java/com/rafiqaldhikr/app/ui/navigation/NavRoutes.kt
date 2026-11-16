@@ -4,6 +4,10 @@ sealed class NavRoute(val route: String, val labelAr: String) {
     data object Dashboard : NavRoute("dashboard", "الرئيسية")
     data object Adhkar : NavRoute("adhkar", "الأذكار")
     data object Quran : NavRoute("quran", "القرآن")
+    data object DuaHub : NavRoute("dua_hub", "الأدعية")
+    data object DuaSection : NavRoute("dua_section/{id}", "قسم الأدعية") {
+        fun create(id: String) = "dua_section/$id"
+    }
     data object Fasting : NavRoute("fasting", "الصيام")
     data object More : NavRoute("more", "المزيد")
 
