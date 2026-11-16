@@ -11,7 +11,12 @@ import java.time.ZoneId
 enum class SpecialReminder(val labelAr: String, val descriptionAr: String, val hour: Int, val minute: Int) {
     FRIDAY_KAHF("ورد الجمعة", "صباح كل جمعة: تذكير بسورة الكهف والإكثار من الصلاة على النبي ﷺ (٩:٠٠ صباحاً)", 9, 0),
     MON_THU_FAST("صيام الاثنين والخميس", "مساء الأحد والأربعاء: تذكير بنية صيام الغد (٨:٠٠ مساءً)", 20, 0),
-    WHITE_DAYS("الأيام البيض", "مساء ١٢ و١٣ و١٤ هجرياً: تذكير بصيام الأيام البيض (٨:٠٠ مساءً)", 20, 0)
+    WHITE_DAYS("الأيام البيض", "مساء ١٢ و١٣ و١٤ هجرياً: تذكير بصيام الأيام البيض (٨:٠٠ مساءً)", 20, 0),
+
+    // New entries are appended: the ordinal is part of the alarm request code.
+    ARAFAH_FAST("صيام يوم عرفة", "مساء ٨ ذي الحجة: تذكير بصيام يوم عرفة لغير الحاج (٨:٠٠ مساءً)", 20, 0),
+    ASHURA_FAST("صيام عاشوراء", "مساء ٨ و٩ محرم: تذكير بصيام التاسع والعاشر (٨:٠٠ مساءً)", 20, 0),
+    SHAWWAL_SIX("ست من شوال", "مساء أول شوال ثم كل أسبوع حتى آخره: تذكير بصيام الست (٨:٠٠ مساءً)", 20, 0)
 }
 
 data class SpecialTrigger(val triggerAtMillis: Long, val title: String, val body: String)
@@ -38,6 +43,18 @@ object SpecialReminders {
         SpecialReminder.WHITE_DAYS ->
             HijriCalendarHelper.getRecommendedFastingOccasions(date.plusDays(1))
                 .contains(FastingOccasion.WHITE_DAYS)
+        SpecialReminder.ARAFAH_FAST ->
+            HijriCalendarHelper.getRecommendedFastingOccasions(date.plusDays(1))
+                .contains(FastingOccasion.ARAFAH)
+        SpecialReminder.ASHURA_FAST -> {
+            val h = HijriCalendarHelper.toHijri(date.plusDays(1), 0)
+            h.month == 1 && (h.day == 9 || h.day == 10)
+        }
+        SpecialReminder.SHAWWAL_SIX -> {
+            // The evenings before the 2nd, 9th, 16th and 23rd of Shawwal (the 1st is Eid, when fasting is forbidden).
+            val h = HijriCalendarHelper.toHijri(date.plusDays(1), 0)
+            h.month == 10 && h.day in listOf(2, 9, 16, 23)
+        }
     }
 
     /** Next firing of [r] strictly after [nowMillis], searching up to ~7 weeks ahead. */
@@ -63,5 +80,14 @@ object SpecialReminders {
         }
         SpecialReminder.WHITE_DAYS ->
             "غداً من الأيام البيض (١٣ و١٤ و١٥ من الشهر الهجري) — يُستحب صيامها."
+        SpecialReminder.ARAFAH_FAST ->
+            "غداً يوم عرفة — صيامه لغير الحاج يكفّر سنتين: الماضية والباقية (رواه مسلم)."
+        SpecialReminder.ASHURA_FAST ->
+            if (HijriCalendarHelper.toHijri(date.plusDays(1), 0).day == 9)
+                "غداً التاسع من محرم — يُستحب صيامه مع العاشر."
+            else
+                "غداً يوم عاشوراء — صيامه يكفّر السنة الماضية (رواه مسلم)."
+        SpecialReminder.SHAWWAL_SIX ->
+            "من صام رمضان ثم أتبعه ستاً من شوال كان كصيام الدهر (رواه مسلم). انوِ صيام الغد إن أردت."
     }
 }

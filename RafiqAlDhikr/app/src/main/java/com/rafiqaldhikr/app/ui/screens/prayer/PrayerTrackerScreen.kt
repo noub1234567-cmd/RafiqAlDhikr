@@ -19,7 +19,10 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,6 +63,14 @@ fun PrayerTrackerScreen(viewModel: PrayerTrackerViewModel, onBack: () -> Unit) {
     val times = remember(state.day) { PrayerSettings.timesFor(context, state.day) }
     val earliest = state.today.minusDays(PrayerTrackerUiState.WINDOW_DAYS - 1L)
     val fardDone = PrayerItem.entries.count { it.isFard && it.key in state.doneOnDay }
+    var afterPrayer by remember { mutableStateOf<PrayerItem?>(null) }
+    afterPrayer?.let { item ->
+        com.rafiqaldhikr.app.ui.components.AfterPrayerDialog(
+            prayerKey = item.key,
+            prayerLabel = item.labelAr,
+            onDismiss = { afterPrayer = null }
+        )
+    }
 
     Scaffold(topBar = { RafiqTopBar(title = "متابعة الصلاة", onBackClick = onBack) }) { padding ->
         LazyColumn(
@@ -97,7 +108,16 @@ fun PrayerTrackerScreen(viewModel: PrayerTrackerViewModel, onBack: () -> Unit) {
                             extra = item.prayer()?.let { p -> times?.get(p) }?.let { "%02d:%02d".format(it.hour, it.minute) },
                             checked = item.key in state.doneOnDay,
                             enabled = state.activeProfile != null,
-                            onToggle = { viewModel.toggle(item) }
+                            onToggle = {
+                                val wasDone = item.key in state.doneOnDay
+                                viewModel.toggle(item)
+                                if (!wasDone && com.rafiqaldhikr.app.core.prayer.AfterPrayerPrefs.autoShow(context)) {
+                                    afterPrayer = item
+                                }
+                            },
+                            trailing = {
+                                TextButton(onClick = { afterPrayer = item }) { Text("الأذكار") }
+                            }
                         )
                     }
                 }
@@ -158,7 +178,8 @@ private fun ItemRow(
     extra: String?,
     checked: Boolean,
     enabled: Boolean,
-    onToggle: () -> Unit
+    onToggle: () -> Unit,
+    trailing: (@Composable () -> Unit)? = null
 ) {
     Row(
         modifier = Modifier
@@ -171,5 +192,6 @@ private fun ItemRow(
         if (extra != null) {
             Text(extra, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
+        trailing?.invoke()
     }
 }

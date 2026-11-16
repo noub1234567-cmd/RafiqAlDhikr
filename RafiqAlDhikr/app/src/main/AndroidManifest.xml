@@ -27,6 +27,20 @@
         </activity>
 
         <receiver
+            android:name=".widget.NextPrayerWidgetProvider"
+            android:label="مواقيت الصلاة"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/widget_next_prayer_info" />
+        </receiver>
+
+        <receiver
             android:name=".widget.TodayWidgetProvider"
             android:exported="false">
             <intent-filter>
