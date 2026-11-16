@@ -117,8 +117,7 @@ fun RamadanScreen(viewModel: RamadanViewModel, onBack: () -> Unit, onOpenKhatma:
             }
 
             val days = (0 until status.length).map { i ->
-                val start = if (status is RamadanStatus.During) status.start else (status as RamadanStatus.Before).start
-                start.plusDays(i.toLong())
+                status.start.plusDays(i.toLong())
             }
             items(days.size) { i ->
                 val date = days[i]

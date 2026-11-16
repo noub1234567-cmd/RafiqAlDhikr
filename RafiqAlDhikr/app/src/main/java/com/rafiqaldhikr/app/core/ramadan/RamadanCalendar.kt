@@ -9,11 +9,14 @@ import java.time.temporal.ChronoUnit
 
 /** Where [today] stands relative to Ramadan. */
 sealed interface RamadanStatus {
+    val start: LocalDate
+    val length: Int
+
     /** [daysUntil] days before 1 Ramadan, which falls on [start]. */
-    data class Before(val daysUntil: Long, val start: LocalDate, val length: Int) : RamadanStatus
+    data class Before(val daysUntil: Long, override val start: LocalDate, override val length: Int) : RamadanStatus
 
     /** Day [dayNumber] (1-based) of a Ramadan that began on [start]. */
-    data class During(val dayNumber: Int, val start: LocalDate, val length: Int) : RamadanStatus
+    data class During(val dayNumber: Int, override val start: LocalDate, override val length: Int) : RamadanStatus
 }
 
 enum class FastMarker { IMSAK, IFTAR }
