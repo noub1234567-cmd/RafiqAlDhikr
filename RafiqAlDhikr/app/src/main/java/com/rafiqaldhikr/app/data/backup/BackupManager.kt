@@ -83,7 +83,8 @@ object BackupCodec {
             parsed.payload.memorizationSessions.any { it.profileId !in profileIds } ||
             parsed.payload.tasbeehLogs.any { it.profileId !in profileIds } ||
             parsed.payload.seasonalSelections.any { it.profileId !in profileIds } ||
-            parsed.payload.prayerLogs.any { it.profileId !in profileIds }
+            parsed.payload.prayerLogs.any { it.profileId !in profileIds } ||
+            parsed.payload.khatmas.any { it.profileId !in profileIds }
 
         val activityIds = parsed.payload.worshipActivities.map { it.id }.toSet()
         val adhkarIds = parsed.payload.adhkarEntries.map { it.id }.toSet()
@@ -128,7 +129,8 @@ class BackupManager(
             tasbeehLogs = database.tasbeehDao().getAllLogs(),
             duaEntries = database.duaDao().getAll(),
             seasonalSelections = database.seasonalDao().getAll(),
-            prayerLogs = database.prayerLogDao().getAll()
+            prayerLogs = database.prayerLogDao().getAll(),
+            khatmas = database.khatmaDao().getAll()
         )
         val settings = preferences.getSnapshot()
         return BackupCodec.encodeBackup(payload, settings)
@@ -182,6 +184,7 @@ class BackupManager(
             database.duaDao().insertAll(p.duaEntries)
             database.seasonalDao().insertAll(p.seasonalSelections)
             database.prayerLogDao().insertAll(p.prayerLogs)
+            database.khatmaDao().insertAll(p.khatmas)
         }
 
         val targetActiveProfile = p.profiles.firstOrNull { it.id == backup.settings.activeProfileId }?.id

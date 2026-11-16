@@ -88,6 +88,11 @@ fun DashboardScreen(
             }
         )
 
+        // Outside the list so it takes no space (and no gap) while everything is healthy.
+        Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)) {
+            com.rafiqaldhikr.app.ui.components.AlarmHealthBanner()
+        }
+
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
@@ -98,6 +103,20 @@ fun DashboardScreen(
                     onClick = { onNavigate(com.rafiqaldhikr.app.ui.navigation.NavRoute.PrayerTracker.route) }
                 )
             }
+
+            val ramadan = com.rafiqaldhikr.app.core.ramadan.RamadanCalendar.statusFor(
+                java.time.LocalDate.now(), state.hijriOffsetDays
+            )
+            if (com.rafiqaldhikr.app.ui.components.showRamadanCard(ramadan)) {
+                item {
+                    com.rafiqaldhikr.app.ui.components.RamadanCard(
+                        status = ramadan,
+                        onClick = { onNavigate(com.rafiqaldhikr.app.ui.navigation.NavRoute.Ramadan.route) }
+                    )
+                }
+            }
+
+            item { com.rafiqaldhikr.app.ui.components.DhikrOfTheDayCard() }
 
             // Welcome & Hijri/Gregorian Dates Card
             item {

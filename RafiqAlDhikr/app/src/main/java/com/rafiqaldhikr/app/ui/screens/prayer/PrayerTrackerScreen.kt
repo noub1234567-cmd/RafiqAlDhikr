@@ -107,7 +107,7 @@ fun PrayerTrackerScreen(viewModel: PrayerTrackerViewModel, onBack: () -> Unit) {
                 RafiqCard {
                     Text("السنن الرواتب والنوافل", style = MaterialTheme.typography.titleMedium)
                     Spacer(modifier = Modifier.height(6.dp))
-                    PrayerItem.entries.filter { !it.isFard }.forEach { item ->
+                    PrayerItem.entries.filter { !it.isFard && !it.ramadanOnly }.forEach { item ->
                         ItemRow(
                             label = item.labelAr,
                             extra = null,

@@ -42,7 +42,10 @@ data class BackupPayload(
      */
     @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
-    val prayerLogs: List<PrayerLogEntity> = emptyList()
+    val prayerLogs: List<PrayerLogEntity> = emptyList(),
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val khatmas: List<com.rafiqaldhikr.app.data.local.db.entities.KhatmaEntity> = emptyList()
 )
 
 @Serializable

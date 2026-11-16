@@ -7,7 +7,13 @@ import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 /** Items tracked in the prayer tracker. The key is what is stored in the database. */
-enum class PrayerItem(val key: String, val labelAr: String, val isFard: Boolean) {
+enum class PrayerItem(
+    val key: String,
+    val labelAr: String,
+    val isFard: Boolean,
+    /** Only shown in the Ramadan screen. */
+    val ramadanOnly: Boolean = false
+) {
     FAJR("FAJR", "الفجر", true),
     DHUHR("DHUHR", "الظهر", true),
     ASR("ASR", "العصر", true),
@@ -20,7 +26,8 @@ enum class PrayerItem(val key: String, val labelAr: String, val isFard: Boolean)
     MAGHRIB_AFTER("MAGHRIB_AFTER", "ركعتان بعد المغرب", false),
     ISHA_AFTER("ISHA_AFTER", "ركعتان بعد العشاء", false),
     DUHA("DUHA", "صلاة الضحى", false),
-    WITR("WITR", "الوتر", false)
+    WITR("WITR", "الوتر", false),
+    TARAWEEH("TARAWEEH", "التراويح", false, ramadanOnly = true)
 }
 
 class PrayerLogRepository(private val database: AppDatabase) {
