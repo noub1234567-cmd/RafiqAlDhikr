@@ -59,7 +59,7 @@ class AppContainerImpl(context: Context) : AppContainer {
         com.rafiqaldhikr.app.data.repository.KhatmaRepository(database)
     }
     override val plannerRepository: com.rafiqaldhikr.app.data.repository.PlannerRepository by lazy {
-        com.rafiqaldhikr.app.data.repository.PlannerRepository(database, reminderScheduler)
+        com.rafiqaldhikr.app.data.repository.PlannerRepository(database, reminderScheduler, appContext)
     }
     override val backupManager: BackupManager by lazy {
         BackupManager(appContext, database, preferences, reminderScheduler)

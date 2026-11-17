@@ -79,6 +79,16 @@ data class ReportLine(val title: String, val type: String, val planned: Int, val
 object PlannerReports {
     private fun normalize(title: String) = title.trim().replace(Regex("\\s+"), " ")
 
+    /** Adds up several weekly reports into one (same title + type merge). */
+    fun merge(reports: List<List<ReportLine>>): List<ReportLine> =
+        reports.flatten()
+            .groupBy { normalize(it.title) to it.type }
+            .map { (key, items) -> ReportLine(key.first, key.second, items.sumOf { it.planned }, items.sumOf { it.done }) }
+            .sortedWith(compareByDescending<ReportLine> { it.planned }.thenBy { it.title })
+
+    /** A monthly report covers this many days, counted from the first archived week. */
+    const val MONTH_DAYS = 30
+
     /** Groups slots by (title, type) as written in the table. Most frequent first. */
     fun summarize(slots: List<Triple<String, String, Boolean>>): List<ReportLine> =
         slots

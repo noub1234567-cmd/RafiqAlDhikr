@@ -70,6 +70,9 @@ interface PlannerDao {
     @Query("SELECT * FROM planner_reports WHERE profileId = :profileId AND kind = :kind ORDER BY startEpochDay DESC")
     fun observeReports(profileId: Long, kind: String): Flow<List<PlannerReportEntity>>
 
+    @Query("SELECT * FROM planner_reports WHERE profileId = :profileId AND kind = :kind")
+    suspend fun getReports(profileId: Long, kind: String): List<PlannerReportEntity>
+
     @Query("DELETE FROM planner_reports WHERE id = :id")
     suspend fun deleteReport(id: Long)
 

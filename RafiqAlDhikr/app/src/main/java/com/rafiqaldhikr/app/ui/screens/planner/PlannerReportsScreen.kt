@@ -47,6 +47,17 @@ fun PlannerReportsScreen(viewModel: PlannerReportsViewModel, onBack: () -> Unit)
             state.current?.let { cur ->
                 item { ReportCard("هذا الأسبوع (جارٍ)", cur, onDelete = null) }
             }
+            if (state.months.isNotEmpty()) {
+                item { Text("التقارير الشهرية", style = MaterialTheme.typography.titleLarge) }
+                items(state.months, key = { "m" + it.id }) { r ->
+                    ReportCard(
+                        "${dateText(r.startEpochDay)} – ${dateText(r.endEpochDay)} (٣٠ يوماً)",
+                        r,
+                        onDelete = { confirm.ask("سيُحذف هذا التقرير الشهري نهائياً. هل تريد المتابعة؟") { viewModel.delete(r.id) } }
+                    )
+                }
+                item { Text("التقارير الأسبوعية", style = MaterialTheme.typography.titleLarge) }
+            }
             if (state.reports.isEmpty()) {
                 item {
                     RafiqCard {
@@ -57,7 +68,7 @@ fun PlannerReportsScreen(viewModel: PlannerReportsViewModel, onBack: () -> Unit)
                     }
                 }
             }
-            items(state.reports, key = { it.id }) { r ->
+            items(state.reports, key = { "w" + it.id }) { r ->
                 ReportCard(
                     "${dateText(r.startEpochDay)} – ${dateText(r.endEpochDay)}",
                     r,
