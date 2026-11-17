@@ -1,12 +1,15 @@
 package com.rafiqaldhikr.app.ui.theme
 
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.LayoutDirection
 import com.rafiqaldhikr.app.core.model.ThemeMode
 
@@ -64,6 +67,15 @@ private val DarkColorScheme = darkColorScheme(
     outline = OutlineDark
 )
 
+/** Classic, slightly squarer corners than the Material defaults. */
+val RafiqShapes = Shapes(
+    extraSmall = RoundedCornerShape(6.dp),
+    small = RoundedCornerShape(10.dp),
+    medium = RoundedCornerShape(14.dp),
+    large = RoundedCornerShape(18.dp),
+    extraLarge = RoundedCornerShape(24.dp)
+)
+
 @Composable
 fun RafiqAlDhikrTheme(
     themeMode: ThemeMode = ThemeMode.SYSTEM,
@@ -80,6 +92,7 @@ fun RafiqAlDhikrTheme(
         MaterialTheme(
             colorScheme = colors,
             typography = RafiqTypography,
+            shapes = RafiqShapes,
             content = content
         )
     }

@@ -30,7 +30,7 @@ fun DhikrOfTheDayCard() {
     val entry = entries[Math.floorMod(today.toEpochDay(), entries.size.toLong()).toInt()]
     var expanded by remember(entry.key) { mutableStateOf(false) }
 
-    RafiqCard(onClick = { expanded = !expanded }) {
+    RafiqCard(onClick = { expanded = !expanded }, ornament = true) {
         Text("ذكر اليوم — ${entry.title}", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(6.dp))
         Text(

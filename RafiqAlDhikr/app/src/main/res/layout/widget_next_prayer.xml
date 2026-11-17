@@ -14,21 +14,23 @@
         android:orientation="horizontal">
 
         <TextView
+        android:fontFamily="@font/amiri_regular"
             android:id="@+id/np_name"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="الصلاة القادمة"
-            android:textColor="#1B5E4A"
+            android:textColor="#0E4D3A"
             android:textSize="18sp"
             android:textStyle="bold" />
 
         <TextView
+        android:fontFamily="@font/amiri_regular"
             android:id="@+id/np_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="--:--"
-            android:textColor="#1B5E4A"
+            android:textColor="#0E4D3A"
             android:textSize="18sp"
             android:textStyle="bold" />
     </LinearLayout>
@@ -40,6 +42,7 @@
         android:orientation="horizontal">
 
         <TextView
+        android:fontFamily="@font/amiri_regular"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="بعد "
@@ -47,6 +50,7 @@
             android:textSize="14sp" />
 
         <Chronometer
+        android:fontFamily="@font/amiri_regular"
             android:id="@+id/np_countdown"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -62,31 +66,36 @@
         android:orientation="horizontal"
         android:weightSum="5">
 
-        <TextView android:id="@+id/np_fajr" android:layout_width="0dp"
+        <TextView
+        android:fontFamily="@font/amiri_regular" android:id="@+id/np_fajr" android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#2B2B2B"
             android:textSize="12sp" />
-        <TextView android:id="@+id/np_dhuhr" android:layout_width="0dp"
+        <TextView
+        android:fontFamily="@font/amiri_regular" android:id="@+id/np_dhuhr" android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#2B2B2B"
             android:textSize="12sp" />
-        <TextView android:id="@+id/np_asr" android:layout_width="0dp"
+        <TextView
+        android:fontFamily="@font/amiri_regular" android:id="@+id/np_asr" android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#2B2B2B"
             android:textSize="12sp" />
-        <TextView android:id="@+id/np_maghrib" android:layout_width="0dp"
+        <TextView
+        android:fontFamily="@font/amiri_regular" android:id="@+id/np_maghrib" android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
             android:textColor="#2B2B2B"
             android:textSize="12sp" />
-        <TextView android:id="@+id/np_isha" android:layout_width="0dp"
+        <TextView
+        android:fontFamily="@font/amiri_regular" android:id="@+id/np_isha" android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"

@@ -10,16 +10,18 @@
     android:padding="12dp">
 
     <TextView
+        android:fontFamily="@font/amiri_regular"
         android:id="@+id/tasbeeh_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text="المسبحة"
-        android:textColor="#1B5E4A"
+        android:textColor="#0E4D3A"
         android:textSize="15sp"
         android:textStyle="bold" />
 
     <TextView
+        android:fontFamily="@font/amiri_regular"
         android:id="@+id/tasbeeh_count"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -30,6 +32,7 @@
         android:textStyle="bold" />
 
     <Button
+        android:fontFamily="@font/amiri_regular"
         android:id="@+id/tasbeeh_plus"
         android:layout_width="match_parent"
         android:layout_height="44dp"

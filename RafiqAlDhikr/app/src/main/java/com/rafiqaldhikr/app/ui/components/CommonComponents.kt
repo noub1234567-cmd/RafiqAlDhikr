@@ -54,6 +54,7 @@ fun RafiqTopBar(
     onBackClick: (() -> Unit)? = null,
     actions: @Composable () -> Unit = {}
 ) {
+    Column {
     CenterAlignedTopAppBar(
         title = {
             Text(
@@ -113,6 +114,8 @@ fun RafiqTopBar(
             containerColor = MaterialTheme.colorScheme.background
         )
     )
+    OrnamentDivider()
+    }
 }
 
 @Composable
@@ -120,6 +123,8 @@ fun RafiqCard(
     modifier: Modifier = Modifier,
     containerColor: Color = MaterialTheme.colorScheme.surfaceContainerLow,
     onClick: (() -> Unit)? = null,
+    /** Adds the faint geometric star pattern behind the content (for the few hero cards). */
+    ornament: Boolean = false,
     content: @Composable ColumnScope.() -> Unit
 ) {
     val cardModifier = if (onClick != null) {
@@ -129,12 +134,14 @@ fun RafiqCard(
     }
     Card(
         modifier = cardModifier,
-        shape = RoundedCornerShape(18.dp),
+        shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = containerColor),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.7f))
     ) {
+        val patternColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.10f)
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = (if (ornament) Modifier.islamicPattern(patternColor) else Modifier).padding(16.dp),
             content = content
         )
     }
