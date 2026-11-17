@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Apps
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CalendarMonth
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material3.Icon
@@ -73,7 +74,7 @@ private val bottomTabs = listOf(
     BottomTab(NavRoute.Dashboard, Icons.Default.Home),
     BottomTab(NavRoute.Adhkar, Icons.Default.AutoAwesome),
     BottomTab(NavRoute.Quran, Icons.Default.MenuBook),
-    BottomTab(NavRoute.Fasting, Icons.Default.CalendarMonth),
+    BottomTab(NavRoute.DuaHub, Icons.Default.Favorite),
     BottomTab(NavRoute.More, Icons.Default.Apps)
 )
 
@@ -89,7 +90,8 @@ fun RafiqNavHost(container: AppContainer) {
     var showProfileSheet by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
 
-    val showBottomBar = currentRoute in bottomTabs.map { it.navRoute.route }
+    // Fasting lost its tab to the du'a hub but keeps the bar (nothing selected) so it feels the same to reach and leave.
+    val showBottomBar = currentRoute in bottomTabs.map { it.navRoute.route } || currentRoute == NavRoute.Fasting.route
 
     val navigateToRoute: (String) -> Unit = { route ->
         if (route in bottomTabs.map { it.navRoute.route }) {
@@ -145,6 +147,18 @@ fun RafiqNavHost(container: AppContainer) {
                         viewModel = vm,
                         onOpenProfileSwitcher = { showProfileSheet = true },
                         onOpenMemorization = { navigateToRoute(NavRoute.Memorization.route) }
+                    )
+                }
+                composable(NavRoute.DuaHub.route) {
+                    com.rafiqaldhikr.app.ui.screens.dualibrary.DuaHubScreen(
+                        onOpenSection = { navController.navigate(NavRoute.DuaSection.create(it)) { launchSingleTop = true } },
+                        onOpenPersonalNotebook = { navController.navigate(NavRoute.Dua.route) { launchSingleTop = true } }
+                    )
+                }
+                composable(NavRoute.DuaSection.route) { entry ->
+                    com.rafiqaldhikr.app.ui.screens.dualibrary.DuaSectionScreen(
+                        sectionId = entry.arguments?.getString("id").orEmpty(),
+                        onBack = { navController.popBackStack() }
                     )
                 }
                 composable(NavRoute.Fasting.route) {
