@@ -33,7 +33,7 @@ fun RamadanCard(status: RamadanStatus, onClick: () -> Unit) {
             delay(20_000)
         }
     }
-    RafiqCard(containerColor = MaterialTheme.colorScheme.tertiaryContainer, onClick = onClick) {
+    RafiqCard(containerColor = MaterialTheme.colorScheme.tertiaryContainer, onClick = onClick, ornament = true) {
         when (status) {
             is RamadanStatus.Before ->
                 Text("يبقى ${status.daysUntil} يوماً على رمضان", style = MaterialTheme.typography.titleMedium)

@@ -26,7 +26,7 @@ fun NextPrayerCard(onClick: () -> Unit) {
     }
     val next = PrayerSettings.nextPrayer(context, now)
 
-    RafiqCard(onClick = onClick) {
+    RafiqCard(onClick = onClick, ornament = true) {
         if (next == null) {
             Text("مواقيت الصلاة غير متاحة لهذه المدينة", style = MaterialTheme.typography.bodyMedium)
             return@RafiqCard
