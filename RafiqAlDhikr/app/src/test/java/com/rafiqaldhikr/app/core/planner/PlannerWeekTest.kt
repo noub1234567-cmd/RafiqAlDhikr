@@ -75,3 +75,16 @@ class PlannerWeekTest {
         assertEquals("", PlannerWeek.formatTime(-1))
     }
 }
+
+class PlannerMergeTest {
+    @Test fun mergeSumsSameWorship() {
+        val merged = PlannerReports.merge(
+            listOf(
+                listOf(ReportLine("ورد", "QURAN", 3, 2), ReportLine("صدقة", "CHARITY", 1, 1)),
+                listOf(ReportLine("ورد ", "QURAN", 2, 2))
+            )
+        )
+        assertEquals(ReportLine("ورد", "QURAN", 5, 4), merged[0])
+        assertEquals(ReportLine("صدقة", "CHARITY", 1, 1), merged[1])
+    }
+}

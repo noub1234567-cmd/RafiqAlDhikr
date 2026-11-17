@@ -16,7 +16,8 @@ import java.time.LocalDate
 
 class PlannerRepository(
     private val database: AppDatabase,
-    private val scheduler: ReminderScheduler
+    private val scheduler: ReminderScheduler,
+    private val context: android.content.Context
 ) {
     private val dao = database.plannerDao()
     private val mutex = Mutex()
@@ -165,10 +166,44 @@ class PlannerRepository(
             if (latest != null && latest.autoRepeat && dao.getWeek(profile.id, currentStart) == null) {
                 copyInto(latest, currentStart, autoRepeat = true)
             }
+            archiveMonths(profile.id, currentStart)
             // Empty finished weeks and anything older than the latest are no longer needed.
             past.forEach { week ->
                 if (week.id != latest?.id || dao.getSlotsForWeek(week.id).isEmpty()) dao.deleteWeek(week.id)
             }
+        }
+    }
+
+    /**
+     * Once 30 days have passed since the first archived week (and a new week has begun), merges the
+     * weekly reports of that period into one monthly report. Weekly reports are kept.
+     */
+    private suspend fun archiveMonths(profileId: Long, currentStart: Long) {
+        val prefs = context.getSharedPreferences("planner_state", android.content.Context.MODE_PRIVATE)
+        val key = "month_end_$profileId"
+        val weeks = dao.getReports(profileId, KIND_WEEK)
+        var lastEnd = maxOf(
+            prefs.getLong(key, Long.MIN_VALUE),
+            dao.getReports(profileId, KIND_MONTH).maxOfOrNull { it.endEpochDay } ?: Long.MIN_VALUE
+        )
+        while (true) {
+            val pending = weeks.filter { it.startEpochDay > lastEnd }
+            val periodStart = pending.minOfOrNull { it.startEpochDay } ?: break
+            if (currentStart < periodStart + PlannerReports.MONTH_DAYS) break
+            val inPeriod = pending.filter { it.startEpochDay < periodStart + PlannerReports.MONTH_DAYS }
+            val lines = PlannerReports.merge(inPeriod.map { r ->
+                runCatching { json.decodeFromString<List<com.rafiqaldhikr.app.core.planner.ReportLine>>(r.summaryJson) }
+                    .getOrDefault(emptyList())
+            })
+            val end = periodStart + PlannerReports.MONTH_DAYS - 1
+            dao.insertReport(
+                PlannerReportEntity(
+                    profileId = profileId, kind = KIND_MONTH, startEpochDay = periodStart, endEpochDay = end,
+                    summaryJson = json.encodeToString(lines), createdAtMillis = System.currentTimeMillis()
+                )
+            )
+            lastEnd = end
+            prefs.edit().putLong(key, end).apply()
         }
     }
 

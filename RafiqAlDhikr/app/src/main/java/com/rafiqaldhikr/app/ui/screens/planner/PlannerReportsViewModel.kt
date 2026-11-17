@@ -30,7 +30,8 @@ data class PlannerReportsUiState(
     val activeProfile: UserProfileEntity? = null,
     /** Live summary of the week in progress (null when there is no table this week). */
     val current: ReportItem? = null,
-    val reports: List<ReportItem> = emptyList()
+    val reports: List<ReportItem> = emptyList(),
+    val months: List<ReportItem> = emptyList()
 )
 
 @OptIn(ExperimentalCoroutinesApi::class)
@@ -52,7 +53,7 @@ class PlannerReportsViewModel(private val container: AppContainer) : ViewModel()
                     )
                 }
             }
-            val reportsFlow = repo.observeReports(profile.id, PlannerRepository.KIND_WEEK).map { list ->
+            fun items(kind: String) = repo.observeReports(profile.id, kind).map { list ->
                 list.map { r ->
                     ReportItem(
                         r.id, r.startEpochDay, r.endEpochDay,
@@ -60,7 +61,9 @@ class PlannerReportsViewModel(private val container: AppContainer) : ViewModel()
                     )
                 }
             }
-            combine(currentFlow, reportsFlow) { cur, reps -> PlannerReportsUiState(profile, cur, reps) }
+            combine(currentFlow, items(PlannerRepository.KIND_WEEK), items(PlannerRepository.KIND_MONTH)) { cur, reps, months ->
+                PlannerReportsUiState(profile, cur, reps, months)
+            }
         }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), PlannerReportsUiState())
 
