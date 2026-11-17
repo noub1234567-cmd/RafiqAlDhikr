@@ -75,7 +75,7 @@ private const val MAX_SCALE = 2.2f
 private class EditorTarget(val row: Int, val day: Int, val slot: PlannerSlotEntity?)
 
 @Composable
-fun PlannerScreen(viewModel: PlannerViewModel, onBack: () -> Unit) {
+fun PlannerScreen(viewModel: PlannerViewModel, onBack: () -> Unit, onOpenReports: () -> Unit) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val confirm = rememberConfirm()
     ConfirmHost(confirm)
@@ -83,7 +83,12 @@ fun PlannerScreen(viewModel: PlannerViewModel, onBack: () -> Unit) {
     var editor by remember { mutableStateOf<EditorTarget?>(null) }
     val week = state.week
 
-    Scaffold(topBar = { RafiqTopBar(title = "جدول العبادات الأسبوعي", onBackClick = onBack) }) { padding ->
+    Scaffold(topBar = { RafiqTopBar(
+            title = "جدول العبادات الأسبوعي",
+            onBackClick = onBack,
+            actions = { TextButton(onClick = onOpenReports) { Text("التقارير") } }
+        )
+    }) { padding ->
         if (week == null) {
             NewWeekCard(
                 enabled = state.activeProfile != null,
