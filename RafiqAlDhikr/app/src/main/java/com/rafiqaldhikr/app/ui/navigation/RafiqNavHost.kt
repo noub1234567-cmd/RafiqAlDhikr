@@ -229,7 +229,15 @@ fun RafiqNavHost(container: AppContainer) {
                 }
                 composable(NavRoute.Planner.route) {
                     val vm: com.rafiqaldhikr.app.ui.screens.planner.PlannerViewModel = viewModel(factory = factory)
-                    com.rafiqaldhikr.app.ui.screens.planner.PlannerScreen(viewModel = vm, onBack = { navController.popBackStack() })
+                    com.rafiqaldhikr.app.ui.screens.planner.PlannerScreen(
+                        viewModel = vm,
+                        onBack = { navController.popBackStack() },
+                        onOpenReports = { navController.navigate(NavRoute.PlannerReports.route) }
+                    )
+                }
+                composable(NavRoute.PlannerReports.route) {
+                    val vm: com.rafiqaldhikr.app.ui.screens.planner.PlannerReportsViewModel = viewModel(factory = factory)
+                    com.rafiqaldhikr.app.ui.screens.planner.PlannerReportsScreen(viewModel = vm, onBack = { navController.popBackStack() })
                 }
                 composable(NavRoute.PrayerTracker.route) {
                     val vm: PrayerTrackerViewModel = viewModel(factory = factory)
