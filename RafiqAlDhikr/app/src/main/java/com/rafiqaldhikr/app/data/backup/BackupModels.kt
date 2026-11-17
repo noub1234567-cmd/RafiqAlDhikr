@@ -45,7 +45,16 @@ data class BackupPayload(
     val prayerLogs: List<PrayerLogEntity> = emptyList(),
     @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
-    val khatmas: List<com.rafiqaldhikr.app.data.local.db.entities.KhatmaEntity> = emptyList()
+    val khatmas: List<com.rafiqaldhikr.app.data.local.db.entities.KhatmaEntity> = emptyList(),
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val plannerWeeks: List<com.rafiqaldhikr.app.data.local.db.entities.PlannerWeekEntity> = emptyList(),
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val plannerSlots: List<com.rafiqaldhikr.app.data.local.db.entities.PlannerSlotEntity> = emptyList(),
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val plannerReports: List<com.rafiqaldhikr.app.data.local.db.entities.PlannerReportEntity> = emptyList()
 )
 
 @Serializable

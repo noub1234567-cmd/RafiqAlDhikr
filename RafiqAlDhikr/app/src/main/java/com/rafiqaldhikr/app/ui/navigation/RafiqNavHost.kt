@@ -227,6 +227,10 @@ fun RafiqNavHost(container: AppContainer) {
                     val vm: com.rafiqaldhikr.app.ui.screens.khatma.KhatmaViewModel = viewModel(factory = factory)
                     com.rafiqaldhikr.app.ui.screens.khatma.KhatmaScreen(viewModel = vm, onBack = { navController.popBackStack() })
                 }
+                composable(NavRoute.Planner.route) {
+                    val vm: com.rafiqaldhikr.app.ui.screens.planner.PlannerViewModel = viewModel(factory = factory)
+                    com.rafiqaldhikr.app.ui.screens.planner.PlannerScreen(viewModel = vm, onBack = { navController.popBackStack() })
+                }
                 composable(NavRoute.PrayerTracker.route) {
                     val vm: PrayerTrackerViewModel = viewModel(factory = factory)
                     PrayerTrackerScreen(viewModel = vm, onBack = { navController.popBackStack() })

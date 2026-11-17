@@ -12,6 +12,7 @@ import com.rafiqaldhikr.app.data.local.db.dao.DuaDao
 import com.rafiqaldhikr.app.data.local.db.dao.FastingDao
 import com.rafiqaldhikr.app.data.local.db.dao.MemorizationDao
 import com.rafiqaldhikr.app.data.local.db.dao.KhatmaDao
+import com.rafiqaldhikr.app.data.local.db.dao.PlannerDao
 import com.rafiqaldhikr.app.data.local.db.dao.PrayerLogDao
 import com.rafiqaldhikr.app.data.local.db.dao.ProfileDao
 import com.rafiqaldhikr.app.data.local.db.dao.QuranDao
@@ -27,6 +28,9 @@ import com.rafiqaldhikr.app.data.local.db.entities.FastingDayEntity
 import com.rafiqaldhikr.app.data.local.db.entities.MemorizationPlanEntity
 import com.rafiqaldhikr.app.data.local.db.entities.MemorizationSessionEntity
 import com.rafiqaldhikr.app.data.local.db.entities.KhatmaEntity
+import com.rafiqaldhikr.app.data.local.db.entities.PlannerReportEntity
+import com.rafiqaldhikr.app.data.local.db.entities.PlannerSlotEntity
+import com.rafiqaldhikr.app.data.local.db.entities.PlannerWeekEntity
 import com.rafiqaldhikr.app.data.local.db.entities.PrayerLogEntity
 import com.rafiqaldhikr.app.data.local.db.entities.QuranGoalEntity
 import com.rafiqaldhikr.app.data.local.db.entities.QuranReadingLogEntity
@@ -54,9 +58,12 @@ import com.rafiqaldhikr.app.data.local.db.entities.WorshipActivityEntity
         DuaEntryEntity::class,
         SeasonalSelectionEntity::class,
         PrayerLogEntity::class,
-        KhatmaEntity::class
+        KhatmaEntity::class,
+        PlannerWeekEntity::class,
+        PlannerSlotEntity::class,
+        PlannerReportEntity::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -72,6 +79,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun seasonalDao(): SeasonalDao
     abstract fun prayerLogDao(): PrayerLogDao
     abstract fun khatmaDao(): KhatmaDao
+    abstract fun plannerDao(): PlannerDao
 
     companion object {
         const val DATABASE_NAME = "rafiq_al_dhikr.db"
@@ -91,6 +99,49 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL(KHATMAS_INDEX_SQL)
             }
         }
+
+        /** Version 4 adds the weekly planner tables; existing data is untouched. */
+        val MIGRATION_3_4 = object : Migration(3, 4) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(PLANNER_WEEKS_CREATE_SQL)
+                db.execSQL(PLANNER_WEEKS_INDEX_SQL)
+                db.execSQL(PLANNER_SLOTS_CREATE_SQL)
+                db.execSQL(PLANNER_SLOTS_INDEX_SQL)
+                db.execSQL(PLANNER_REPORTS_CREATE_SQL)
+                db.execSQL(PLANNER_REPORTS_INDEX_SQL)
+            }
+        }
+
+        const val PLANNER_WEEKS_CREATE_SQL =
+            "CREATE TABLE IF NOT EXISTS `planner_weeks` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`profileId` INTEGER NOT NULL, `weekStartEpochDay` INTEGER NOT NULL, `rowCount` INTEGER NOT NULL, " +
+                "`autoRepeat` INTEGER NOT NULL, FOREIGN KEY(`profileId`) REFERENCES `user_profiles`(`id`) " +
+                "ON UPDATE NO ACTION ON DELETE CASCADE )"
+
+        const val PLANNER_WEEKS_INDEX_SQL =
+            "CREATE UNIQUE INDEX IF NOT EXISTS `index_planner_weeks_profileId_weekStartEpochDay` " +
+                "ON `planner_weeks` (`profileId`, `weekStartEpochDay`)"
+
+        const val PLANNER_SLOTS_CREATE_SQL =
+            "CREATE TABLE IF NOT EXISTS `planner_slots` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`weekId` INTEGER NOT NULL, `rowIndex` INTEGER NOT NULL, `dayIndex` INTEGER NOT NULL, " +
+                "`title` TEXT NOT NULL, `type` TEXT NOT NULL, `timeMinutes` INTEGER NOT NULL, " +
+                "`groupId` INTEGER NOT NULL, `doneAtMillis` INTEGER NOT NULL, " +
+                "FOREIGN KEY(`weekId`) REFERENCES `planner_weeks`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )"
+
+        const val PLANNER_SLOTS_INDEX_SQL =
+            "CREATE UNIQUE INDEX IF NOT EXISTS `index_planner_slots_weekId_rowIndex_dayIndex` " +
+                "ON `planner_slots` (`weekId`, `rowIndex`, `dayIndex`)"
+
+        const val PLANNER_REPORTS_CREATE_SQL =
+            "CREATE TABLE IF NOT EXISTS `planner_reports` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`profileId` INTEGER NOT NULL, `kind` TEXT NOT NULL, `startEpochDay` INTEGER NOT NULL, " +
+                "`endEpochDay` INTEGER NOT NULL, `summaryJson` TEXT NOT NULL, `createdAtMillis` INTEGER NOT NULL, " +
+                "FOREIGN KEY(`profileId`) REFERENCES `user_profiles`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )"
+
+        const val PLANNER_REPORTS_INDEX_SQL =
+            "CREATE UNIQUE INDEX IF NOT EXISTS `index_planner_reports_profileId_kind_startEpochDay` " +
+                "ON `planner_reports` (`profileId`, `kind`, `startEpochDay`)"
 
         const val KHATMAS_CREATE_SQL =
             "CREATE TABLE IF NOT EXISTS `khatmas` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
@@ -117,7 +168,7 @@ abstract class AppDatabase : RoomDatabase() {
                 AppDatabase::class.java,
                 DATABASE_NAME
             )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
                 .build()
         }
     }
