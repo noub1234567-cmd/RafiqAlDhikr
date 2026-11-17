@@ -42,6 +42,8 @@ class AppViewModelFactory(private val container: AppContainer) : ViewModelProvid
                 com.rafiqaldhikr.app.ui.screens.ramadan.RamadanViewModel(container)
             com.rafiqaldhikr.app.ui.screens.khatma.KhatmaViewModel::class.java ->
                 com.rafiqaldhikr.app.ui.screens.khatma.KhatmaViewModel(container)
+            com.rafiqaldhikr.app.ui.screens.planner.PlannerViewModel::class.java ->
+                com.rafiqaldhikr.app.ui.screens.planner.PlannerViewModel(container)
             SettingsViewModel::class.java -> SettingsViewModel(container)
             else -> throw IllegalArgumentException("Unknown ViewModel class: ${modelClass.name}")
         } as T

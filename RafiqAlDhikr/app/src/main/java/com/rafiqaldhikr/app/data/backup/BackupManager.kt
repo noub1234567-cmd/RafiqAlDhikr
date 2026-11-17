@@ -84,16 +84,20 @@ object BackupCodec {
             parsed.payload.tasbeehLogs.any { it.profileId !in profileIds } ||
             parsed.payload.seasonalSelections.any { it.profileId !in profileIds } ||
             parsed.payload.prayerLogs.any { it.profileId !in profileIds } ||
-            parsed.payload.khatmas.any { it.profileId !in profileIds }
+            parsed.payload.khatmas.any { it.profileId !in profileIds } ||
+            parsed.payload.plannerWeeks.any { it.profileId !in profileIds } ||
+            parsed.payload.plannerReports.any { it.profileId !in profileIds }
 
         val activityIds = parsed.payload.worshipActivities.map { it.id }.toSet()
         val adhkarIds = parsed.payload.adhkarEntries.map { it.id }.toSet()
         val planIds = parsed.payload.memorizationPlans.map { it.id }.toSet()
         val tasbeehIds = parsed.payload.tasbeehTypes.map { it.id }.toSet()
+        val plannerWeekIds = parsed.payload.plannerWeeks.map { it.id }.toSet()
         val hasBrokenLink = parsed.payload.activityLogs.any { it.activityId !in activityIds } ||
             parsed.payload.adhkarProgress.any { it.adhkarEntryId !in adhkarIds } ||
             parsed.payload.memorizationSessions.any { it.planId !in planIds } ||
-            parsed.payload.tasbeehLogs.any { it.tasbeehTypeId !in tasbeehIds }
+            parsed.payload.tasbeehLogs.any { it.tasbeehTypeId !in tasbeehIds } ||
+            parsed.payload.plannerSlots.any { it.weekId !in plannerWeekIds }
         if (hasBrokenLink) {
             return BackupValidationResult.Invalid("بنية الملف غير متسقة (سجلات مرتبطة بعناصر غير موجودة).")
         }
@@ -130,7 +134,10 @@ class BackupManager(
             duaEntries = database.duaDao().getAll(),
             seasonalSelections = database.seasonalDao().getAll(),
             prayerLogs = database.prayerLogDao().getAll(),
-            khatmas = database.khatmaDao().getAll()
+            khatmas = database.khatmaDao().getAll(),
+            plannerWeeks = database.plannerDao().getAllWeeks(),
+            plannerSlots = database.plannerDao().getAllSlots(),
+            plannerReports = database.plannerDao().getAllReports()
         )
         val settings = preferences.getSnapshot()
         return BackupCodec.encodeBackup(payload, settings)
@@ -185,6 +192,9 @@ class BackupManager(
             database.seasonalDao().insertAll(p.seasonalSelections)
             database.prayerLogDao().insertAll(p.prayerLogs)
             database.khatmaDao().insertAll(p.khatmas)
+            database.plannerDao().insertAllWeeks(p.plannerWeeks)
+            database.plannerDao().insertAllSlots(p.plannerSlots)
+            database.plannerDao().insertAllReports(p.plannerReports)
         }
 
         val targetActiveProfile = p.profiles.firstOrNull { it.id == backup.settings.activeProfileId }?.id

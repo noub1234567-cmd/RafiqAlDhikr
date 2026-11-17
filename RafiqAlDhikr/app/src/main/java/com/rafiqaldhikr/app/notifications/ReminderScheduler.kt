@@ -39,6 +39,9 @@ class ReminderScheduler(
         const val KIND_FASTING = "fasting"
         const val KIND_SEASONAL = "seasonal"
         const val KIND_RESCHEDULED = "rescheduled"
+        const val KIND_PLANNER = "planner"
+        /** targetId of the silent alarm that turns the weekly table over. */
+        const val PLANNER_ROLLOVER_ID = -1L
     }
 
     private val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -108,7 +111,57 @@ class ReminderScheduler(
 
         // 8. Friday / Monday-Thursday / white-days reminders
         scheduleSpecialAlarms(now)
+
+        // 9. Weekly planner slots + the weekly rollover alarm
+        schedulePlannerAlarms(now)
     }
+
+    /** Arms every planner slot of the current and later weeks, and the weekly rollover. */
+    suspend fun schedulePlannerAlarms(now: Long = System.currentTimeMillis()) {
+        val currentStart = com.rafiqaldhikr.app.core.planner.PlannerWeek
+            .weekStart(LocalDate.now()).toEpochDay()
+        val dao = database.plannerDao()
+        dao.getWeeksFrom(currentStart).forEach { week ->
+            dao.getSlotsForWeek(week.id).forEach { schedulePlannerSlot(it, week, now) }
+        }
+        scheduleAlarm(
+            requestCode = requestCodeFor(KIND_PLANNER, PLANNER_ROLLOVER_ID),
+            triggerAtMillis = com.rafiqaldhikr.app.core.planner.PlannerWeek.nextBoundaryMillis(now),
+            kind = KIND_PLANNER,
+            targetId = PLANNER_ROLLOVER_ID,
+            profileId = -1L,
+            title = "جدول العبادات",
+            body = "أسبوع جديد",
+            soundMode = NotificationSoundMode.GENTLE_SOUND
+        )
+    }
+
+    fun schedulePlannerSlot(
+        slot: com.rafiqaldhikr.app.data.local.db.entities.PlannerSlotEntity,
+        week: com.rafiqaldhikr.app.data.local.db.entities.PlannerWeekEntity,
+        nowMillis: Long = System.currentTimeMillis()
+    ) {
+        val code = requestCodeFor(KIND_PLANNER, slot.id)
+        val trigger = com.rafiqaldhikr.app.core.planner.PlannerWeek
+            .triggerMillis(week.weekStartEpochDay, slot.dayIndex, slot.timeMinutes)
+        if (slot.doneAtMillis != 0L || trigger == null || trigger <= nowMillis) {
+            cancelAlarm(code)
+            return
+        }
+        val typeLabel = com.rafiqaldhikr.app.core.planner.PlannerType.fromKey(slot.type).labelAr
+        scheduleAlarm(
+            requestCode = code,
+            triggerAtMillis = trigger,
+            kind = KIND_PLANNER,
+            targetId = slot.id,
+            profileId = week.profileId,
+            title = "حان وقت: ${slot.title}",
+            body = "من جدولك الأسبوعي · $typeLabel",
+            soundMode = NotificationSoundMode.NORMAL
+        )
+    }
+
+    fun cancelPlannerSlot(slotId: Long) = cancelAlarm(requestCodeFor(KIND_PLANNER, slotId))
 
     fun scheduleSpecialAlarms(nowMillis: Long = System.currentTimeMillis()) {
         SpecialReminder.entries.forEach { scheduleSpecialAlarm(it, nowMillis) }
@@ -533,6 +586,9 @@ class ReminderScheduler(
         }
         database.seasonalDao().getAll().filter { it.profileId == profileId }.forEach {
             cancelAlarm(requestCodeFor(KIND_SEASONAL, it.id))
+        }
+        database.plannerDao().getSlotsByProfile(profileId).forEach {
+            cancelAlarm(requestCodeFor(KIND_PLANNER, it.id))
         }
     }
 

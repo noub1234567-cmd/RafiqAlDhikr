@@ -52,6 +52,14 @@ class ReminderReceiver : BroadcastReceiver() {
                     return@launch
                 }
 
+                if (kind == ReminderScheduler.KIND_PLANNER && targetId == ReminderScheduler.PLANNER_ROLLOVER_ID) {
+                    // Silent weekly turn-over of the planner table; no notification.
+                    app.container.plannerRepository.rolloverAll(LocalDate.now())
+                    app.container.reminderScheduler.schedulePlannerAlarms()
+                    AlarmDiagnostics.record(context, "جرى تدوير الجدول الأسبوعي")
+                    return@launch
+                }
+
                 if (kind == ReminderScheduler.KIND_ACTIVITY && activityId > 0L) {
                     val todayEpoch = LocalDate.now().toEpochDay()
                     val activity = db.worshipDao().getActivityById(activityId)
@@ -200,6 +208,9 @@ class ReminderReceiver : BroadcastReceiver() {
                 db.fastingDao().getByDate(profileId, targetId)?.let { it.reminderEnabled && !it.isCompleted } == true
             ReminderScheduler.KIND_SEASONAL ->
                 db.seasonalDao().getAll().any { it.id == targetId && it.isSelected && it.reminderEnabled }
+            ReminderScheduler.KIND_PLANNER ->
+                if (targetId == ReminderScheduler.PLANNER_ROLLOVER_ID) true
+                else db.plannerDao().getSlotById(targetId)?.let { it.doneAtMillis == 0L && it.timeMinutes >= 0 } == true
             ReminderScheduler.KIND_PRAYER ->
                 com.rafiqaldhikr.app.core.prayer.Prayer.entries.getOrNull(targetId.toInt())
                     ?.let { com.rafiqaldhikr.app.core.prayer.PrayerSettings.adhanEnabled(app, it) } == true

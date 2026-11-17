@@ -24,6 +24,7 @@ class BootAndUpdateReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 app.container.worshipRepository.evaluateMissedActivitiesForAllProfiles()
+                runCatching { app.container.plannerRepository.rolloverAll(java.time.LocalDate.now()) }
                 app.container.reminderScheduler.rescheduleAll()
                 MissedActivityWorker.enqueuePeriodic(context)
             } finally {

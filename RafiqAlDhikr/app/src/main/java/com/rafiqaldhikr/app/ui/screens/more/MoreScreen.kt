@@ -55,6 +55,7 @@ fun MoreScreen(
 ) {
     val items = listOf(
         MoreMenuItem("الصيام", "أيام الصيام والمناسبات والتتبع", Icons.Default.CalendarMonth, NavRoute.Fasting.route),
+        MoreMenuItem("جدول العبادات الأسبوعي", "جدول بصفوفك وأيام الأسبوع مع منبّه لكل خانة وتقرير بما أنجزت", Icons.Default.CalendarMonth, NavRoute.Planner.route),
         MoreMenuItem("السجل السنوي", "شبكة أيام سنتك لكل عبادة مع التحديات والأوسمة", Icons.Default.DateRange, NavRoute.YearLog.route),
         MoreMenuItem("رمضان", "الإمساكية وعدّ الإفطار والتراويح وختمة ٣٠ يوماً", Icons.Default.CheckCircle, NavRoute.Ramadan.route),
         MoreMenuItem("ختمة القرآن", "موضع القراءة بالسورة والآية والورد اليومي لإنهاء الختمة", Icons.Default.CheckCircle, NavRoute.Khatma.route),
