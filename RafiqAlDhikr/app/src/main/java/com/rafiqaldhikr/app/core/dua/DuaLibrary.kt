@@ -37,15 +37,17 @@ object DuaLibrary {
     const val PROPHET = "prophet"
     const val QURAN = "quran"
     const val CONDITIONS = "conditions"
+    const val VIRTUE = "virtue"
 
-    /** The six sections without their content, for showing the buttons immediately. */
+    /** The sections without their content, for showing the buttons immediately. */
     val skeleton: List<DuaSectionDef> = listOf(
         DuaSectionDef(LIBRARY, "المكتبة", "أدعية وأذكار المناسبات: الصلاة والبيت والسفر والأحوال"),
         DuaSectionDef(PRAISE, "حمد الله عز وجل والثناء عليه", "حمد الله وتمجيده والثناء عليه"),
         DuaSectionDef(ISTIGHFAR, "الاستغفار والتوبة", "صيغ الاستغفار وفضله"),
         DuaSectionDef(PROPHET, "جوامع أدعية النبي ﷺ", "ما ثبت من دعائه عليه الصلاة والسلام"),
         DuaSectionDef(QURAN, "أدعية من القرآن", "الأدعية الواردة في القرآن الكريم"),
-        DuaSectionDef(CONDITIONS, "هدي السلف في عبادة الدعاء", "آداب الدعاء وأسباب الإجابة وموانعها")
+        DuaSectionDef(CONDITIONS, "هدي السلف في عبادة الدعاء", "آداب الدعاء وأسباب الإجابة وموانعها"),
+        DuaSectionDef(VIRTUE, "فضل الدعاء", "أحاديث في فضل الذكر والدعاء مع بيان فضلها وتخريجها")
     )
 
     private val json = Json { ignoreUnknownKeys = true }

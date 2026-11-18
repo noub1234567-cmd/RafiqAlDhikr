@@ -48,9 +48,9 @@ class DuaLibraryTest {
         assertTrue(DuaLibrary.plain("رَبَّنَا آتِنَا").contains(DuaLibrary.plain("ربنا اتنا")))
     }
 
-    @Test fun sixSectionsWithUniqueIds() {
+    @Test fun sevenSectionsWithUniqueIds() {
         val ids = DuaLibrary.skeleton.map { it.id }
-        assertEquals(6, ids.size)
+        assertEquals(7, ids.size)
         assertEquals(ids.size, ids.toSet().size)
     }
 
@@ -75,5 +75,11 @@ class DuaLibraryTest {
         assertEquals("دعاء — البقرة 201", DuaLibrary.saveTitle(plain, DuaItem(text = "x", source = "البقرة 201")))
         assertEquals("ا ب ج د ه و…", DuaLibrary.saveTitle(plain, DuaItem(text = "((ا ب ج د ه و ز))")))
         assertEquals("عنوان", DuaLibrary.saveTitle(plain, DuaItem(title = "عنوان", text = "x")))
+    }
+
+    @Test fun virtueHasFiftyHadithsEachWithGradingAndVirtue() {
+        val items = load(DuaLibrary.VIRTUE).flatMap { it.items }
+        assertEquals(50, items.size)
+        assertTrue(items.all { it.source.startsWith("التخريج:") && it.note.startsWith("فضل") })
     }
 }
