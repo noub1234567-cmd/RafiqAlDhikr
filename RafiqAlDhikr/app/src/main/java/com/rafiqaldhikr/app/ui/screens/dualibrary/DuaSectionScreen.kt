@@ -28,13 +28,22 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.rafiqaldhikr.app.core.dua.DuaItem
 import com.rafiqaldhikr.app.core.dua.DuaLibrary
+import com.rafiqaldhikr.app.core.dua.DuaSectionDef
+import androidx.compose.runtime.produceState
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import com.rafiqaldhikr.app.ui.components.RafiqCard
 import com.rafiqaldhikr.app.ui.components.RafiqTopBar
 
 /** Reads one library section: search, collapsible chapters, and copy for each item. */
 @Composable
 fun DuaSectionScreen(sectionId: String, onBack: () -> Unit) {
-    val section = DuaLibrary.byId(sectionId)
+    val context = LocalContext.current
+    val loaded by produceState<List<DuaSectionDef>?>(null) {
+        value = withContext(Dispatchers.Default) { DuaLibrary.sections(context) }
+    }
+    val section = loaded?.let { DuaLibrary.byId(it, sectionId) }
     var query by remember { mutableStateOf("") }
     val expanded = remember { mutableStateMapOf<String, Boolean>() }
     val clipboard = LocalClipboardManager.current
@@ -42,6 +51,7 @@ fun DuaSectionScreen(sectionId: String, onBack: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
         RafiqTopBar(title = section?.title ?: "الأدعية", onBackClick = onBack)
 
+        if (loaded == null) return@Column
         if (section == null || section.itemCount == 0) {
             RafiqCard(modifier = Modifier.padding(16.dp)) {
                 Column(modifier = Modifier.padding(16.dp)) {
@@ -61,9 +71,14 @@ fun DuaSectionScreen(sectionId: String, onBack: () -> Unit) {
             modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
         )
         val q = query.trim()
-        val groups = section.groups.map { g ->
-            g to g.items.filter { q.isEmpty() || it.title.contains(q) || it.text.contains(q) }
-        }.filter { it.second.isNotEmpty() }
+        val groups = remember(section, q) {
+            val pq = DuaLibrary.plain(q)
+            section.groups.map { g ->
+                g to g.items.filter {
+                    pq.isEmpty() || DuaLibrary.plain(it.title).contains(pq) || DuaLibrary.plain(it.text).contains(pq)
+                }
+            }.filter { it.second.isNotEmpty() }
+        }
 
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
