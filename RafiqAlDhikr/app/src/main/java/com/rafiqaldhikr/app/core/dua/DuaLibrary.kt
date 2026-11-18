@@ -34,11 +34,11 @@ object DuaLibrary {
 
     val sections: List<DuaSectionDef> = listOf(
         DuaSectionDef(LIBRARY, "المكتبة", "أدعية وأذكار المناسبات: الصلاة والبيت والسفر والأحوال"),
-        DuaSectionDef(PRAISE, "الحمد والثناء", "حمد الله وتمجيده والثناء عليه"),
-        DuaSectionDef(ISTIGHFAR, "الاستغفار", "صيغ الاستغفار وفضله"),
-        DuaSectionDef(PROPHET, "أدعية الرسول ﷺ", "ما ثبت من دعائه عليه الصلاة والسلام"),
+        DuaSectionDef(PRAISE, "حمد الله عز وجل والثناء عليه", "حمد الله وتمجيده والثناء عليه"),
+        DuaSectionDef(ISTIGHFAR, "الاستغفار والتوبة", "صيغ الاستغفار وفضله"),
+        DuaSectionDef(PROPHET, "جوامع أدعية النبي ﷺ", "ما ثبت من دعائه عليه الصلاة والسلام"),
         DuaSectionDef(QURAN, "أدعية من القرآن", "الأدعية الواردة في القرآن الكريم"),
-        DuaSectionDef(CONDITIONS, "شروط الدعاء وكيفيته", "آداب الدعاء وأسباب الإجابة وموانعها")
+        DuaSectionDef(CONDITIONS, "هدي السلف في عبادة الدعاء", "آداب الدعاء وأسباب الإجابة وموانعها")
     )
 
     fun byId(id: String?): DuaSectionDef? = sections.firstOrNull { it.id == id }
