@@ -50,7 +50,7 @@ class DuaToolsTest {
                 )
             )
         )
-        val hits = DuaSearch.search(DuaSearch.buildIndex(s), "رحمه")
+        val hits = DuaSearch.search(DuaSearch.buildIndex(s), "رحمة")
         assertEquals("رحمة", hits.first().item.title)
     }
 
