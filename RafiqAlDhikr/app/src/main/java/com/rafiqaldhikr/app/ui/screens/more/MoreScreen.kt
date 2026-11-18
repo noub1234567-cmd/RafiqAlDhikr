@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.filled.VolunteerActivism
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -65,6 +66,9 @@ fun MoreScreen(
         MoreMenuItem("حفظ القرآن ومراجعته", "خطط الحفظ وجلسات المراجعة والتذكيرات المستقلة", Icons.Default.Book, NavRoute.Memorization.route),
         MoreMenuItem("المسبحة والاستغفار", "عدّاد إلكتروني وأذكار مخصصة وسجل يومي", Icons.Default.Fingerprint, NavRoute.Tasbeeh.route),
         MoreMenuItem("دفتر الأدعية الشخصي", "أدعيتك الخاصة والمفضلة والبحث المحلي", Icons.Default.VolunteerActivism, NavRoute.Dua.route),
+        MoreMenuItem("مفضلتي", "كل ما نجّمته من أذكار وأدعية في مكان واحد", Icons.Default.Star, NavRoute.Favorites.route),
+        MoreMenuItem("حفظ الأدعية", "راجع أدعيتك المحفوظة في مواعيد متباعدة تثبّتها في الذاكرة", Icons.Default.Book, NavRoute.DuaMemo.route),
+        MoreMenuItem("محاسبة النفس", "ثلاثة أسئلة قصيرة قبل النوم وسجل خاص على جهازك", Icons.Default.Checklist, NavRoute.NightReview.route),
         MoreMenuItem("العبادات والنوافل والأهداف", "الضحى، قيام الليل، الصدقة، الجمعة، والأهداف المخصصة", Icons.Default.Checklist, NavRoute.WorshipActs.route),
         MoreMenuItem("المواسم الإسلامية", "رمضان، عشر ذي الحجة، عرفة، عاشوراء، الأشهر الحرم", Icons.Default.EventAvailable, NavRoute.Seasons.route),
         MoreMenuItem("السجل (المكتمل والفائت)", "مراجعة العبادات وإعادة الجدولة دون إكمال تلقائي", Icons.Default.History, NavRoute.History.route),

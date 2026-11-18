@@ -82,6 +82,12 @@ object DuaLibrary {
         return words.take(6).joinToString(" ") + if (words.size > 6) "…" else ""
     }
 
+    /** A stable key for an item, from its text without tashkeel, used to recognise favorites and memorized items. */
+    fun itemKey(text: String): String {
+        val t = plain(text).trim()
+        return "${t.hashCode()}_${t.length}"
+    }
+
     fun byId(sections: List<DuaSectionDef>, id: String?): DuaSectionDef? = sections.firstOrNull { it.id == id }
 
     /** Removes tashkeel/tatweel and unifies alef forms so a plain search matches fully vowelled text. */

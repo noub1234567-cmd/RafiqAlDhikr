@@ -12,6 +12,7 @@ import com.rafiqaldhikr.app.data.local.db.dao.DuaDao
 import com.rafiqaldhikr.app.data.local.db.dao.FastingDao
 import com.rafiqaldhikr.app.data.local.db.dao.MemorizationDao
 import com.rafiqaldhikr.app.data.local.db.dao.KhatmaDao
+import com.rafiqaldhikr.app.data.local.db.dao.PersonalToolsDao
 import com.rafiqaldhikr.app.data.local.db.dao.PlannerDao
 import com.rafiqaldhikr.app.data.local.db.dao.PrayerLogDao
 import com.rafiqaldhikr.app.data.local.db.dao.ProfileDao
@@ -28,6 +29,9 @@ import com.rafiqaldhikr.app.data.local.db.entities.FastingDayEntity
 import com.rafiqaldhikr.app.data.local.db.entities.MemorizationPlanEntity
 import com.rafiqaldhikr.app.data.local.db.entities.MemorizationSessionEntity
 import com.rafiqaldhikr.app.data.local.db.entities.KhatmaEntity
+import com.rafiqaldhikr.app.data.local.db.entities.DuaFavoriteEntity
+import com.rafiqaldhikr.app.data.local.db.entities.DuaMemoEntity
+import com.rafiqaldhikr.app.data.local.db.entities.NightReviewEntity
 import com.rafiqaldhikr.app.data.local.db.entities.PlannerReportEntity
 import com.rafiqaldhikr.app.data.local.db.entities.PlannerSlotEntity
 import com.rafiqaldhikr.app.data.local.db.entities.PlannerWeekEntity
@@ -61,9 +65,12 @@ import com.rafiqaldhikr.app.data.local.db.entities.WorshipActivityEntity
         KhatmaEntity::class,
         PlannerWeekEntity::class,
         PlannerSlotEntity::class,
-        PlannerReportEntity::class
+        PlannerReportEntity::class,
+        DuaFavoriteEntity::class,
+        NightReviewEntity::class,
+        DuaMemoEntity::class
     ],
-    version = 4,
+    version = 5,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -80,6 +87,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun prayerLogDao(): PrayerLogDao
     abstract fun khatmaDao(): KhatmaDao
     abstract fun plannerDao(): PlannerDao
+    abstract fun personalToolsDao(): PersonalToolsDao
 
     companion object {
         const val DATABASE_NAME = "rafiq_al_dhikr.db"
@@ -111,6 +119,49 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL(PLANNER_REPORTS_INDEX_SQL)
             }
         }
+
+        /** Version 5 adds favorites, du'a memorization and the night review log; existing data is untouched. */
+        val MIGRATION_4_5 = object : Migration(4, 5) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(DUA_FAVORITES_CREATE_SQL)
+                db.execSQL(DUA_FAVORITES_INDEX_SQL)
+                db.execSQL(NIGHT_REVIEWS_CREATE_SQL)
+                db.execSQL(NIGHT_REVIEWS_INDEX_SQL)
+                db.execSQL(DUA_MEMOS_CREATE_SQL)
+                db.execSQL(DUA_MEMOS_INDEX_SQL)
+            }
+        }
+
+        const val DUA_FAVORITES_CREATE_SQL =
+            "CREATE TABLE IF NOT EXISTS `dua_favorites` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`profileId` INTEGER NOT NULL, `itemKey` TEXT NOT NULL, `title` TEXT NOT NULL, `text` TEXT NOT NULL, " +
+                "`source` TEXT NOT NULL, `createdAtMillis` INTEGER NOT NULL, FOREIGN KEY(`profileId`) " +
+                "REFERENCES `user_profiles`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )"
+
+        const val DUA_FAVORITES_INDEX_SQL =
+            "CREATE UNIQUE INDEX IF NOT EXISTS `index_dua_favorites_profileId_itemKey` " +
+                "ON `dua_favorites` (`profileId`, `itemKey`)"
+
+        const val NIGHT_REVIEWS_CREATE_SQL =
+            "CREATE TABLE IF NOT EXISTS `night_reviews` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`profileId` INTEGER NOT NULL, `dateEpochDay` INTEGER NOT NULL, `shortfall` TEXT NOT NULL, " +
+                "`good` TEXT NOT NULL, `forgiveness` TEXT NOT NULL, `updatedAtMillis` INTEGER NOT NULL, " +
+                "FOREIGN KEY(`profileId`) REFERENCES `user_profiles`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )"
+
+        const val NIGHT_REVIEWS_INDEX_SQL =
+            "CREATE UNIQUE INDEX IF NOT EXISTS `index_night_reviews_profileId_dateEpochDay` " +
+                "ON `night_reviews` (`profileId`, `dateEpochDay`)"
+
+        const val DUA_MEMOS_CREATE_SQL =
+            "CREATE TABLE IF NOT EXISTS `dua_memos` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`profileId` INTEGER NOT NULL, `itemKey` TEXT NOT NULL, `title` TEXT NOT NULL, `text` TEXT NOT NULL, " +
+                "`source` TEXT NOT NULL, `stage` INTEGER NOT NULL, `dueEpochDay` INTEGER NOT NULL, " +
+                "`lastEpochDay` INTEGER NOT NULL, `createdAtMillis` INTEGER NOT NULL, FOREIGN KEY(`profileId`) " +
+                "REFERENCES `user_profiles`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )"
+
+        const val DUA_MEMOS_INDEX_SQL =
+            "CREATE UNIQUE INDEX IF NOT EXISTS `index_dua_memos_profileId_itemKey` " +
+                "ON `dua_memos` (`profileId`, `itemKey`)"
 
         const val PLANNER_WEEKS_CREATE_SQL =
             "CREATE TABLE IF NOT EXISTS `planner_weeks` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
@@ -168,7 +219,7 @@ abstract class AppDatabase : RoomDatabase() {
                 AppDatabase::class.java,
                 DATABASE_NAME
             )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
                 .build()
         }
     }

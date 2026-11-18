@@ -169,6 +169,15 @@ fun RafiqNavHost(container: AppContainer) {
                         onBack = { navController.popBackStack() }
                     )
                 }
+                composable(NavRoute.Favorites.route) {
+                    com.rafiqaldhikr.app.ui.screens.tools.FavoritesScreen(onBack = { navController.popBackStack() })
+                }
+                composable(NavRoute.NightReview.route) {
+                    com.rafiqaldhikr.app.ui.screens.tools.NightReviewScreen(onBack = { navController.popBackStack() })
+                }
+                composable(NavRoute.DuaMemo.route) {
+                    com.rafiqaldhikr.app.ui.screens.tools.DuaMemoScreen(onBack = { navController.popBackStack() })
+                }
                 composable(NavRoute.Fasting.route) {
                     val vm: FastingViewModel = viewModel(factory = factory)
                     FastingScreen(

@@ -34,6 +34,7 @@ interface AppContainer {
     val prayerLogRepository: PrayerLogRepository
     val khatmaRepository: com.rafiqaldhikr.app.data.repository.KhatmaRepository
     val plannerRepository: com.rafiqaldhikr.app.data.repository.PlannerRepository
+    val personalToolsRepository: com.rafiqaldhikr.app.data.repository.PersonalToolsRepository
     val backupManager: BackupManager
 }
 
@@ -60,6 +61,9 @@ class AppContainerImpl(context: Context) : AppContainer {
     }
     override val plannerRepository: com.rafiqaldhikr.app.data.repository.PlannerRepository by lazy {
         com.rafiqaldhikr.app.data.repository.PlannerRepository(database, reminderScheduler, appContext)
+    }
+    override val personalToolsRepository: com.rafiqaldhikr.app.data.repository.PersonalToolsRepository by lazy {
+        com.rafiqaldhikr.app.data.repository.PersonalToolsRepository(database)
     }
     override val backupManager: BackupManager by lazy {
         BackupManager(appContext, database, preferences, reminderScheduler)
