@@ -104,6 +104,13 @@ object PrayerSettings {
         prefs(context).edit().putBoolean("adhan_${prayer.name}", value).apply()
     }
 
+    /** Whether the adhan recording plays when a prayer-time alert fires (on by default). */
+    fun adhanSoundEnabled(context: Context): Boolean = prefs(context).getBoolean("adhan_sound", true)
+
+    fun setAdhanSoundEnabled(context: Context, value: Boolean) {
+        prefs(context).edit().putBoolean("adhan_sound", value).apply()
+    }
+
     /** Minutes before the prayer at which the adhan reminder fires (0 = at the prayer time). */
     fun adhanLeadMinutes(context: Context): Int = prefs(context).getInt("adhan_lead", 0).coerceIn(0, 60)
 

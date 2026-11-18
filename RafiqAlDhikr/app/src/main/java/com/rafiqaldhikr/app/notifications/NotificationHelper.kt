@@ -24,6 +24,8 @@ object NotificationHelper {
     const val SUMMARY_NOTIFICATION_ID = -1001
     const val CHANNEL_NORMAL = "rafiq_reminders_normal"
     const val CHANNEL_GENTLE = "rafiq_reminders_gentle"
+    /** Same importance as the normal channel but without a sound, used while the adhan recording plays. */
+    const val CHANNEL_QUIET = "rafiq_reminders_quiet"
 
     const val ACTION_COMPLETE = "com.rafiqaldhikr.app.ACTION_COMPLETE"
     const val ACTION_SNOOZE_15 = "com.rafiqaldhikr.app.ACTION_SNOOZE_15"
@@ -68,7 +70,17 @@ object NotificationHelper {
             enableVibration(false)
         }
 
+        val quietChannel = NotificationChannel(
+            CHANNEL_QUIET,
+            "تنبيهات بلا صوت (أثناء الأذان)",
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply {
+            setSound(null, null)
+            enableVibration(false)
+        }
+
         manager.createNotificationChannel(normalChannel)
+        manager.createNotificationChannel(quietChannel)
         manager.createNotificationChannel(gentleChannel)
     }
 
@@ -80,7 +92,8 @@ object NotificationHelper {
         soundMode: NotificationSoundMode,
         activityId: Long = -1L,
         logId: Long = -1L,
-        profileId: Long = -1L
+        profileId: Long = -1L,
+        quiet: Boolean = false
     ) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             val granted = ContextCompat.checkSelfPermission(
@@ -104,7 +117,9 @@ object NotificationHelper {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val channelId = if (soundMode == NotificationSoundMode.GENTLE_SOUND) {
+        val channelId = if (quiet) {
+            CHANNEL_QUIET
+        } else if (soundMode == NotificationSoundMode.GENTLE_SOUND) {
             CHANNEL_GENTLE
         } else {
             CHANNEL_NORMAL

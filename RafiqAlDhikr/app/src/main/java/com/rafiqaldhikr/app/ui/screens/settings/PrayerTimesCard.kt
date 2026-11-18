@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Column
+import com.rafiqaldhikr.app.notifications.AdhanService
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -61,6 +63,7 @@ fun PrayerTimesCard() {
     var adhan by remember {
         mutableStateOf(PrayerSettings.fardPrayers.associateWith { PrayerSettings.adhanEnabled(context, it) })
     }
+    var adhanSound by remember { mutableStateOf(PrayerSettings.adhanSoundEnabled(context)) }
     var lead by remember { mutableStateOf(PrayerSettings.adhanLeadMinutes(context)) }
 
     val times = remember(cityIndex, method) { PrayerSettings.timesFor(context, LocalDate.now()) }
@@ -110,7 +113,7 @@ fun PrayerTimesCard() {
         Spacer(modifier = Modifier.height(12.dp))
         Text("تنبيه الأذان", style = MaterialTheme.typography.titleSmall)
         Text(
-            "إشعار عند موعد كل صلاة تختارها. هذا تذكير بالموعد وليس صوت الأذان.",
+            "إشعار عند موعد كل صلاة تختارها، ومعه صوت الأذان إن فعّلته أدناه.",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -131,6 +134,29 @@ fun PrayerTimesCard() {
                 )
             }
         }
+        Spacer(modifier = Modifier.height(6.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text("تشغيل صوت الأذان", style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    "يُشغَّل عند اختيار «عند الأذان» فقط، وبمستوى صوت المنبّه، ولا يُشغَّل في الوضع الصامت أو عدم الإزعاج.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Switch(
+                checked = adhanSound,
+                onCheckedChange = {
+                    adhanSound = it
+                    PrayerSettings.setAdhanSoundEnabled(context, it)
+                }
+            )
+        }
+        OutlinedButton(onClick = { AdhanService.start(context) }) { Text("تجربة صوت الأذان") }
         Spacer(modifier = Modifier.height(6.dp))
         Text("وقت التنبيه", style = MaterialTheme.typography.labelLarge)
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

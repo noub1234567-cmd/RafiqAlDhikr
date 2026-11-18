@@ -112,6 +112,9 @@ class ReminderReceiver : BroadcastReceiver() {
                     app.container.reminderScheduler.rescheduleOne(kind, targetId, profileId)
                 }
 
+                // At prayer time the adhan recording plays; the notification is then silent so it does not ring twice.
+                val adhanPlaying = kind == ReminderScheduler.KIND_PRAYER &&
+                    AdhanService.shouldPlay(context) && AdhanService.start(context)
                 NotificationHelper.showReminderNotification(
                     context = context,
                     notificationId = notificationId,
@@ -120,7 +123,8 @@ class ReminderReceiver : BroadcastReceiver() {
                     soundMode = soundMode,
                     activityId = resolvedActivityId,
                     logId = resolvedLogId,
-                    profileId = profileId
+                    profileId = profileId,
+                    quiet = adhanPlaying
                 )
                 AlarmDiagnostics.record(context, "نُشر الإشعار [$kind#$targetId] «$title»")
             } catch (t: Throwable) {
