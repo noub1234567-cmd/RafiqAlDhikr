@@ -118,6 +118,16 @@ fun DashboardScreen(
 
             item { com.rafiqaldhikr.app.ui.components.DhikrOfTheDayCard() }
             item {
+                val ctx = androidx.compose.ui.platform.LocalContext.current
+                val keys = remember { com.rafiqaldhikr.app.ui.screens.dualibrary.suggestedNowKeys(ctx) }
+                val label = com.rafiqaldhikr.app.core.dua.DuaNow.byKey(keys.firstOrNull())?.label.orEmpty()
+                RafiqCard(onClick = { onNavigate(NavRoute.DuaNow.route) }) {
+                    Text("ماذا أقول الآن؟", style = MaterialTheme.typography.titleMedium)
+                    if (label.isNotEmpty()) Text("المناسب لوقتك: $label", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                }
+            }
+            item { com.rafiqaldhikr.app.ui.components.DuaOfTheDayCards() }
+            item {
                 val day = java.time.LocalDate.now().dayOfWeek
                 if (day == java.time.DayOfWeek.FRIDAY || day == java.time.DayOfWeek.SATURDAY) {
                     com.rafiqaldhikr.app.ui.components.RafiqCard(onClick = { onNavigate(NavRoute.WeeklyReport.route) }) {

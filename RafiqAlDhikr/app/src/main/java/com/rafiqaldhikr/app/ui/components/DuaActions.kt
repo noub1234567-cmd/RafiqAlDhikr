@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BookmarkAdd
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -22,6 +23,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
 import com.rafiqaldhikr.app.RafiqApplication
+import com.rafiqaldhikr.app.core.share.ShareCard
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -71,6 +73,18 @@ fun DuaActionsRow(
             Icon(Icons.Default.BookmarkAdd, contentDescription = null, modifier = Modifier.size(16.dp))
             Spacer(Modifier.width(6.dp))
             Text("إلى أدعيتي", style = MaterialTheme.typography.labelLarge)
+        }
+        TextButton(onClick = {
+            scope.launch {
+                val chooser = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Default) {
+                    ShareCard.buildChooser(context, text, source)
+                }
+                runCatching { context.startActivity(chooser) }
+            }
+        }) {
+            Icon(Icons.Default.Image, contentDescription = null, modifier = Modifier.size(16.dp))
+            Spacer(Modifier.width(6.dp))
+            Text("صورة", style = MaterialTheme.typography.labelLarge)
         }
     }
 }
