@@ -14,6 +14,13 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.platform.LocalContext
+import com.rafiqaldhikr.app.core.share.ShareCard
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -32,6 +39,8 @@ fun WeeklyReportScreen(viewModel: WeeklyReportViewModel, onBack: () -> Unit) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val cur = state.thisWeek
     val last = state.lastWeek
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
 
     Scaffold(topBar = { RafiqTopBar(title = "تقرير الأسبوع", onBackClick = onBack) }) { padding ->
         LazyColumn(
@@ -49,6 +58,15 @@ fun WeeklyReportScreen(viewModel: WeeklyReportViewModel, onBack: () -> Unit) {
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
+                    TextButton(onClick = {
+                        val body = Rows(cur, last).joinToString("\n") { (label, a, _) -> "$label: $a" }
+                        scope.launch {
+                            val chooser = withContext(Dispatchers.Default) {
+                                ShareCard.buildChooser(context, body, "", header = "تقرير أسبوعي")
+                            }
+                            runCatching { context.startActivity(chooser) }
+                        }
+                    }) { Text("مشاركة كصورة") }
                 }
             }
             item {

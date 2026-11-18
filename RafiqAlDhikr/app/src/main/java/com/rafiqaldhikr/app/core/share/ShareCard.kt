@@ -22,7 +22,7 @@ object ShareCard {
     private const val MARGIN = 90
     private const val MAX_BODY_HEIGHT = 3200
 
-    fun render(context: Context, text: String, source: String): Bitmap {
+    fun render(context: Context, text: String, source: String, header: String = "رفيقك في الذكر"): Bitmap {
         val regular = ResourcesCompat.getFont(context, R.font.amiri_regular)
         val bold = ResourcesCompat.getFont(context, R.font.amiri_bold)
         val innerWidth = WIDTH - 2 * MARGIN
@@ -47,7 +47,7 @@ object ShareCard {
             body = layout(text, size, Color.parseColor("#1F2A24"), regular)
         }
         val src = if (source.isBlank()) null else layout(source, 36f, Color.parseColor("#6B7A70"), regular)
-        val title = layout("رفيقك في الذكر", 40f, Color.parseColor("#1B5E4B"), bold)
+        val title = layout(header, 40f, Color.parseColor("#1B5E4B"), bold)
 
         val gap = 60
         val height = MARGIN + title.height + gap + body.height + (src?.let { gap + it.height } ?: 0) + MARGIN
@@ -80,10 +80,10 @@ object ShareCard {
     }
 
     /** Renders the card, saves it in the app cache and returns the share chooser; falls back to plain text. Call off the main thread. */
-    fun buildChooser(context: Context, text: String, source: String): Intent {
+    fun buildChooser(context: Context, text: String, source: String, header: String = "رفيقك في الذكر"): Intent {
         val plain = if (source.isBlank()) text else "$text\n$source"
         val intent = runCatching {
-            val bmp = render(context, text, source)
+            val bmp = render(context, text, source, header)
             val dir = File(context.cacheDir, "shared").apply { mkdirs() }
             dir.listFiles()?.forEach { it.delete() }
             val file = File(dir, "dhikr_${System.currentTimeMillis()}.png")

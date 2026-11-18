@@ -154,7 +154,8 @@ fun RafiqNavHost(container: AppContainer) {
                         onOpenSection = { navController.navigate(NavRoute.DuaSection.create(it)) { launchSingleTop = true } },
                         onOpenPersonalNotebook = { navController.navigate(NavRoute.Dua.route) { launchSingleTop = true } },
                         onOpenSearch = { navController.navigate(NavRoute.DuaSearch.route) { launchSingleTop = true } },
-                        onOpenNow = { navController.navigate(NavRoute.DuaNow.route) { launchSingleTop = true } }
+                        onOpenNow = { navController.navigate(NavRoute.DuaNow.route) { launchSingleTop = true } },
+                        onOpenQuiz = { navController.navigate(NavRoute.DuaQuiz.route) { launchSingleTop = true } }
                     )
                 }
                 composable(NavRoute.DuaSearch.route) {
@@ -177,6 +178,12 @@ fun RafiqNavHost(container: AppContainer) {
                 }
                 composable(NavRoute.DuaMemo.route) {
                     com.rafiqaldhikr.app.ui.screens.tools.DuaMemoScreen(onBack = { navController.popBackStack() })
+                }
+                composable(NavRoute.Jumua.route) {
+                    com.rafiqaldhikr.app.ui.screens.tools.JumuaScreen(onBack = { navController.popBackStack() })
+                }
+                composable(NavRoute.DuaQuiz.route) {
+                    com.rafiqaldhikr.app.ui.screens.dualibrary.DuaQuizScreen(onBack = { navController.popBackStack() })
                 }
                 composable(NavRoute.Fasting.route) {
                     val vm: FastingViewModel = viewModel(factory = factory)
