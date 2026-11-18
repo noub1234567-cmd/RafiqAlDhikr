@@ -117,6 +117,19 @@ fun DashboardScreen(
             }
 
             item { com.rafiqaldhikr.app.ui.components.DhikrOfTheDayCard() }
+            item {
+                val day = java.time.LocalDate.now().dayOfWeek
+                if (day == java.time.DayOfWeek.FRIDAY || day == java.time.DayOfWeek.SATURDAY) {
+                    com.rafiqaldhikr.app.ui.components.RafiqCard(onClick = { onNavigate(NavRoute.WeeklyReport.route) }) {
+                        Text("تقرير أسبوعك جاهز", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            "اضغط لترى حصيلة صلاتك وأذكارك وقرآنك وجدولك هذا الأسبوع.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                }
+            }
 
             // Welcome & Hijri/Gregorian Dates Card
             item {

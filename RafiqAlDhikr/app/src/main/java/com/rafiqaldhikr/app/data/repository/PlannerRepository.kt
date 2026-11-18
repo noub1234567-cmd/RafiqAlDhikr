@@ -1,9 +1,13 @@
 package com.rafiqaldhikr.app.data.repository
 
+import com.rafiqaldhikr.app.core.model.ActivityStatus
+import com.rafiqaldhikr.app.core.planner.PlannerLog
 import com.rafiqaldhikr.app.core.planner.PlannerReports
 import com.rafiqaldhikr.app.core.planner.PlannerWeek
 import com.rafiqaldhikr.app.data.local.db.AppDatabase
+import com.rafiqaldhikr.app.data.local.db.entities.ActivityLogEntity
 import com.rafiqaldhikr.app.data.local.db.entities.PlannerReportEntity
+import com.rafiqaldhikr.app.data.local.db.entities.WorshipActivityEntity
 import com.rafiqaldhikr.app.data.local.db.entities.PlannerSlotEntity
 import com.rafiqaldhikr.app.data.local.db.entities.PlannerWeekEntity
 import com.rafiqaldhikr.app.notifications.ReminderScheduler
@@ -66,8 +70,10 @@ class PlannerRepository(
         val week = dao.getWeekById(weekId) ?: return@withLock
         val target = PlannerWeek.clampRows(rows)
         if (target < week.rowCount) {
-            dao.getSlotsForWeek(weekId).filter { it.rowIndex >= target }.forEach { scheduler.cancelPlannerSlot(it.id) }
+            val removed = dao.getSlotsForWeek(weekId).filter { it.rowIndex >= target }
+            removed.forEach { scheduler.cancelPlannerSlot(it.id) }
             dao.deleteSlotsFromRow(weekId, target)
+            removed.filter { it.doneAtMillis != 0L }.map { it.dayIndex }.toSet().forEach { syncDay(week, it) }
         }
         dao.setRowCount(weekId, target)
     }
@@ -107,6 +113,9 @@ class PlannerRepository(
         )).copy(title = cleanTitle, type = type, timeMinutes = time, rowIndex = rowIndex, dayIndex = dayIndex)
         val mainId = dao.upsertSlot(main)
         scheduler.schedulePlannerSlot(main.copy(id = if (main.id == 0L) mainId else main.id), week)
+        // A renamed or moved slot that was already done must move its log too.
+        if (existing != null && existing.doneAtMillis != 0L) syncDay(week, existing.dayIndex)
+        syncDay(week, dayIndex)
 
         extraDays.filter { it in 0 until PlannerWeek.DAYS && it != dayIndex && it !in taken }.forEach { day ->
             val copy = PlannerSlotEntity(
@@ -124,11 +133,64 @@ class PlannerRepository(
         dao.upsertSlot(updated)
         val week = dao.getWeekById(slot.weekId) ?: return@withLock
         scheduler.schedulePlannerSlot(updated, week)
+        syncDay(week, slot.dayIndex)
     }
 
     suspend fun deleteSlot(slotId: Long): Unit = mutex.withLock {
+        val slot = dao.getSlotById(slotId)
         scheduler.cancelPlannerSlot(slotId)
         dao.deleteSlot(slotId)
+        slot?.let { s -> dao.getWeekById(s.weekId)?.let { syncDay(it, s.dayIndex) } }
+    }
+
+    /**
+     * Makes the activity log of one day match the slots marked done: one COMPLETED log per distinct
+     * worship name, and no planner log for anything that is no longer done.
+     */
+    private suspend fun syncDay(week: PlannerWeekEntity, dayIndex: Int) {
+        val worship = database.worshipDao()
+        val date = week.weekStartEpochDay + dayIndex
+        val done = dao.getSlotsForWeek(week.id).filter { it.dayIndex == dayIndex && it.doneAtMillis != 0L }
+        val wanted = mutableSetOf<Long>()
+        done.forEach { s ->
+            val key = PlannerLog.templateKey(s.type, s.title)
+            val activity = worship.getActivityByTemplateKey(week.profileId, key) ?: run {
+                val id = worship.insertActivity(
+                    WorshipActivityEntity(
+                        profileId = week.profileId,
+                        templateKey = key,
+                        title = s.title.trim(),
+                        category = PlannerLog.category(s.type),
+                        isEnabled = false,
+                        reminderEnabled = false
+                    )
+                )
+                worship.getActivityById(id)
+            } ?: return@forEach
+            wanted += activity.id
+            val log = worship.getLogForActivityDay(week.profileId, activity.id, date)
+            if (log == null) {
+                worship.insertLog(
+                    ActivityLogEntity(
+                        profileId = week.profileId,
+                        activityId = activity.id,
+                        activityTitleSnapshot = s.title.trim(),
+                        categorySnapshot = PlannerLog.category(s.type),
+                        dateEpochDay = date,
+                        scheduledAtMillis = s.doneAtMillis,
+                        status = ActivityStatus.COMPLETED,
+                        completedAtMillis = s.doneAtMillis
+                    )
+                )
+            } else if (log.status != ActivityStatus.COMPLETED) {
+                worship.updateLog(log.copy(status = ActivityStatus.COMPLETED, completedAtMillis = s.doneAtMillis))
+            }
+        }
+        worship.getLogsForDay(week.profileId, date).forEach { log ->
+            if (log.activityId in wanted) return@forEach
+            val key = worship.getActivityById(log.activityId)?.templateKey ?: return@forEach
+            if (key.startsWith(PlannerLog.KEY_PREFIX)) worship.deleteLog(log)
+        }
     }
 
     fun observeReports(profileId: Long, kind: String): Flow<List<PlannerReportEntity>> =

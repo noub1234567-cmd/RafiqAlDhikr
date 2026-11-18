@@ -24,6 +24,7 @@ sealed class NavRoute(val route: String, val labelAr: String) {
     data object Khatma : NavRoute("khatma", "ختمة القرآن")
     data object Planner : NavRoute("planner", "جدول العبادات الأسبوعي")
     data object PlannerReports : NavRoute("planner_reports", "تقارير الجدول")
+    data object WeeklyReport : NavRoute("weekly_report", "تقرير الأسبوع")
     data object PrayerTracker : NavRoute("prayer_tracker", "متابعة الصلاة")
     data object Qibla : NavRoute("qibla", "اتجاه القبلة")
     data object Settings : NavRoute("settings", "الإعدادات")
