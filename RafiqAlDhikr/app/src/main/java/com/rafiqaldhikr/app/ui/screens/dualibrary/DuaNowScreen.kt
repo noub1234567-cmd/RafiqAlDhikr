@@ -5,6 +5,9 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -57,40 +60,33 @@ fun DuaNowScreen(onBack: () -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
         RafiqTopBar(title = "ماذا أقول الآن؟", onBackClick = onBack)
         if (data == null) return@Column
-        if (suggested.isNotEmpty()) {
-            Text(
-                "المناسب لوقتك الآن",
-                style = MaterialTheme.typography.titleSmall,
-                modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)
-            )
-            FlowRow(
-                modifier = Modifier.padding(horizontal = 16.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                suggested.mapNotNull { DuaNow.byKey(it) }.forEach { c ->
-                    FilterChip(selected = selected?.key == c.key, onClick = { chosen = c.key }, label = { Text(c.label) })
-                }
-            }
-        }
-        Text(
-            "مواقف أخرى",
-            style = MaterialTheme.typography.titleSmall,
-            modifier = Modifier.padding(start = 16.dp, end = 16.dp, top = 8.dp)
-        )
-        FlowRow(
-            modifier = Modifier.padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            DuaNow.contexts.filter { it.key !in suggested }.forEach { c ->
-                FilterChip(selected = selected?.key == c.key, onClick = { chosen = c.key }, label = { Text(c.label) })
-            }
-        }
         val groups = if (selected == null) emptyList() else DuaNow.groupsFor(library, selected)
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            item(key = "chips") {
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    if (suggested.isNotEmpty()) {
+                        Text("المناسب لوقتك الآن", style = MaterialTheme.typography.titleSmall)
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            suggested.mapNotNull { DuaNow.byKey(it) }.forEach { c ->
+                                FilterChip(selected = selected?.key == c.key, onClick = { chosen = c.key }, label = { Text(c.label) })
+                            }
+                        }
+                    }
+                    Text("مواقف أخرى", style = MaterialTheme.typography.titleSmall)
+                    Row(
+                        modifier = Modifier.horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        DuaNow.contexts.filter { it.key !in suggested }.forEach { c ->
+                            FilterChip(selected = selected?.key == c.key, onClick = { chosen = c.key }, label = { Text(c.label) })
+                        }
+                    }
+                }
+            }
             groups.forEach { g ->
                 item(key = "h_${g.title}") {
                     Text(g.title, style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary)
