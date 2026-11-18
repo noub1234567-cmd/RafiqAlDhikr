@@ -8,6 +8,8 @@ sealed class NavRoute(val route: String, val labelAr: String) {
     data object DuaSection : NavRoute("dua_section/{id}", "قسم الأدعية") {
         fun create(id: String) = "dua_section/$id"
     }
+    data object DuaSearch : NavRoute("dua_search", "بحث في الأذكار والأدعية")
+    data object DuaNow : NavRoute("dua_now", "ماذا أقول الآن؟")
     data object Fasting : NavRoute("fasting", "الصيام")
     data object More : NavRoute("more", "المزيد")
 

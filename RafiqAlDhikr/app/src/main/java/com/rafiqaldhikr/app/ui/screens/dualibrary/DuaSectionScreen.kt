@@ -111,7 +111,7 @@ fun DuaSectionScreen(sectionId: String, onBack: () -> Unit) {
 }
 
 @Composable
-private fun ItemCard(d: DuaItem, saveTitle: String, sectionTitle: String) {
+internal fun ItemCard(d: DuaItem, saveTitle: String, sectionTitle: String) {
     RafiqCard {
         Column(modifier = Modifier.padding(14.dp)) {
             if (d.title.isNotBlank()) Text(d.title, style = MaterialTheme.typography.titleSmall)

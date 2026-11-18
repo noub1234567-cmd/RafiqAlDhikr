@@ -152,8 +152,16 @@ fun RafiqNavHost(container: AppContainer) {
                 composable(NavRoute.DuaHub.route) {
                     com.rafiqaldhikr.app.ui.screens.dualibrary.DuaHubScreen(
                         onOpenSection = { navController.navigate(NavRoute.DuaSection.create(it)) { launchSingleTop = true } },
-                        onOpenPersonalNotebook = { navController.navigate(NavRoute.Dua.route) { launchSingleTop = true } }
+                        onOpenPersonalNotebook = { navController.navigate(NavRoute.Dua.route) { launchSingleTop = true } },
+                        onOpenSearch = { navController.navigate(NavRoute.DuaSearch.route) { launchSingleTop = true } },
+                        onOpenNow = { navController.navigate(NavRoute.DuaNow.route) { launchSingleTop = true } }
                     )
+                }
+                composable(NavRoute.DuaSearch.route) {
+                    com.rafiqaldhikr.app.ui.screens.dualibrary.DuaSearchScreen(onBack = { navController.popBackStack() })
+                }
+                composable(NavRoute.DuaNow.route) {
+                    com.rafiqaldhikr.app.ui.screens.dualibrary.DuaNowScreen(onBack = { navController.popBackStack() })
                 }
                 composable(NavRoute.DuaSection.route) { entry ->
                     com.rafiqaldhikr.app.ui.screens.dualibrary.DuaSectionScreen(

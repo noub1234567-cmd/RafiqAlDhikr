@@ -26,7 +26,12 @@ import com.rafiqaldhikr.app.ui.components.RafiqTopBar
 
 /** The "الأدعية" tab: one button per section, plus the personal du'a notebook that already exists. */
 @Composable
-fun DuaHubScreen(onOpenSection: (String) -> Unit, onOpenPersonalNotebook: () -> Unit) {
+fun DuaHubScreen(
+    onOpenSection: (String) -> Unit,
+    onOpenPersonalNotebook: () -> Unit,
+    onOpenSearch: () -> Unit,
+    onOpenNow: () -> Unit
+) {
     val context = LocalContext.current
     val sections by produceState(DuaLibrary.skeleton) {
         value = withContext(Dispatchers.Default) { DuaLibrary.sections(context) }
@@ -38,6 +43,22 @@ fun DuaHubScreen(onOpenSection: (String) -> Unit, onOpenPersonalNotebook: () -> 
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            item {
+                RafiqCard(onClick = onOpenNow) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                        Text("ماذا أقول الآن؟", style = MaterialTheme.typography.titleMedium)
+                        Text("أذكار تناسب وقتك: بعد الأذان، بعد الصلاة، الصباح، النوم…", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
+            item {
+                RafiqCard(onClick = onOpenSearch) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                        Text("بحث في كل الأذكار والأدعية", style = MaterialTheme.typography.titleMedium)
+                        Text("اكتب كلمة من النص أو العنوان أو المصدر", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
             items(sections, key = { it.id }) { s ->
                 RafiqCard(onClick = { onOpenSection(s.id) }) {
                     Row(
