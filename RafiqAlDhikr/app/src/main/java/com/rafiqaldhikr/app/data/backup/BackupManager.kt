@@ -86,7 +86,10 @@ object BackupCodec {
             parsed.payload.prayerLogs.any { it.profileId !in profileIds } ||
             parsed.payload.khatmas.any { it.profileId !in profileIds } ||
             parsed.payload.plannerWeeks.any { it.profileId !in profileIds } ||
-            parsed.payload.plannerReports.any { it.profileId !in profileIds }
+            parsed.payload.plannerReports.any { it.profileId !in profileIds } ||
+            parsed.payload.duaFavorites.any { it.profileId !in profileIds } ||
+            parsed.payload.nightReviews.any { it.profileId !in profileIds } ||
+            parsed.payload.duaMemos.any { it.profileId !in profileIds }
 
         val activityIds = parsed.payload.worshipActivities.map { it.id }.toSet()
         val adhkarIds = parsed.payload.adhkarEntries.map { it.id }.toSet()
@@ -137,7 +140,10 @@ class BackupManager(
             khatmas = database.khatmaDao().getAll(),
             plannerWeeks = database.plannerDao().getAllWeeks(),
             plannerSlots = database.plannerDao().getAllSlots(),
-            plannerReports = database.plannerDao().getAllReports()
+            plannerReports = database.plannerDao().getAllReports(),
+            duaFavorites = database.personalToolsDao().getAllFavorites(),
+            nightReviews = database.personalToolsDao().getAllReviews(),
+            duaMemos = database.personalToolsDao().getAllMemos()
         )
         val settings = preferences.getSnapshot()
         return BackupCodec.encodeBackup(payload, settings)
@@ -195,6 +201,9 @@ class BackupManager(
             database.plannerDao().insertAllWeeks(p.plannerWeeks)
             database.plannerDao().insertAllSlots(p.plannerSlots)
             database.plannerDao().insertAllReports(p.plannerReports)
+            database.personalToolsDao().insertAllFavorites(p.duaFavorites)
+            database.personalToolsDao().insertAllReviews(p.nightReviews)
+            database.personalToolsDao().insertAllMemos(p.duaMemos)
         }
 
         val targetActiveProfile = p.profiles.firstOrNull { it.id == backup.settings.activeProfileId }?.id
