@@ -50,5 +50,11 @@ fun DhikrOfTheDayCard() {
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.primary
         )
+        DuaActionsRow(
+            text = entry.arabicText,
+            source = entry.sourceReference,
+            saveTitle = entry.title,
+            saveCategory = "من الأذكار"
+        )
     }
 }

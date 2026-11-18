@@ -67,4 +67,13 @@ class DuaLibraryTest {
         )
         assertEquals(3, s.itemCount)
     }
+
+    @Test fun saveTitlePrefersChapterNameThenReferenceThenFirstWords() {
+        val chapter = DuaGroup("11. دعاء دخول المسجد", emptyList())
+        assertEquals("دعاء دخول المسجد", DuaLibrary.saveTitle(chapter, DuaItem(text = "x")))
+        val plain = DuaGroup("أدعية قرآنية جامعة", emptyList())
+        assertEquals("دعاء — البقرة 201", DuaLibrary.saveTitle(plain, DuaItem(text = "x", source = "البقرة 201")))
+        assertEquals("ا ب ج د ه و…", DuaLibrary.saveTitle(plain, DuaItem(text = "((ا ب ج د ه و ز))")))
+        assertEquals("عنوان", DuaLibrary.saveTitle(plain, DuaItem(title = "عنوان", text = "x")))
+    }
 }

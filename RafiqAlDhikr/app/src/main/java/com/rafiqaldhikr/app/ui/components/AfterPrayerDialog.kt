@@ -77,6 +77,7 @@ fun AfterPrayerDialog(prayerKey: String, prayerLabel: String, onDismiss: () -> U
                             }
                             Spacer(Modifier.height(4.dp))
                             Text(d.source, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
+                            DuaActionsRow(text = d.text, source = d.source, saveTitle = d.title, saveCategory = "من الأذكار")
                         }
                     }
                 }

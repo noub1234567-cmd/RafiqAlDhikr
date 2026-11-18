@@ -191,7 +191,13 @@ fun AdhkarScreen(
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.secondary
                         )
-                        Spacer(modifier = Modifier.height(10.dp))
+                        com.rafiqaldhikr.app.ui.components.DuaActionsRow(
+                            text = entry.arabicText,
+                            source = entry.sourceReference,
+                            saveTitle = entry.title,
+                            saveCategory = "من الأذكار"
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
                         LinearProgressIndicator(
                             progress = { (currentCount.toFloat() / entry.targetCount.coerceAtLeast(1)).coerceIn(0f, 1f) },
                             modifier = Modifier.fillMaxWidth().height(6.dp)

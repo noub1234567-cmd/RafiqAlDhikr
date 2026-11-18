@@ -33,6 +33,7 @@ import androidx.compose.runtime.produceState
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.rafiqaldhikr.app.ui.components.DuaActionsRow
 import com.rafiqaldhikr.app.ui.components.RafiqCard
 import com.rafiqaldhikr.app.ui.components.RafiqTopBar
 
@@ -101,7 +102,7 @@ fun DuaSectionScreen(sectionId: String, onBack: () -> Unit) {
                 }
                 if (open) {
                     items.forEachIndexed { i, d ->
-                        item(key = "i_${g.title}_$i") { ItemCard(d) { clipboard.setText(AnnotatedString(d.text)) } }
+                        item(key = "i_${g.title}_$i") { ItemCard(d, DuaLibrary.saveTitle(g, d), section.title) }
                     }
                 }
             }
@@ -110,7 +111,7 @@ fun DuaSectionScreen(sectionId: String, onBack: () -> Unit) {
 }
 
 @Composable
-private fun ItemCard(d: DuaItem, onCopy: () -> Unit) {
+private fun ItemCard(d: DuaItem, saveTitle: String, sectionTitle: String) {
     RafiqCard {
         Column(modifier = Modifier.padding(14.dp)) {
             if (d.title.isNotBlank()) Text(d.title, style = MaterialTheme.typography.titleSmall)
@@ -119,19 +120,10 @@ private fun ItemCard(d: DuaItem, onCopy: () -> Unit) {
             }
             Spacer(Modifier.height(4.dp))
             Text(d.text, style = MaterialTheme.typography.bodyLarge)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    d.source,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.outline,
-                    modifier = Modifier.weight(1f)
-                )
-                TextButton(onClick = onCopy) { Text("نسخ") }
+            if (d.source.isNotBlank()) {
+                Text(d.source, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
             }
+            DuaActionsRow(text = d.text, source = d.source, saveTitle = saveTitle, saveCategory = "من المكتبة: $sectionTitle")
         }
     }
 }
