@@ -70,6 +70,16 @@ object DuaLibrary {
         }
     }
 
+    /** A readable title for an item saved to the personal notebook. */
+    fun saveTitle(group: DuaGroup, item: DuaItem): String {
+        if (item.title.isNotBlank()) return item.title
+        val numbered = Regex("^\\d+\\.\\s*(.+)$").find(group.title)
+        if (numbered != null) return numbered.groupValues[1]
+        if (item.source.isNotBlank()) return "دعاء — ${item.source}"
+        val words = item.text.replace(Regex("[()\\[\\]]"), " ").trim().split(Regex("\\s+")).filter { it.isNotEmpty() }
+        return words.take(6).joinToString(" ") + if (words.size > 6) "…" else ""
+    }
+
     fun byId(sections: List<DuaSectionDef>, id: String?): DuaSectionDef? = sections.firstOrNull { it.id == id }
 
     /** Removes tashkeel/tatweel and unifies alef forms so a plain search matches fully vowelled text. */

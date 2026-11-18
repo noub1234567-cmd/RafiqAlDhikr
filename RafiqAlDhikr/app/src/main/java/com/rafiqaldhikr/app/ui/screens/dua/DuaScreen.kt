@@ -152,6 +152,12 @@ fun DuaScreen(
                             }
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(dua.body, style = MaterialTheme.typography.bodyLarge)
+                            val copyCtx = androidx.compose.ui.platform.LocalContext.current
+                            val copyClip = androidx.compose.ui.platform.LocalClipboardManager.current
+                            TextButton(onClick = {
+                                copyClip.setText(androidx.compose.ui.text.AnnotatedString(dua.body))
+                                android.widget.Toast.makeText(copyCtx, "تم النسخ", android.widget.Toast.LENGTH_SHORT).show()
+                            }) { Text("نسخ") }
                         }
                     }
                 }

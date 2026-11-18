@@ -7,6 +7,7 @@ import com.rafiqaldhikr.app.data.local.db.entities.SeasonalSelectionEntity
 import com.rafiqaldhikr.app.notifications.ReminderScheduler
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import java.time.LocalDate
 
 class DuaRepository(private val database: AppDatabase) {
@@ -21,6 +22,14 @@ class DuaRepository(private val database: AppDatabase) {
         } else {
             dao.update(dua.copy(updatedAt = now))
         }
+    }
+
+    /** Adds a du'a unless the profile already has one with the same text; returns whether it was added. */
+    suspend fun addIfAbsent(profileId: Long, title: String, body: String, category: String): Boolean {
+        val exists = dao.observeDuas(profileId).first().any { it.body.trim() == body.trim() }
+        if (exists) return false
+        saveDua(DuaEntryEntity(profileId = profileId, title = title.trim().ifBlank { "دعاء" }, body = body.trim(), category = category))
+        return true
     }
 
     suspend fun toggleFavorite(dua: DuaEntryEntity) {
