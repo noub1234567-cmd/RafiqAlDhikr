@@ -25,6 +25,9 @@ interface WorshipDao {
     @Query("SELECT * FROM worship_activities")
     suspend fun getAllActivities(): List<WorshipActivityEntity>
 
+    @Query("SELECT id FROM worship_activities WHERE profileId = :profileId AND templateKey LIKE 'sys-planner-%'")
+    fun observePlannerActivityIds(profileId: Long): Flow<List<Long>>
+
     @Query("SELECT * FROM worship_activities WHERE profileId = :profileId AND templateKey = :key LIMIT 1")
     suspend fun getActivityByTemplateKey(profileId: Long, key: String): WorshipActivityEntity?
 
