@@ -12,6 +12,11 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -22,6 +27,10 @@ import com.rafiqaldhikr.app.ui.components.RafiqTopBar
 /** The "الأدعية" tab: one button per section, plus the personal du'a notebook that already exists. */
 @Composable
 fun DuaHubScreen(onOpenSection: (String) -> Unit, onOpenPersonalNotebook: () -> Unit) {
+    val context = LocalContext.current
+    val sections by produceState(DuaLibrary.skeleton) {
+        value = withContext(Dispatchers.Default) { DuaLibrary.sections(context) }
+    }
     Column(modifier = Modifier.fillMaxSize()) {
         RafiqTopBar(title = "الأدعية")
         LazyColumn(
@@ -29,7 +38,7 @@ fun DuaHubScreen(onOpenSection: (String) -> Unit, onOpenPersonalNotebook: () -> 
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            items(DuaLibrary.sections, key = { it.id }) { s ->
+            items(sections, key = { it.id }) { s ->
                 RafiqCard(onClick = { onOpenSection(s.id) }) {
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(16.dp),
