@@ -13,6 +13,8 @@ sealed class NavRoute(val route: String, val labelAr: String) {
     data object Favorites : NavRoute("favorites", "مفضلتي")
     data object NightReview : NavRoute("night_review", "محاسبة النفس")
     data object DuaMemo : NavRoute("dua_memo", "حفظ الأدعية")
+    data object Jumua : NavRoute("jumua", "سنن الجمعة")
+    data object DuaQuiz : NavRoute("dua_quiz", "اختبار الأذكار")
     data object Fasting : NavRoute("fasting", "الصيام")
     data object More : NavRoute("more", "المزيد")
 

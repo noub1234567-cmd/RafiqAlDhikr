@@ -66,6 +66,7 @@ fun MoreScreen(
         MoreMenuItem("حفظ القرآن ومراجعته", "خطط الحفظ وجلسات المراجعة والتذكيرات المستقلة", Icons.Default.Book, NavRoute.Memorization.route),
         MoreMenuItem("المسبحة والاستغفار", "عدّاد إلكتروني وأذكار مخصصة وسجل يومي", Icons.Default.Fingerprint, NavRoute.Tasbeeh.route),
         MoreMenuItem("دفتر الأدعية الشخصي", "أدعيتك الخاصة والمفضلة والبحث المحلي", Icons.Default.VolunteerActivism, NavRoute.Dua.route),
+        MoreMenuItem("سنن الجمعة", "قائمة بما تفعله يوم الجمعة تُعلَّم بنقرة", Icons.Default.Checklist, NavRoute.Jumua.route),
         MoreMenuItem("مفضلتي", "كل ما نجّمته من أذكار وأدعية في مكان واحد", Icons.Default.Star, NavRoute.Favorites.route),
         MoreMenuItem("حفظ الأدعية", "راجع أدعيتك المحفوظة في مواعيد متباعدة تثبّتها في الذاكرة", Icons.Default.Book, NavRoute.DuaMemo.route),
         MoreMenuItem("محاسبة النفس", "ثلاثة أسئلة قصيرة قبل النوم وسجل خاص على جهازك", Icons.Default.Checklist, NavRoute.NightReview.route),

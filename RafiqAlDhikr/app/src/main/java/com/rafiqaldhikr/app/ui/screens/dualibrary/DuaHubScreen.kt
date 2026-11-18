@@ -30,7 +30,8 @@ fun DuaHubScreen(
     onOpenSection: (String) -> Unit,
     onOpenPersonalNotebook: () -> Unit,
     onOpenSearch: () -> Unit,
-    onOpenNow: () -> Unit
+    onOpenNow: () -> Unit,
+    onOpenQuiz: () -> Unit
 ) {
     val context = LocalContext.current
     val sections by produceState(DuaLibrary.skeleton) {
@@ -56,6 +57,14 @@ fun DuaHubScreen(
                     Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
                         Text("بحث في كل الأذكار والأدعية", style = MaterialTheme.typography.titleMedium)
                         Text("اكتب كلمة من النص أو العنوان أو المصدر", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
+            item {
+                RafiqCard(onClick = onOpenQuiz) {
+                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                        Text("اختبر حفظك للأذكار", style = MaterialTheme.typography.titleMedium)
+                        Text("أكمل الذكر من أربعة خيارات، عشرة أسئلة في كل جولة", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
             }

@@ -127,6 +127,14 @@ fun DashboardScreen(
                 }
             }
             item { com.rafiqaldhikr.app.ui.components.DuaOfTheDayCards() }
+            if (java.time.LocalDate.now().dayOfWeek == java.time.DayOfWeek.FRIDAY) {
+                item {
+                    RafiqCard(onClick = { onNavigate(NavRoute.Jumua.route) }) {
+                        Text("اليوم الجمعة — سنن الجمعة", style = MaterialTheme.typography.titleMedium)
+                        Text("اضغط لتعليم ما أنجزته", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
             item {
                 val day = java.time.LocalDate.now().dayOfWeek
                 if (day == java.time.DayOfWeek.FRIDAY || day == java.time.DayOfWeek.SATURDAY) {
