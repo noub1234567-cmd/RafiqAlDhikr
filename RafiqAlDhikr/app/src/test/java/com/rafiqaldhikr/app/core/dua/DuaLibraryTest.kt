@@ -48,9 +48,9 @@ class DuaLibraryTest {
         assertTrue(DuaLibrary.plain("رَبَّنَا آتِنَا").contains(DuaLibrary.plain("ربنا اتنا")))
     }
 
-    @Test fun eightSectionsWithUniqueIds() {
+    @Test fun nineSectionsWithUniqueIds() {
         val ids = DuaLibrary.skeleton.map { it.id }
-        assertEquals(8, ids.size)
+        assertEquals(9, ids.size)
         assertEquals(ids.size, ids.toSet().size)
     }
 
@@ -92,5 +92,12 @@ class DuaLibraryTest {
         val athar = groups.last().items.filter { it.title.startsWith("الأثر") }
         assertEquals(3, athar.size)
         assertTrue(athar.all { it.source.contains("المصدر:") && it.note.startsWith("الفائدة:") })
+    }
+
+    @Test fun nawawiHasFortyTwoHadithsWithoutLeftovers() {
+        val items = load(DuaLibrary.NAWAWI).flatMap { it.items }
+        assertEquals(42, items.size)
+        assertTrue(items.all { it.title.startsWith("الحديث ") && it.text.isNotBlank() })
+        assertTrue(items.none { it.text.contains("جامع العلوم") || it.text.contains("<br>") })
     }
 }
