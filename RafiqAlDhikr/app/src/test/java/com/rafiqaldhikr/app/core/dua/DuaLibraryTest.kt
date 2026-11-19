@@ -86,7 +86,7 @@ class DuaLibraryTest {
     @Test fun sunanHasFiftySunnahsNineAtharAndNotes() {
         val groups = load(DuaLibrary.SUNAN)
         assertEquals(8, groups.size)
-        val sunnahs = groups.dropLast(2).flatMap { it.items }
+        val sunnahs = groups.take(6).flatMap { it.items }
         assertEquals(50, sunnahs.size)
         assertTrue(sunnahs.all { it.source.contains("المصدر:") && it.source.contains("الحكم:") && it.note.startsWith("كيفية العمل:") })
         val athar = groups[6].items.filter { it.title.startsWith("الأثر") }
