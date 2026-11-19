@@ -26,8 +26,6 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.ManageAccounts
 import androidx.compose.material.icons.filled.Place
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.VolunteerActivism
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -54,28 +52,37 @@ fun MoreScreen(
     onOpenProfileSwitcher: () -> Unit,
     onNavigate: (String) -> Unit
 ) {
-    val items = listOf(
-        MoreMenuItem("الصيام", "أيام الصيام والمناسبات والتتبع", Icons.Default.CalendarMonth, NavRoute.Fasting.route),
-        MoreMenuItem("جدول العبادات الأسبوعي", "جدول بصفوفك وأيام الأسبوع مع منبّه لكل خانة وتقرير بما أنجزت", Icons.Default.CalendarMonth, NavRoute.Planner.route),
-        MoreMenuItem("تقرير الأسبوع", "ملخص واحد للصلاة والأذكار والقرآن والصيام والجدول مقارنةً بالأسبوع الماضي", Icons.Default.BarChart, NavRoute.WeeklyReport.route),
-        MoreMenuItem("السجل السنوي", "شبكة أيام سنتك لكل عبادة مع التحديات والأوسمة", Icons.Default.DateRange, NavRoute.YearLog.route),
-        MoreMenuItem("رمضان", "الإمساكية وعدّ الإفطار والتراويح وختمة ٣٠ يوماً", Icons.Default.CheckCircle, NavRoute.Ramadan.route),
-        MoreMenuItem("ختمة القرآن", "موضع القراءة بالسورة والآية والورد اليومي لإنهاء الختمة", Icons.Default.CheckCircle, NavRoute.Khatma.route),
-        MoreMenuItem("متابعة الصلاة", "الفرائض والسنن الرواتب والوتر والضحى بنقرة واحدة", Icons.Default.CheckCircle, NavRoute.PrayerTracker.route),
-        MoreMenuItem("اتجاه القبلة", "بوصلة تعتمد المدينة المختارة في الإعدادات", Icons.Default.Place, NavRoute.Qibla.route),
-        MoreMenuItem("حفظ القرآن ومراجعته", "خطط الحفظ وجلسات المراجعة والتذكيرات المستقلة", Icons.Default.Book, NavRoute.Memorization.route),
-        MoreMenuItem("المسبحة والاستغفار", "عدّاد إلكتروني وأذكار مخصصة وسجل يومي", Icons.Default.Fingerprint, NavRoute.Tasbeeh.route),
-        MoreMenuItem("دفتر الأدعية الشخصي", "أدعيتك الخاصة والمفضلة والبحث المحلي", Icons.Default.VolunteerActivism, NavRoute.Dua.route),
-        MoreMenuItem("سنن الجمعة", "قائمة بما تفعله يوم الجمعة تُعلَّم بنقرة", Icons.Default.Checklist, NavRoute.Jumua.route),
-        MoreMenuItem("مفضلتي", "كل ما نجّمته من أذكار وأدعية في مكان واحد", Icons.Default.Star, NavRoute.Favorites.route),
-        MoreMenuItem("حفظ الأدعية", "راجع أدعيتك المحفوظة في مواعيد متباعدة تثبّتها في الذاكرة", Icons.Default.Book, NavRoute.DuaMemo.route),
-        MoreMenuItem("محاسبة النفس", "ثلاثة أسئلة قصيرة قبل النوم وسجل خاص على جهازك", Icons.Default.Checklist, NavRoute.NightReview.route),
-        MoreMenuItem("العبادات والنوافل والأهداف", "الضحى، قيام الليل، الصدقة، الجمعة، والأهداف المخصصة", Icons.Default.Checklist, NavRoute.WorshipActs.route),
-        MoreMenuItem("المواسم الإسلامية", "رمضان، عشر ذي الحجة، عرفة، عاشوراء، الأشهر الحرم", Icons.Default.EventAvailable, NavRoute.Seasons.route),
-        MoreMenuItem("السجل (المكتمل والفائت)", "مراجعة العبادات وإعادة الجدولة دون إكمال تلقائي", Icons.Default.History, NavRoute.History.route),
-        MoreMenuItem("الإحصائيات والمتابعة", "ملخص يومي وأسبوعي وشهري بتشجيع هادئ", Icons.Default.BarChart, NavRoute.Statistics.route),
-        MoreMenuItem("إدارة الملفات الشخصية", "إنشاء وتبديل ملفات مستقلة على نفس الجهاز", Icons.Default.ManageAccounts, NavRoute.Profiles.route),
-        MoreMenuItem("الإعدادات والنسخ الاحتياطي", "المظهر، التقويم الهجري، الإشعارات، التصدير والاستعادة", Icons.Default.Settings, NavRoute.Settings.route)
+    val groups: List<Pair<String, List<MoreMenuItem>>> = listOf(
+        "عباداتي" to listOf(
+            MoreMenuItem("متابعة الصلاة", "الفرائض والسنن الرواتب والوتر والضحى بنقرة واحدة", Icons.Default.CheckCircle, NavRoute.PrayerTracker.route),
+            MoreMenuItem("جدول العبادات الأسبوعي", "جدول بصفوفك وأيام الأسبوع مع منبّه لكل خانة وتقرير بما أنجزت", Icons.Default.CalendarMonth, NavRoute.Planner.route),
+            MoreMenuItem("العبادات والنوافل والأهداف", "الضحى، قيام الليل، الصدقة، الجمعة، والأهداف المخصصة", Icons.Default.Checklist, NavRoute.WorshipActs.route),
+            MoreMenuItem("المسبحة والاستغفار", "عدّاد إلكتروني وأذكار مخصصة وسجل يومي", Icons.Default.Fingerprint, NavRoute.Tasbeeh.route),
+            MoreMenuItem("سنن الجمعة", "قائمة بما تفعله يوم الجمعة تُعلَّم بنقرة", Icons.Default.Checklist, NavRoute.Jumua.route)
+        ),
+        "القرآن" to listOf(
+            MoreMenuItem("ختمة القرآن", "موضع القراءة بالسورة والآية والورد اليومي لإنهاء الختمة", Icons.Default.CheckCircle, NavRoute.Khatma.route),
+            MoreMenuItem("حفظ القرآن ومراجعته", "خطط الحفظ وجلسات المراجعة والتذكيرات المستقلة", Icons.Default.Book, NavRoute.Memorization.route)
+        ),
+        "المواسم" to listOf(
+            MoreMenuItem("رمضان", "الإمساكية وعدّ الإفطار والتراويح وختمة ٣٠ يوماً", Icons.Default.CheckCircle, NavRoute.Ramadan.route),
+            MoreMenuItem("الصيام", "أيام الصيام والمناسبات والتتبع", Icons.Default.CalendarMonth, NavRoute.Fasting.route),
+            MoreMenuItem("المواسم الإسلامية", "رمضان، عشر ذي الحجة، عرفة، عاشوراء، الأشهر الحرم", Icons.Default.EventAvailable, NavRoute.Seasons.route)
+        ),
+        "تقاريري" to listOf(
+            MoreMenuItem("تقرير الأسبوع", "ملخص واحد للصلاة والأذكار والقرآن والصيام والجدول مقارنةً بالأسبوع الماضي", Icons.Default.BarChart, NavRoute.WeeklyReport.route),
+            MoreMenuItem("الإحصائيات والمتابعة", "ملخص يومي وأسبوعي وشهري بتشجيع هادئ", Icons.Default.BarChart, NavRoute.Statistics.route),
+            MoreMenuItem("السجل (المكتمل والفائت)", "مراجعة العبادات وإعادة الجدولة دون إكمال تلقائي", Icons.Default.History, NavRoute.History.route),
+            MoreMenuItem("السجل السنوي", "شبكة أيام سنتك لكل عبادة مع التحديات والأوسمة", Icons.Default.DateRange, NavRoute.YearLog.route)
+        ),
+        "أدوات" to listOf(
+            MoreMenuItem("اتجاه القبلة", "بوصلة تعتمد المدينة المختارة في الإعدادات", Icons.Default.Place, NavRoute.Qibla.route),
+            MoreMenuItem("محاسبة النفس", "ثلاثة أسئلة قصيرة قبل النوم وسجل خاص على جهازك", Icons.Default.Checklist, NavRoute.NightReview.route)
+        ),
+        "حسابي" to listOf(
+            MoreMenuItem("إدارة الملفات الشخصية", "إنشاء وتبديل ملفات مستقلة على نفس الجهاز", Icons.Default.ManageAccounts, NavRoute.Profiles.route),
+            MoreMenuItem("الإعدادات والنسخ الاحتياطي", "المظهر، التقويم الهجري، الإشعارات، التصدير والاستعادة", Icons.Default.Settings, NavRoute.Settings.route)
+        )
     )
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -90,7 +97,16 @@ fun MoreScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            items(items) { item ->
+            groups.forEach { (heading, entries) ->
+                item(key = "h_$heading") {
+                    Text(
+                        heading,
+                        style = MaterialTheme.typography.titleSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(top = 6.dp)
+                    )
+                }
+                items(entries, key = { it.route }) { item ->
                 RafiqCard(onClick = { onNavigate(item.route) }) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -118,6 +134,7 @@ fun MoreScreen(
                         )
                     }
                 }
+            }
             }
         }
     }

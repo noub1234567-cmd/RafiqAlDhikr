@@ -28,7 +28,7 @@ import com.rafiqaldhikr.app.ui.components.RafiqTopBar
 import java.time.LocalDate
 import kotlinx.coroutines.launch
 
-/** Memorize du'as with spaced repetition: recall first, then reveal the text and rate yourself. */
+/** Memorize adhkar, du'as and hadiths with spaced repetition: recall first, then reveal the text and rate yourself. */
 @Composable
 fun DuaMemoScreen(onBack: () -> Unit) {
     val container = rememberContainer()
@@ -41,7 +41,7 @@ fun DuaMemoScreen(onBack: () -> Unit) {
     val later = memos.filter { it.dueEpochDay > today }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        RafiqTopBar(title = "حفظ الأدعية", onBackClick = onBack)
+        RafiqTopBar(title = "حفظ الأذكار والأحاديث", onBackClick = onBack)
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
@@ -51,7 +51,7 @@ fun DuaMemoScreen(onBack: () -> Unit) {
                 item {
                     RafiqCard {
                         Text(
-                            "لم تضف دعاءً للحفظ بعد. اضغط «حفظ» تحت أي دعاء في التطبيق، وسيعرضه عليك هنا في مواعيد المراجعة.",
+                            "لم تضف شيئاً للحفظ بعد. اضغط «حفظ» تحت أي ذكر أو دعاء أو حديث في التطبيق، وسيعرضه عليك هنا في مواعيد المراجعة.",
                             style = MaterialTheme.typography.bodyMedium,
                             modifier = Modifier.padding(16.dp)
                         )
