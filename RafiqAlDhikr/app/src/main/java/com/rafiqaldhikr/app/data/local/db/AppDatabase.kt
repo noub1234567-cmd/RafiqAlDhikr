@@ -12,6 +12,7 @@ import com.rafiqaldhikr.app.data.local.db.dao.DuaDao
 import com.rafiqaldhikr.app.data.local.db.dao.FastingDao
 import com.rafiqaldhikr.app.data.local.db.dao.MemorizationDao
 import com.rafiqaldhikr.app.data.local.db.dao.KhatmaDao
+import com.rafiqaldhikr.app.data.local.db.dao.MemoPlanDao
 import com.rafiqaldhikr.app.data.local.db.dao.PersonalToolsDao
 import com.rafiqaldhikr.app.data.local.db.dao.PlannerDao
 import com.rafiqaldhikr.app.data.local.db.dao.PrayerLogDao
@@ -31,6 +32,8 @@ import com.rafiqaldhikr.app.data.local.db.entities.MemorizationSessionEntity
 import com.rafiqaldhikr.app.data.local.db.entities.KhatmaEntity
 import com.rafiqaldhikr.app.data.local.db.entities.DuaFavoriteEntity
 import com.rafiqaldhikr.app.data.local.db.entities.DuaMemoEntity
+import com.rafiqaldhikr.app.data.local.db.entities.MemoPlanEntity
+import com.rafiqaldhikr.app.data.local.db.entities.MemoPlanItemEntity
 import com.rafiqaldhikr.app.data.local.db.entities.NightReviewEntity
 import com.rafiqaldhikr.app.data.local.db.entities.PlannerReportEntity
 import com.rafiqaldhikr.app.data.local.db.entities.PlannerSlotEntity
@@ -68,9 +71,11 @@ import com.rafiqaldhikr.app.data.local.db.entities.WorshipActivityEntity
         PlannerReportEntity::class,
         DuaFavoriteEntity::class,
         NightReviewEntity::class,
-        DuaMemoEntity::class
+        DuaMemoEntity::class,
+        MemoPlanEntity::class,
+        MemoPlanItemEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -88,6 +93,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun khatmaDao(): KhatmaDao
     abstract fun plannerDao(): PlannerDao
     abstract fun personalToolsDao(): PersonalToolsDao
+    abstract fun memoPlanDao(): MemoPlanDao
 
     companion object {
         const val DATABASE_NAME = "rafiq_al_dhikr.db"
@@ -131,6 +137,36 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL(DUA_MEMOS_INDEX_SQL)
             }
         }
+
+        /** Version 6 adds memorization plans; existing data is untouched. */
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(MEMO_PLANS_CREATE_SQL)
+                db.execSQL(MEMO_PLANS_INDEX_SQL)
+                db.execSQL(MEMO_PLAN_ITEMS_CREATE_SQL)
+                db.execSQL(MEMO_PLAN_ITEMS_INDEX_SQL)
+            }
+        }
+
+        const val MEMO_PLANS_CREATE_SQL =
+            "CREATE TABLE IF NOT EXISTS `memo_plans` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`profileId` INTEGER NOT NULL, `title` TEXT NOT NULL, `sourceId` TEXT NOT NULL, " +
+                "`groupTitle` TEXT NOT NULL, `startEpochDay` INTEGER NOT NULL, `totalDays` INTEGER NOT NULL, " +
+                "`reviewMode` INTEGER NOT NULL, `reviewCount` INTEGER NOT NULL, `createdAtMillis` INTEGER NOT NULL, " +
+                "FOREIGN KEY(`profileId`) REFERENCES `user_profiles`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )"
+
+        const val MEMO_PLANS_INDEX_SQL =
+            "CREATE INDEX IF NOT EXISTS `index_memo_plans_profileId` ON `memo_plans` (`profileId`)"
+
+        const val MEMO_PLAN_ITEMS_CREATE_SQL =
+            "CREATE TABLE IF NOT EXISTS `memo_plan_items` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`planId` INTEGER NOT NULL, `position` INTEGER NOT NULL, `itemKey` TEXT NOT NULL, " +
+                "`title` TEXT NOT NULL, `text` TEXT NOT NULL, `source` TEXT NOT NULL, " +
+                "`doneEpochDay` INTEGER NOT NULL, FOREIGN KEY(`planId`) REFERENCES `memo_plans`(`id`) " +
+                "ON UPDATE NO ACTION ON DELETE CASCADE )"
+
+        const val MEMO_PLAN_ITEMS_INDEX_SQL =
+            "CREATE INDEX IF NOT EXISTS `index_memo_plan_items_planId` ON `memo_plan_items` (`planId`)"
 
         const val DUA_FAVORITES_CREATE_SQL =
             "CREATE TABLE IF NOT EXISTS `dua_favorites` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
@@ -219,7 +255,7 @@ abstract class AppDatabase : RoomDatabase() {
                 AppDatabase::class.java,
                 DATABASE_NAME
             )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
                 .build()
         }
     }

@@ -15,6 +15,11 @@ sealed class NavRoute(val route: String, val labelAr: String) {
     data object DuaMemo : NavRoute("dua_memo", "حفظ الأذكار والأحاديث")
     data object Jumua : NavRoute("jumua", "سنن الجمعة")
     data object DuaQuiz : NavRoute("dua_quiz", "اختبار الأذكار")
+    data object MemoPlans : NavRoute("memo_plans", "خطط الحفظ")
+    data object MemoPlanNew : NavRoute("memo_plan_new", "خطة حفظ جديدة")
+    data object MemoPlan : NavRoute("memo_plan/{id}", "خطة الحفظ") {
+        fun create(id: Long) = "memo_plan/$id"
+    }
     data object Fasting : NavRoute("fasting", "الصيام")
     data object More : NavRoute("more", "المزيد")
 

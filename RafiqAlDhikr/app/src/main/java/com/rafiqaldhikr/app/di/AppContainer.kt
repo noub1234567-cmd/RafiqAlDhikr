@@ -35,6 +35,7 @@ interface AppContainer {
     val khatmaRepository: com.rafiqaldhikr.app.data.repository.KhatmaRepository
     val plannerRepository: com.rafiqaldhikr.app.data.repository.PlannerRepository
     val personalToolsRepository: com.rafiqaldhikr.app.data.repository.PersonalToolsRepository
+    val memoPlanRepository: com.rafiqaldhikr.app.data.repository.MemoPlanRepository
     val backupManager: BackupManager
 }
 
@@ -64,6 +65,9 @@ class AppContainerImpl(context: Context) : AppContainer {
     }
     override val personalToolsRepository: com.rafiqaldhikr.app.data.repository.PersonalToolsRepository by lazy {
         com.rafiqaldhikr.app.data.repository.PersonalToolsRepository(database)
+    }
+    override val memoPlanRepository: com.rafiqaldhikr.app.data.repository.MemoPlanRepository by lazy {
+        com.rafiqaldhikr.app.data.repository.MemoPlanRepository(database, personalToolsRepository)
     }
     override val backupManager: BackupManager by lazy {
         BackupManager(appContext, database, preferences, reminderScheduler)

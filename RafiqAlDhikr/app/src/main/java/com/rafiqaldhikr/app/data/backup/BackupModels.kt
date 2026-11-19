@@ -63,7 +63,13 @@ data class BackupPayload(
     val nightReviews: List<com.rafiqaldhikr.app.data.local.db.entities.NightReviewEntity> = emptyList(),
     @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
-    val duaMemos: List<com.rafiqaldhikr.app.data.local.db.entities.DuaMemoEntity> = emptyList()
+    val duaMemos: List<com.rafiqaldhikr.app.data.local.db.entities.DuaMemoEntity> = emptyList(),
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val memoPlans: List<com.rafiqaldhikr.app.data.local.db.entities.MemoPlanEntity> = emptyList(),
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val memoPlanItems: List<com.rafiqaldhikr.app.data.local.db.entities.MemoPlanItemEntity> = emptyList()
 )
 
 @Serializable
