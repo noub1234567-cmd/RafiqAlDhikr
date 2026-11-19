@@ -157,7 +157,8 @@ fun RafiqNavHost(container: AppContainer) {
                         onOpenNow = { navController.navigate(NavRoute.DuaNow.route) { launchSingleTop = true } },
                         onOpenQuiz = { navController.navigate(NavRoute.DuaQuiz.route) { launchSingleTop = true } },
                         onOpenFavorites = { navController.navigate(NavRoute.Favorites.route) { launchSingleTop = true } },
-                        onOpenMemo = { navController.navigate(NavRoute.DuaMemo.route) { launchSingleTop = true } }
+                        onOpenMemo = { navController.navigate(NavRoute.DuaMemo.route) { launchSingleTop = true } },
+                        onOpenPlans = { navController.navigate(NavRoute.MemoPlans.route) { launchSingleTop = true } }
                     )
                 }
                 composable(NavRoute.DuaSearch.route) {
@@ -186,6 +187,29 @@ fun RafiqNavHost(container: AppContainer) {
                 }
                 composable(NavRoute.DuaQuiz.route) {
                     com.rafiqaldhikr.app.ui.screens.dualibrary.DuaQuizScreen(onBack = { navController.popBackStack() })
+                }
+                composable(NavRoute.MemoPlans.route) {
+                    com.rafiqaldhikr.app.ui.screens.tools.MemoPlansScreen(
+                        onBack = { navController.popBackStack() },
+                        onNew = { navController.navigate(NavRoute.MemoPlanNew.route) { launchSingleTop = true } },
+                        onOpen = { navController.navigate(NavRoute.MemoPlan.create(it)) { launchSingleTop = true } }
+                    )
+                }
+                composable(NavRoute.MemoPlanNew.route) {
+                    com.rafiqaldhikr.app.ui.screens.tools.MemoPlanCreateScreen(
+                        onBack = { navController.popBackStack() },
+                        onCreated = { id ->
+                            navController.popBackStack()
+                            navController.navigate(NavRoute.MemoPlan.create(id)) { launchSingleTop = true }
+                        }
+                    )
+                }
+                composable(NavRoute.MemoPlan.route) { entry ->
+                    com.rafiqaldhikr.app.ui.screens.tools.MemoPlanScreen(
+                        planId = entry.arguments?.getString("id")?.toLongOrNull() ?: -1L,
+                        onBack = { navController.popBackStack() },
+                        onOpenMemo = { navController.navigate(NavRoute.DuaMemo.route) { launchSingleTop = true } }
+                    )
                 }
                 composable(NavRoute.Fasting.route) {
                     val vm: FastingViewModel = viewModel(factory = factory)

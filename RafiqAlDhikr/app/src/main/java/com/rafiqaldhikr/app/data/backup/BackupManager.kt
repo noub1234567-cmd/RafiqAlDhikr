@@ -89,7 +89,9 @@ object BackupCodec {
             parsed.payload.plannerReports.any { it.profileId !in profileIds } ||
             parsed.payload.duaFavorites.any { it.profileId !in profileIds } ||
             parsed.payload.nightReviews.any { it.profileId !in profileIds } ||
-            parsed.payload.duaMemos.any { it.profileId !in profileIds }
+            parsed.payload.duaMemos.any { it.profileId !in profileIds } ||
+            parsed.payload.memoPlans.any { it.profileId !in profileIds } ||
+            parsed.payload.memoPlanItems.any { it.planId !in parsed.payload.memoPlans.map { p -> p.id }.toSet() }
 
         val activityIds = parsed.payload.worshipActivities.map { it.id }.toSet()
         val adhkarIds = parsed.payload.adhkarEntries.map { it.id }.toSet()
@@ -143,7 +145,9 @@ class BackupManager(
             plannerReports = database.plannerDao().getAllReports(),
             duaFavorites = database.personalToolsDao().getAllFavorites(),
             nightReviews = database.personalToolsDao().getAllReviews(),
-            duaMemos = database.personalToolsDao().getAllMemos()
+            duaMemos = database.personalToolsDao().getAllMemos(),
+            memoPlans = database.memoPlanDao().getAllPlans(),
+            memoPlanItems = database.memoPlanDao().getAllItems()
         )
         val settings = preferences.getSnapshot()
         return BackupCodec.encodeBackup(payload, settings)
@@ -204,6 +208,8 @@ class BackupManager(
             database.personalToolsDao().insertAllFavorites(p.duaFavorites)
             database.personalToolsDao().insertAllReviews(p.nightReviews)
             database.personalToolsDao().insertAllMemos(p.duaMemos)
+            database.memoPlanDao().insertAllPlans(p.memoPlans)
+            database.memoPlanDao().insertAllItems(p.memoPlanItems)
         }
 
         val targetActiveProfile = p.profiles.firstOrNull { it.id == backup.settings.activeProfileId }?.id

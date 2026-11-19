@@ -42,7 +42,8 @@ fun DuaHubScreen(
     onOpenNow: () -> Unit,
     onOpenQuiz: () -> Unit,
     onOpenFavorites: () -> Unit,
-    onOpenMemo: () -> Unit
+    onOpenMemo: () -> Unit,
+    onOpenPlans: () -> Unit
 ) {
     val context = LocalContext.current
     val sections by produceState(DuaLibrary.skeleton) {
@@ -88,6 +89,7 @@ fun DuaHubScreen(
                             OutlinedButton(onClick = onOpenFavorites) { Text("مفضلتي") }
                         }
                         OutlinedButton(onClick = onOpenMemo) { Text("حفظ الأذكار والأحاديث") }
+                        OutlinedButton(onClick = onOpenPlans) { Text("خطط الحفظ") }
                     }
                 }
             }

@@ -60,8 +60,9 @@ fun MoreScreen(
             MoreMenuItem("المسبحة والاستغفار", "عدّاد إلكتروني وأذكار مخصصة وسجل يومي", Icons.Default.Fingerprint, NavRoute.Tasbeeh.route),
             MoreMenuItem("سنن الجمعة", "قائمة بما تفعله يوم الجمعة تُعلَّم بنقرة", Icons.Default.Checklist, NavRoute.Jumua.route)
         ),
-        "القرآن" to listOf(
+        "القرآن والحفظ" to listOf(
             MoreMenuItem("ختمة القرآن", "موضع القراءة بالسورة والآية والورد اليومي لإنهاء الختمة", Icons.Default.CheckCircle, NavRoute.Khatma.route),
+            MoreMenuItem("خطط الحفظ", "قسّم حفظ الأربعين النووية أو الأدعية على أيام مع خطة مراجعة", Icons.Default.Checklist, NavRoute.MemoPlans.route),
             MoreMenuItem("حفظ القرآن ومراجعته", "خطط الحفظ وجلسات المراجعة والتذكيرات المستقلة", Icons.Default.Book, NavRoute.Memorization.route)
         ),
         "المواسم" to listOf(
