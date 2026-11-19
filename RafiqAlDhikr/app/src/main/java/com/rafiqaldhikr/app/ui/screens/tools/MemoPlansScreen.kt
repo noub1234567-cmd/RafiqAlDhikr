@@ -22,12 +22,13 @@ import java.time.LocalDate
 
 /** "خطط الحفظ": every plan with its progress and today's quota. */
 @Composable
-fun MemoPlansScreen(onBack: () -> Unit, onNew: () -> Unit, onOpen: (Long) -> Unit) {
+fun MemoPlansScreen(onBack: () -> Unit, onNew: () -> Unit, onOpen: (Long) -> Unit, onOpenQuran: () -> Unit) {
     val container = rememberContainer()
     val repo = container.memoPlanRepository
     val profileId by activeProfileIdState(container)
     val plans = profileList(profileId) { repo.observePlans(it) }
     val items = profileList(profileId) { repo.observeAllItems(it) }
+    val quranPlans = profileList(profileId) { container.memorizationRepository.observePlans(it) }
     val today = LocalDate.now().toEpochDay()
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -39,6 +40,21 @@ fun MemoPlansScreen(onBack: () -> Unit, onNew: () -> Unit, onOpen: (Long) -> Uni
         ) {
             item {
                 Button(onClick = onNew, modifier = Modifier.fillMaxWidth()) { Text("خطة جديدة") }
+            }
+            if (quranPlans.isNotEmpty()) {
+                item { Text("خطط حفظ القرآن", style = MaterialTheme.typography.titleMedium) }
+                items(quranPlans, key = { "q_${it.id}" }) { q ->
+                    val total = (q.endAyah - q.startAyah + 1).coerceAtLeast(1)
+                    val learned = (q.currentAyah - q.startAyah).coerceIn(0, total)
+                    RafiqCard(onClick = onOpenQuran) {
+                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                            Text(q.title, style = MaterialTheme.typography.titleMedium)
+                            Text("حفظت $learned من $total آية", style = MaterialTheme.typography.bodyMedium)
+                            Text("كل جلسة: ${q.versesPerSession} آيات", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                }
+                item { Text("خطط الأذكار والأحاديث", style = MaterialTheme.typography.titleMedium) }
             }
             if (plans.isEmpty()) {
                 item {
