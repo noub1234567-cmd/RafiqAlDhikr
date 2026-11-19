@@ -192,6 +192,7 @@ fun RafiqNavHost(container: AppContainer) {
                     com.rafiqaldhikr.app.ui.screens.tools.MemoPlansScreen(
                         onBack = { navController.popBackStack() },
                         onNew = { navController.navigate(NavRoute.MemoPlanNew.route) { launchSingleTop = true } },
+                        onOpenQuran = { navController.navigate(NavRoute.Memorization.route) { launchSingleTop = true } },
                         onOpen = { navController.navigate(NavRoute.MemoPlan.create(it)) { launchSingleTop = true } }
                     )
                 }
