@@ -40,6 +40,7 @@ class ReminderScheduler(
         const val KIND_SEASONAL = "seasonal"
         const val KIND_RESCHEDULED = "rescheduled"
         const val KIND_PLANNER = "planner"
+        const val KIND_MEMO_PLAN = "memo_plan"
         /** targetId of the silent alarm that turns the weekly table over. */
         const val PLANNER_ROLLOVER_ID = -1L
     }
@@ -114,7 +115,32 @@ class ReminderScheduler(
 
         // 9. Weekly planner slots + the weekly rollover alarm
         schedulePlannerAlarms(now)
+
+        // 10. Daily reminders of memorization plans
+        database.memoPlanDao().getAllPlans().forEach { scheduleMemoPlanReminder(it.id, it.profileId, it.title, now) }
     }
+
+    /** Daily reminder of a memorization plan; cancelled when no time is stored for it. */
+    fun scheduleMemoPlanReminder(planId: Long, profileId: Long, planTitle: String, nowMillis: Long = System.currentTimeMillis()) {
+        val code = requestCodeFor(KIND_MEMO_PLAN, planId)
+        val minutes = com.rafiqaldhikr.app.core.memorization.MemoPlanReminders.minutes(context, planId)
+        if (minutes < 0) {
+            cancelAlarm(code)
+            return
+        }
+        scheduleAlarm(
+            requestCode = code,
+            triggerAtMillis = nextDailyMillis(minutes / 60, minutes % 60, nowMillis),
+            kind = KIND_MEMO_PLAN,
+            targetId = planId,
+            profileId = profileId,
+            title = "خطة الحفظ",
+            body = "حان وقت حفظ اليوم في خطة «$planTitle».",
+            soundMode = NotificationSoundMode.GENTLE_SOUND
+        )
+    }
+
+    fun cancelMemoPlanReminder(planId: Long) = cancelAlarm(requestCodeFor(KIND_MEMO_PLAN, planId))
 
     /** Arms every planner slot of the current and later weeks, and the weekly rollover. */
     suspend fun schedulePlannerAlarms(now: Long = System.currentTimeMillis()) {
@@ -241,6 +267,8 @@ class ReminderScheduler(
                 ?.let { scheduleSeasonalReminder(it, now) }
             KIND_PRAYER -> Prayer.entries.getOrNull(targetId.toInt())?.let { schedulePrayerAlarm(it, now) }
             KIND_SPECIAL -> SpecialReminder.entries.getOrNull(targetId.toInt())?.let { scheduleSpecialAlarm(it, now) }
+            KIND_MEMO_PLAN -> database.memoPlanDao().getAllPlans().firstOrNull { it.id == targetId }
+                ?.let { scheduleMemoPlanReminder(it.id, it.profileId, it.title, now) }
             else -> Unit // fasting reminders are one-shot: nothing to re-arm
         }
     }
@@ -589,6 +617,9 @@ class ReminderScheduler(
         }
         database.plannerDao().getSlotsByProfile(profileId).forEach {
             cancelAlarm(requestCodeFor(KIND_PLANNER, it.id))
+        }
+        database.memoPlanDao().getAllPlans().filter { it.profileId == profileId }.forEach {
+            cancelAlarm(requestCodeFor(KIND_MEMO_PLAN, it.id))
         }
     }
 
