@@ -91,7 +91,7 @@ class DuaLibraryTest {
         assertTrue(sunnahs.all { it.source.contains("المصدر:") && it.source.contains("الحكم:") && it.note.startsWith("كيفية العمل:") })
         val athar = groups[6].items.filter { it.title.startsWith("الأثر") }
         assertEquals(9, athar.size)
-        assertTrue(athar.all { it.source.contains("المصدر:") && it.note.startsWith("الفائد") })
+        assertTrue(athar.all { it.source.contains("المصدر:") && it.note.startsWith("الفائدة:") || it.note.startsWith("الفوائد:") })
     }
 
     @Test fun nawawiHasFortyTwoHadithsWithoutLeftovers() {
