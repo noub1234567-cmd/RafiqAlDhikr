@@ -127,9 +127,9 @@ fun DuaActionsRow(
                 val message = if (pid == null) {
                     "لا يوجد ملف شخصي نشط"
                 } else if (tools.addMemo(pid, saveTitle, text, source, java.time.LocalDate.now().toEpochDay())) {
-                    "أُضيف إلى حفظ الأدعية"
+                    "أُضيف إلى حفظ الأذكار والأحاديث"
                 } else {
-                    "موجود بالفعل في حفظ الأدعية"
+                    "موجود بالفعل في حفظ الأذكار والأحاديث"
                 }
                 Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
             }

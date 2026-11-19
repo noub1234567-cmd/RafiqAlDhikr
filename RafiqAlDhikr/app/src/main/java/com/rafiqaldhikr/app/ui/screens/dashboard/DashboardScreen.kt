@@ -116,7 +116,6 @@ fun DashboardScreen(
                 }
             }
 
-            item { com.rafiqaldhikr.app.ui.components.DhikrOfTheDayCard() }
             item {
                 val ctx = androidx.compose.ui.platform.LocalContext.current
                 val keys = remember { com.rafiqaldhikr.app.ui.screens.dualibrary.suggestedNowKeys(ctx) }
@@ -126,6 +125,7 @@ fun DashboardScreen(
                     if (label.isNotEmpty()) Text("المناسب لوقتك: $label", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
                 }
             }
+            item { com.rafiqaldhikr.app.ui.components.DhikrOfTheDayCard() }
             item { com.rafiqaldhikr.app.ui.components.DuaOfTheDayCards() }
             if (java.time.LocalDate.now().dayOfWeek == java.time.DayOfWeek.FRIDAY) {
                 item {

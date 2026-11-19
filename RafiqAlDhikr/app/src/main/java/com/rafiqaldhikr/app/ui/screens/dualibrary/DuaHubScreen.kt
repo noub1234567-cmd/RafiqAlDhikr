@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -24,6 +25,14 @@ import com.rafiqaldhikr.app.core.dua.DuaLibrary
 import com.rafiqaldhikr.app.ui.components.RafiqCard
 import com.rafiqaldhikr.app.ui.components.RafiqTopBar
 
+private val sectionGroups: List<Pair<String, List<String>>> = listOf(
+    "الأدعية" to listOf(
+        DuaLibrary.LIBRARY, DuaLibrary.PRAISE, DuaLibrary.ISTIGHFAR, DuaLibrary.PROPHET,
+        DuaLibrary.QURAN, DuaLibrary.VIRTUE, DuaLibrary.CONDITIONS
+    ),
+    "السنة والأحاديث" to listOf(DuaLibrary.NAWAWI, DuaLibrary.SUNAN)
+)
+
 /** The "الأدعية" tab: one button per section, plus the personal du'a notebook that already exists. */
 @Composable
 fun DuaHubScreen(
@@ -31,7 +40,9 @@ fun DuaHubScreen(
     onOpenPersonalNotebook: () -> Unit,
     onOpenSearch: () -> Unit,
     onOpenNow: () -> Unit,
-    onOpenQuiz: () -> Unit
+    onOpenQuiz: () -> Unit,
+    onOpenFavorites: () -> Unit,
+    onOpenMemo: () -> Unit
 ) {
     val context = LocalContext.current
     val sections by produceState(DuaLibrary.skeleton) {
@@ -68,28 +79,40 @@ fun DuaHubScreen(
                     }
                 }
             }
-            items(sections, key = { it.id }) { s ->
-                RafiqCard(onClick = { onOpenSection(s.id) }) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().padding(16.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(s.title, style = MaterialTheme.typography.titleMedium)
-                            Text(s.subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            item {
+                RafiqCard {
+                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("أدعيتي", style = MaterialTheme.typography.titleMedium)
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedButton(onClick = onOpenPersonalNotebook) { Text("دفتر الأدعية") }
+                            OutlinedButton(onClick = onOpenFavorites) { Text("مفضلتي") }
                         }
-                        if (s.itemCount > 0) {
-                            Text("${s.itemCount}", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
-                        }
+                        OutlinedButton(onClick = onOpenMemo) { Text("حفظ الأذكار والأحاديث") }
                     }
                 }
             }
-            item {
-                RafiqCard(onClick = onOpenPersonalNotebook) {
-                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                        Text("دفتر أدعيتي", style = MaterialTheme.typography.titleMedium)
-                        Text("أدعيتك الخاصة والمفضلة", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            sectionGroups.forEach { (heading, ids) ->
+                val inGroup = sections.filter { it.id in ids }
+                if (inGroup.isNotEmpty()) {
+                    item(key = "h_$heading") {
+                        Text(heading, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 6.dp))
+                    }
+                    items(inGroup, key = { it.id }) { s ->
+                        RafiqCard(onClick = { onOpenSection(s.id) }) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(s.title, style = MaterialTheme.typography.titleMedium)
+                                    Text(s.subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                                if (s.itemCount > 0) {
+                                    Text("${s.itemCount}", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+                                }
+                            }
+                        }
                     }
                 }
             }

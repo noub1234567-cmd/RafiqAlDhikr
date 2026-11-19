@@ -155,7 +155,9 @@ fun RafiqNavHost(container: AppContainer) {
                         onOpenPersonalNotebook = { navController.navigate(NavRoute.Dua.route) { launchSingleTop = true } },
                         onOpenSearch = { navController.navigate(NavRoute.DuaSearch.route) { launchSingleTop = true } },
                         onOpenNow = { navController.navigate(NavRoute.DuaNow.route) { launchSingleTop = true } },
-                        onOpenQuiz = { navController.navigate(NavRoute.DuaQuiz.route) { launchSingleTop = true } }
+                        onOpenQuiz = { navController.navigate(NavRoute.DuaQuiz.route) { launchSingleTop = true } },
+                        onOpenFavorites = { navController.navigate(NavRoute.Favorites.route) { launchSingleTop = true } },
+                        onOpenMemo = { navController.navigate(NavRoute.DuaMemo.route) { launchSingleTop = true } }
                     )
                 }
                 composable(NavRoute.DuaSearch.route) {
