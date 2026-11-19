@@ -31,6 +31,7 @@ import java.time.LocalDate
 import kotlinx.coroutines.launch
 
 /** One plan: today's items to learn, the review for today, and what is already learned. */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun MemoPlanScreen(planId: Long, onBack: () -> Unit, onOpenMemo: () -> Unit) {
     val container = rememberContainer()
