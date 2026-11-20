@@ -188,7 +188,12 @@ private fun ReviewCard(item: MemoPlanItemEntity) {
     RafiqCard(onClick = { shown = !shown }) {
         Column(modifier = Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(item.title, style = MaterialTheme.typography.titleSmall)
+            val firstHalf = com.rafiqaldhikr.app.core.dua.DuaLibrary.verseFirstHalf(item.title, item.text)
             if (shown) Text(item.text, style = MaterialTheme.typography.bodyLarge)
+            else if (firstHalf != null) {
+                Text(firstHalf, style = MaterialTheme.typography.bodyLarge)
+                Text("أكمل الشطر الثاني ثم اضغط لإظهار البيت", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
             else Text("اضغط لإظهار النص بعد أن تستحضره", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }

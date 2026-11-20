@@ -122,4 +122,23 @@ class DuaLibraryTest {
         assertEquals(DuaLibrary.skeleton.map { it.id }.toSet(), all.toSet())
         assertEquals(4, DuaLibrary.categories.size)
     }
+
+    @Test fun verseFirstHalfOnlyForTwoLineVerses() {
+        assertEquals("صدر", DuaLibrary.verseFirstHalf("البيت 3", "صدر\nعجز"))
+        assertNull(DuaLibrary.verseFirstHalf("الحديث 3", "صدر\nعجز"))
+        assertNull(DuaLibrary.verseFirstHalf("البيت 3", "سطر واحد"))
+        assertNull(DuaLibrary.verseFirstHalf("البيت 3", "أ\nب\nج"))
+    }
+
+    @Test fun verseQuizHasFourOptionsWithCorrectSecondHalf() {
+        val sections = DuaLibrary.skeleton.map { def -> def.copy(groups = load(def.id)) }
+        val qs = DuaQuiz.generateVerses(sections, count = 10)
+        assertEquals(10, qs.size)
+        for (q in qs) {
+            assertEquals(4, q.options.size)
+            assertEquals(4, q.options.map { DuaLibrary.plain(it) }.toSet().size)
+            assertTrue(q.fullText.endsWith(q.options[q.correctIndex]))
+            assertTrue(q.fullText.startsWith(q.prefix.removeSuffix(" …")))
+        }
+    }
 }

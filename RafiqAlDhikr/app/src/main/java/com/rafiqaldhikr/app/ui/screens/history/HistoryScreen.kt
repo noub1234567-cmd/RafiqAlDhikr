@@ -46,7 +46,8 @@ import com.rafiqaldhikr.app.ui.components.StatusBadge
 @Composable
 fun HistoryScreen(
     viewModel: HistoryViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    embedded: Boolean = false
 ) {
     val confirm = com.rafiqaldhikr.app.ui.components.rememberConfirm()
     com.rafiqaldhikr.app.ui.components.ConfirmHost(confirm)
@@ -55,7 +56,7 @@ fun HistoryScreen(
 
     Scaffold(
         topBar = {
-            RafiqTopBar(
+            if (!embedded) RafiqTopBar(
                 title = "سجل العبادات المنجزة والفائتة",
                 onBackClick = onBack
             )

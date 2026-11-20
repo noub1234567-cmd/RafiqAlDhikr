@@ -36,6 +36,7 @@ fun DuaHubScreen(
     onOpenSearch: () -> Unit,
     onOpenNow: () -> Unit,
     onOpenQuiz: () -> Unit,
+    onOpenQuizMode: (String) -> Unit,
     onOpenFavorites: () -> Unit,
     onOpenMemo: () -> Unit,
     onOpenPlans: () -> Unit
@@ -69,10 +70,15 @@ fun DuaHubScreen(
                 }
             }
             item {
-                RafiqCard(onClick = onOpenQuiz) {
-                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                        Text("اختبر حفظك للأذكار", style = MaterialTheme.typography.titleMedium)
-                        Text("أكمل الذكر من أربعة خيارات، عشرة أسئلة في كل جولة", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                RafiqCard {
+                    Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("اختبر حفظك", style = MaterialTheme.typography.titleMedium)
+                        Text("أكمل النص من أربعة خيارات، عشرة أسئلة في كل جولة", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedButton(onClick = onOpenQuiz) { Text("الأذكار") }
+                            OutlinedButton(onClick = { onOpenQuizMode("matn") }) { Text("المتون") }
+                            OutlinedButton(onClick = { onOpenQuizMode("nazm") }) { Text("النظم") }
+                        }
                     }
                 }
             }

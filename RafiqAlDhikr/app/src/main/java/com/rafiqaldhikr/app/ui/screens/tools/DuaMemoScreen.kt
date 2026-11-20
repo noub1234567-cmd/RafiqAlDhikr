@@ -101,8 +101,10 @@ private fun DueCard(m: DuaMemoEntity, onRate: (Boolean) -> Unit) {
     RafiqCard {
         Column(modifier = Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(m.title, style = MaterialTheme.typography.titleSmall)
+            val firstHalf = com.rafiqaldhikr.app.core.dua.DuaLibrary.verseFirstHalf(m.title, m.text)
             if (!revealed) {
-                Text("حاول استحضار الدعاء من ذاكرتك، ثم اكشف النص للتأكد.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (firstHalf != null) Text(firstHalf, style = MaterialTheme.typography.bodyLarge)
+                Text(if (firstHalf != null) "أكمل الشطر الثاني من ذاكرتك، ثم اكشف البيت للتأكد." else "حاول استحضار الدعاء من ذاكرتك، ثم اكشف النص للتأكد.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Button(onClick = { revealed = true }) { Text("إظهار النص") }
             } else {
                 Text(m.text, style = MaterialTheme.typography.bodyLarge)
