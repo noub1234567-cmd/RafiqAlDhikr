@@ -156,6 +156,7 @@ fun RafiqNavHost(container: AppContainer) {
                         onOpenSearch = { navController.navigate(NavRoute.DuaSearch.route) { launchSingleTop = true } },
                         onOpenNow = { navController.navigate(NavRoute.DuaNow.route) { launchSingleTop = true } },
                         onOpenQuiz = { navController.navigate(NavRoute.DuaQuiz.route) { launchSingleTop = true } },
+                        onOpenQuizMode = { navController.navigate(NavRoute.DuaQuizMode.create(it)) { launchSingleTop = true } },
                         onOpenFavorites = { navController.navigate(NavRoute.Favorites.route) { launchSingleTop = true } },
                         onOpenMemo = { navController.navigate(NavRoute.DuaMemo.route) { launchSingleTop = true } },
                         onOpenPlans = { navController.navigate(NavRoute.MemoPlans.route) { launchSingleTop = true } }
@@ -184,6 +185,12 @@ fun RafiqNavHost(container: AppContainer) {
                 }
                 composable(NavRoute.Jumua.route) {
                     com.rafiqaldhikr.app.ui.screens.tools.JumuaScreen(onBack = { navController.popBackStack() })
+                }
+                composable(NavRoute.DuaQuizMode.route) { entry ->
+                    com.rafiqaldhikr.app.ui.screens.dualibrary.DuaQuizScreen(
+                        onBack = { navController.popBackStack() },
+                        mode = entry.arguments?.getString("mode").orEmpty()
+                    )
                 }
                 composable(NavRoute.DuaQuiz.route) {
                     com.rafiqaldhikr.app.ui.screens.dualibrary.DuaQuizScreen(onBack = { navController.popBackStack() })
@@ -252,11 +259,13 @@ fun RafiqNavHost(container: AppContainer) {
                 }
                 composable(NavRoute.History.route) {
                     val vm: HistoryViewModel = viewModel(factory = factory)
-                    HistoryScreen(viewModel = vm, onBack = { navController.popBackStack() })
+                    val svm: StatisticsViewModel = viewModel(factory = factory)
+                    com.rafiqaldhikr.app.ui.screens.history.ProgressScreen(vm, svm, initialTab = 1, onBack = { navController.popBackStack() })
                 }
                 composable(NavRoute.Statistics.route) {
-                    val vm: StatisticsViewModel = viewModel(factory = factory)
-                    StatisticsScreen(viewModel = vm, onBack = { navController.popBackStack() })
+                    val vm: HistoryViewModel = viewModel(factory = factory)
+                    val svm: StatisticsViewModel = viewModel(factory = factory)
+                    com.rafiqaldhikr.app.ui.screens.history.ProgressScreen(vm, svm, initialTab = 0, onBack = { navController.popBackStack() })
                 }
                 composable(NavRoute.Profiles.route) {
                     val vm: ProfilesViewModel = viewModel(factory = factory)

@@ -31,19 +31,26 @@ import kotlinx.coroutines.withContext
 
 /** Ten "complete the dhikr" questions drawn from the app's own texts. */
 @Composable
-fun DuaQuizScreen(onBack: () -> Unit) {
+fun DuaQuizScreen(onBack: () -> Unit, mode: String = "adhkar") {
     val context = LocalContext.current
     var round by remember { mutableIntStateOf(0) }
     val questions by produceState<List<QuizQuestion>?>(null, round) {
         value = null
-        value = withContext(Dispatchers.Default) { DuaQuiz.generate(DuaLibrary.sections(context)) }
+        value = withContext(Dispatchers.Default) {
+            val all = DuaLibrary.sections(context)
+            when (mode) {
+                "nazm" -> DuaQuiz.generateVerses(all)
+                "matn" -> DuaQuiz.generate(all, DuaQuiz.MATN_SECTIONS)
+                else -> DuaQuiz.generate(all)
+            }
+        }
     }
     var index by remember(round) { mutableIntStateOf(0) }
     var score by remember(round) { mutableIntStateOf(0) }
     var picked by remember(round, index) { mutableStateOf<Int?>(null) }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        RafiqTopBar(title = "اختبار الأذكار", onBackClick = onBack)
+        RafiqTopBar(title = when (mode) { "nazm" -> "اختبار النظم"; "matn" -> "اختبار المتون"; else -> "اختبار الأذكار" }, onBackClick = onBack)
         val qs = questions ?: return@Column
         if (qs.isEmpty()) {
             Text("لا تتوفر نصوص كافية للاختبار.", modifier = Modifier.padding(16.dp))
@@ -66,7 +73,7 @@ fun DuaQuizScreen(onBack: () -> Unit) {
             Text("السؤال ${index + 1} من ${qs.size}", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
             RafiqCard {
                 Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text("أكمل الذكر:", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(if (mode == "nazm") "أكمل البيت:" else if (mode == "matn") "أكمل المتن:" else "أكمل الذكر:", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(q.prefix, style = MaterialTheme.typography.titleMedium)
                 }
             }

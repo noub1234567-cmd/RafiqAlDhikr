@@ -72,8 +72,7 @@ fun MoreScreen(
         ),
         "تقاريري" to listOf(
             MoreMenuItem("تقرير الأسبوع", "ملخص واحد للصلاة والأذكار والقرآن والصيام والجدول مقارنةً بالأسبوع الماضي", Icons.Default.BarChart, NavRoute.WeeklyReport.route),
-            MoreMenuItem("الإحصائيات والمتابعة", "ملخص يومي وأسبوعي وشهري بتشجيع هادئ", Icons.Default.BarChart, NavRoute.Statistics.route),
-            MoreMenuItem("السجل (المكتمل والفائت)", "مراجعة العبادات وإعادة الجدولة دون إكمال تلقائي", Icons.Default.History, NavRoute.History.route),
+            MoreMenuItem("المتابعة والسجل", "الإحصائيات اليومية والأسبوعية، وسجل المكتمل والفائت", Icons.Default.BarChart, NavRoute.Statistics.route),
             MoreMenuItem("السجل السنوي", "شبكة أيام سنتك لكل عبادة مع التحديات والأوسمة", Icons.Default.DateRange, NavRoute.YearLog.route)
         ),
         "أدوات" to listOf(

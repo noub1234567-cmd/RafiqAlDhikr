@@ -26,14 +26,15 @@ import com.rafiqaldhikr.app.ui.components.RafiqTopBar
 @Composable
 fun StatisticsScreen(
     viewModel: StatisticsViewModel,
-    onBack: () -> Unit
+    onBack: () -> Unit,
+    embedded: Boolean = false
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val s = state.stats
 
     Scaffold(
         topBar = {
-            RafiqTopBar(
+            if (!embedded) RafiqTopBar(
                 title = "الإحصائيات والمتابعة",
                 onBackClick = onBack
             )

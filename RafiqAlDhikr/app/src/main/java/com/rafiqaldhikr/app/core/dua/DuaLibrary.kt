@@ -117,6 +117,13 @@ object DuaLibrary {
         return "${t.hashCode()}_${t.length}"
     }
 
+    /** The first hemistich of a nazm verse (title "البيت N", two lines) so a review can hide the second; null for other texts. */
+    fun verseFirstHalf(title: String, text: String): String? {
+        if (!title.startsWith("البيت ")) return null
+        val parts = text.split("\n").map { it.trim() }.filter { it.isNotEmpty() }
+        return if (parts.size == 2) parts[0] else null
+    }
+
     fun byId(sections: List<DuaSectionDef>, id: String?): DuaSectionDef? = sections.firstOrNull { it.id == id }
 
     /** Removes tashkeel/tatweel and unifies alef forms so a plain search matches fully vowelled text. */
