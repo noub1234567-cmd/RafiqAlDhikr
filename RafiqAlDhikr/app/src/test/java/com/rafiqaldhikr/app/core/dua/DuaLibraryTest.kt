@@ -48,9 +48,9 @@ class DuaLibraryTest {
         assertTrue(DuaLibrary.plain("رَبَّنَا آتِنَا").contains(DuaLibrary.plain("ربنا اتنا")))
     }
 
-    @Test fun sixteenSectionsWithUniqueIds() {
+    @Test fun twentySectionsWithUniqueIds() {
         val ids = DuaLibrary.skeleton.map { it.id }
-        assertEquals(16, ids.size)
+        assertEquals(20, ids.size)
         assertEquals(ids.size, ids.toSet().size)
     }
 
@@ -108,7 +108,7 @@ class DuaLibraryTest {
         assertEquals(34, n(DuaLibrary.N_BAYQUNIYYA))
         assertEquals(12, load(DuaLibrary.M_NAWAQID).size)
         assertEquals(5, load(DuaLibrary.M_QAWAID).size)
-        for (id in listOf(DuaLibrary.M_QAWAID, DuaLibrary.M_NAWAQID, DuaLibrary.M_USUL, DuaLibrary.M_SHURUT)) {
+        for (id in DuaQuiz.MATN_SECTIONS) {
             assertTrue(id, load(id).all { g -> g.items.isNotEmpty() && g.items.all { it.text.isNotBlank() } })
         }
         for (id in listOf(DuaLibrary.N_AJRUMIYYA, DuaLibrary.N_BAYQUNIYYA)) {

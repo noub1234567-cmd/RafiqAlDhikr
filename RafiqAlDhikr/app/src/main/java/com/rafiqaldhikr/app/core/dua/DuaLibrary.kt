@@ -44,6 +44,10 @@ object DuaLibrary {
     const val M_NAWAQID = "m_nawaqid"
     const val M_USUL = "m_usul"
     const val M_SHURUT = "m_shurut"
+    const val M_KASHF = "m_kashf"
+    const val M_ASHMAWIYYA = "m_ashmawiyya"
+    const val M_AKHDARI = "m_akhdari"
+    const val M_AJRUMIYYA = "m_ajrumiyya"
     const val N_TUHFA = "n_tuhfa"
     const val N_AJRUMIYYA = "n_ajrumiyya"
     const val N_BAYQUNIYYA = "n_bayquniyya"
@@ -63,6 +67,10 @@ object DuaLibrary {
         DuaSectionDef(M_NAWAQID, "نواقض الإسلام", "للشيخ محمد بن عبد الوهاب رحمه الله"),
         DuaSectionDef(M_USUL, "الأصول الثلاثة وأدلتها", "للشيخ محمد بن عبد الوهاب رحمه الله"),
         DuaSectionDef(M_SHURUT, "شروط الصلاة وأركانها وواجباتها", "للشيخ محمد بن عبد الوهاب رحمه الله"),
+        DuaSectionDef(M_KASHF, "كشف الشبهات", "للشيخ محمد بن عبد الوهاب رحمه الله (ستة عشر فصلاً)"),
+        DuaSectionDef(M_ASHMAWIYYA, "متن العشماوية", "في الفقه المالكي لعبد الباري العشماوي"),
+        DuaSectionDef(M_AKHDARI, "متن الأخضري في العبادات", "في الفقه المالكي للأخضري"),
+        DuaSectionDef(M_AJRUMIYYA, "متن الآجرومية", "في النحو لابن آجروم (غير مشكّل)"),
         DuaSectionDef(N_TUHFA, "تحفة الأطفال", "نظم في أحكام التجويد للجمزوري (٦١ بيتاً) مع شرح مختصر"),
         DuaSectionDef(N_AJRUMIYYA, "نظم الآجرومية", "نظم متن الآجرومية في النحو (١٥٤ بيتاً)"),
         DuaSectionDef(N_BAYQUNIYYA, "المنظومة البيقونية", "نظم في مصطلح الحديث للإمام عمر البيقوني (٣٤ بيتاً)")
@@ -75,7 +83,7 @@ object DuaLibrary {
         Category("adhkar", "الأدعية والأذكار", "أذكار المناسبات والأدعية والاستغفار وفضل الدعاء",
             listOf(LIBRARY, PRAISE, ISTIGHFAR, PROPHET, QURAN, VIRTUE, CONDITIONS)),
         Category("hadith", "الأحاديث", "الأربعون النووية والسنن المهجورة", listOf(NAWAWI, SUNAN)),
-        Category("matn", "المتون", "متون طالب العلم", listOf(M_QAWAID, M_NAWAQID, M_USUL, M_SHURUT)),
+        Category("matn", "المتون", "متون طالب العلم", listOf(M_QAWAID, M_NAWAQID, M_USUL, M_SHURUT, M_KASHF, M_ASHMAWIYYA, M_AKHDARI, M_AJRUMIYYA)),
         Category("nazm", "النظم", "منظومات للحفظ في التجويد والنحو والحديث", listOf(N_TUHFA, N_AJRUMIYYA, N_BAYQUNIYYA))
     )
 

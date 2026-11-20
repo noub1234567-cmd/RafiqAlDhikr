@@ -22,7 +22,10 @@ object DuaQuiz {
         DuaLibrary.LIBRARY, DuaLibrary.PROPHET, DuaLibrary.QURAN, DuaLibrary.PRAISE, DuaLibrary.ISTIGHFAR
     )
 
-    val MATN_SECTIONS = listOf(DuaLibrary.M_QAWAID, DuaLibrary.M_NAWAQID, DuaLibrary.M_USUL, DuaLibrary.M_SHURUT)
+    val MATN_SECTIONS = listOf(
+        DuaLibrary.M_QAWAID, DuaLibrary.M_NAWAQID, DuaLibrary.M_USUL, DuaLibrary.M_SHURUT,
+        DuaLibrary.M_KASHF, DuaLibrary.M_ASHMAWIYYA, DuaLibrary.M_AKHDARI, DuaLibrary.M_AJRUMIYYA
+    )
     val NAZM_SECTIONS = listOf(DuaLibrary.N_TUHFA, DuaLibrary.N_AJRUMIYYA, DuaLibrary.N_BAYQUNIYYA)
 
     /** "Complete the verse": the first hemistich is shown and the second must be picked from four options. */
