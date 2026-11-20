@@ -48,9 +48,9 @@ class DuaLibraryTest {
         assertTrue(DuaLibrary.plain("رَبَّنَا آتِنَا").contains(DuaLibrary.plain("ربنا اتنا")))
     }
 
-    @Test fun nineSectionsWithUniqueIds() {
+    @Test fun sixteenSectionsWithUniqueIds() {
         val ids = DuaLibrary.skeleton.map { it.id }
-        assertEquals(9, ids.size)
+        assertEquals(16, ids.size)
         assertEquals(ids.size, ids.toSet().size)
     }
 
@@ -94,10 +94,32 @@ class DuaLibraryTest {
         assertTrue(athar.all { it.source.contains("المصدر:") && it.note.startsWith("الفائدة:") })
     }
 
-    @Test fun nawawiHasFortyTwoHadithsWithoutLeftovers() {
+    @Test fun nawawiHasFiftyHadithsWithoutLeftovers() {
         val items = load(DuaLibrary.NAWAWI).flatMap { it.items }
-        assertEquals(42, items.size)
+        assertEquals(50, items.size)
         assertTrue(items.all { it.title.startsWith("الحديث ") && it.text.isNotBlank() })
         assertTrue(items.none { it.text.contains("جامع العلوم") || it.text.contains("<br>") })
+    }
+
+    @Test fun matnsAndNazmAreLoadedWithExpectedSizes() {
+        fun n(id: String) = load(id).sumOf { it.items.size }
+        assertEquals(61, n(DuaLibrary.N_TUHFA) - 1) // 61 verses plus one commentary item
+        assertEquals(154, n(DuaLibrary.N_AJRUMIYYA))
+        assertEquals(34, n(DuaLibrary.N_BAYQUNIYYA))
+        assertEquals(12, load(DuaLibrary.M_NAWAQID).size)
+        assertEquals(5, load(DuaLibrary.M_QAWAID).size)
+        for (id in listOf(DuaLibrary.M_QAWAID, DuaLibrary.M_NAWAQID, DuaLibrary.M_USUL, DuaLibrary.M_SHURUT)) {
+            assertTrue(id, load(id).all { g -> g.items.isNotEmpty() && g.items.all { it.text.isNotBlank() } })
+        }
+        for (id in listOf(DuaLibrary.N_AJRUMIYYA, DuaLibrary.N_BAYQUNIYYA)) {
+            assertTrue(id, load(id).flatMap { it.items }.all { it.text.contains("\n") })
+        }
+    }
+
+    @Test fun everyCategorySectionExistsAndNoneIsListedTwice() {
+        val all = DuaLibrary.categories.flatMap { it.sectionIds }
+        assertEquals(all.size, all.toSet().size)
+        assertEquals(DuaLibrary.skeleton.map { it.id }.toSet(), all.toSet())
+        assertEquals(4, DuaLibrary.categories.size)
     }
 }

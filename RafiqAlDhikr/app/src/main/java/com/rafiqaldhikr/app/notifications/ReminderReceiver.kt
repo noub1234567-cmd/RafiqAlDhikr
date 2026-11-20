@@ -221,6 +221,9 @@ class ReminderReceiver : BroadcastReceiver() {
             ReminderScheduler.KIND_SPECIAL ->
                 com.rafiqaldhikr.app.core.special.SpecialReminder.entries.getOrNull(targetId.toInt())
                     ?.let { com.rafiqaldhikr.app.core.special.SpecialReminders.isEnabled(app, it) } == true
+            ReminderScheduler.KIND_MEMO_PLAN ->
+                com.rafiqaldhikr.app.core.memorization.MemoPlanReminders.minutes(app, targetId) >= 0 &&
+                    db.memoPlanDao().getAllPlans().any { it.id == targetId }
             else -> true
         }
     }
