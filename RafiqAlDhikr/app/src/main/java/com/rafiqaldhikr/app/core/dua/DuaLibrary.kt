@@ -27,7 +27,7 @@ data class DuaSectionDef(
 }
 
 /**
- * The content of the "الأدعية" tab. Each section's texts live in `assets/dua/<id>.json`
+ * The content of the "الذكر والعلم" tab. Each section's texts live in `assets/dua/<id>.json`
  * (a list of groups), so adding content means editing one JSON file and nothing else.
  */
 object DuaLibrary {
@@ -40,6 +40,13 @@ object DuaLibrary {
     const val VIRTUE = "virtue"
     const val SUNAN = "sunan"
     const val NAWAWI = "nawawi"
+    const val M_QAWAID = "m_qawaid"
+    const val M_NAWAQID = "m_nawaqid"
+    const val M_USUL = "m_usul"
+    const val M_SHURUT = "m_shurut"
+    const val N_TUHFA = "n_tuhfa"
+    const val N_AJRUMIYYA = "n_ajrumiyya"
+    const val N_BAYQUNIYYA = "n_bayquniyya"
 
     /** The sections without their content, for showing the buttons immediately. */
     val skeleton: List<DuaSectionDef> = listOf(
@@ -51,7 +58,25 @@ object DuaLibrary {
         DuaSectionDef(CONDITIONS, "هدي السلف في عبادة الدعاء", "آداب الدعاء وأسباب الإجابة وموانعها"),
         DuaSectionDef(VIRTUE, "فضل الدعاء", "أحاديث في فضل الذكر والدعاء مع بيان فضلها وتخريجها"),
         DuaSectionDef(SUNAN, "السنن المهجورة", "سنن نبوية ثابتة قلّ من يعمل بها، مع تخريجها وكيفية العمل بها وآثار الصحابة والتابعين"),
-        DuaSectionDef(NAWAWI, "الأربعون النووية", "أحاديث الأربعين النووية للإمام النووي (٤٢ حديثاً) بنصها وتخريجها")
+        DuaSectionDef(NAWAWI, "الأربعون النووية", "الأربعون النووية للإمام النووي مع تتمة الخمسين (٥٠ حديثاً)"),
+        DuaSectionDef(M_QAWAID, "القواعد الأربع", "للشيخ محمد بن عبد الوهاب رحمه الله"),
+        DuaSectionDef(M_NAWAQID, "نواقض الإسلام", "للشيخ محمد بن عبد الوهاب رحمه الله"),
+        DuaSectionDef(M_USUL, "الأصول الثلاثة وأدلتها", "للشيخ محمد بن عبد الوهاب رحمه الله"),
+        DuaSectionDef(M_SHURUT, "شروط الصلاة وأركانها وواجباتها", "للشيخ محمد بن عبد الوهاب رحمه الله"),
+        DuaSectionDef(N_TUHFA, "تحفة الأطفال", "نظم في أحكام التجويد للجمزوري (٦١ بيتاً) مع شرح مختصر"),
+        DuaSectionDef(N_AJRUMIYYA, "نظم الآجرومية", "نظم متن الآجرومية في النحو (١٥٤ بيتاً)"),
+        DuaSectionDef(N_BAYQUNIYYA, "المنظومة البيقونية", "نظم في مصطلح الحديث للإمام عمر البيقوني (٣٤ بيتاً)")
+    )
+
+    /** A box on the hub that opens the list of sections it holds. */
+    data class Category(val id: String, val title: String, val subtitle: String, val sectionIds: List<String>)
+
+    val categories: List<Category> = listOf(
+        Category("adhkar", "الأدعية والأذكار", "أذكار المناسبات والأدعية والاستغفار وفضل الدعاء",
+            listOf(LIBRARY, PRAISE, ISTIGHFAR, PROPHET, QURAN, VIRTUE, CONDITIONS)),
+        Category("hadith", "الأحاديث", "الأربعون النووية والسنن المهجورة", listOf(NAWAWI, SUNAN)),
+        Category("matn", "المتون", "متون طالب العلم", listOf(M_QAWAID, M_NAWAQID, M_USUL, M_SHURUT)),
+        Category("nazm", "النظم", "منظومات للحفظ في التجويد والنحو والحديث", listOf(N_TUHFA, N_AJRUMIYYA, N_BAYQUNIYYA))
     )
 
     private val json = Json { ignoreUnknownKeys = true }

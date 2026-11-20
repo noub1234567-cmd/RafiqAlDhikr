@@ -14,6 +14,9 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.Dispatchers
@@ -25,15 +28,7 @@ import com.rafiqaldhikr.app.core.dua.DuaLibrary
 import com.rafiqaldhikr.app.ui.components.RafiqCard
 import com.rafiqaldhikr.app.ui.components.RafiqTopBar
 
-private val sectionGroups: List<Pair<String, List<String>>> = listOf(
-    "الأدعية" to listOf(
-        DuaLibrary.LIBRARY, DuaLibrary.PRAISE, DuaLibrary.ISTIGHFAR, DuaLibrary.PROPHET,
-        DuaLibrary.QURAN, DuaLibrary.VIRTUE, DuaLibrary.CONDITIONS
-    ),
-    "السنة والأحاديث" to listOf(DuaLibrary.NAWAWI, DuaLibrary.SUNAN)
-)
-
-/** The "الأدعية" tab: one button per section, plus the personal du'a notebook that already exists. */
+/** The "الذكر والعلم" tab: four boxes (du'as, hadiths, matns, nazm) that open their sections, plus the personal tools. */
 @Composable
 fun DuaHubScreen(
     onOpenSection: (String) -> Unit,
@@ -49,8 +44,9 @@ fun DuaHubScreen(
     val sections by produceState(DuaLibrary.skeleton) {
         value = withContext(Dispatchers.Default) { DuaLibrary.sections(context) }
     }
+    var openCategory by rememberSaveable { mutableStateOf("") }
     Column(modifier = Modifier.fillMaxSize()) {
-        RafiqTopBar(title = "الأدعية")
+        RafiqTopBar(title = "الذكر والعلم")
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
@@ -93,21 +89,33 @@ fun DuaHubScreen(
                     }
                 }
             }
-            sectionGroups.forEach { (heading, ids) ->
-                val inGroup = sections.filter { it.id in ids }
-                if (inGroup.isNotEmpty()) {
-                    item(key = "h_$heading") {
-                        Text(heading, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 6.dp))
+            DuaLibrary.categories.forEach { cat ->
+                val open = openCategory == cat.id
+                item(key = "c_${cat.id}") {
+                    RafiqCard(onClick = { openCategory = if (open) "" else cat.id }) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(cat.title, style = MaterialTheme.typography.titleMedium)
+                                Text(cat.subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                            Text(if (open) "▲" else "▼", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+                        }
                     }
-                    items(inGroup, key = { it.id }) { s ->
+                }
+                if (open) {
+                    items(sections.filter { it.id in cat.sectionIds }.sortedBy { cat.sectionIds.indexOf(it.id) }, key = { "s_${it.id}" }) { s ->
                         RafiqCard(onClick = { onOpenSection(s.id) }) {
                             Row(
-                                modifier = Modifier.fillMaxWidth().padding(16.dp),
+                                modifier = Modifier.fillMaxWidth().padding(start = 28.dp, end = 16.dp, top = 14.dp, bottom = 14.dp),
                                 verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.SpaceBetween
                             ) {
                                 Column(modifier = Modifier.weight(1f)) {
-                                    Text(s.title, style = MaterialTheme.typography.titleMedium)
+                                    Text(s.title, style = MaterialTheme.typography.titleSmall)
                                     Text(s.subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                                 if (s.itemCount > 0) {
