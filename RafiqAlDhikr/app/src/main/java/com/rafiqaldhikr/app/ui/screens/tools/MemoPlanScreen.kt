@@ -48,9 +48,13 @@ fun MemoPlanScreen(planId: Long, onBack: () -> Unit, onOpenMemo: () -> Unit) {
         if (p == null) return@Column
         val undone = items.filter { it.doneEpochDay < 0 }
         val done = items.filter { it.doneEpochDay >= 0 }
-        val dayIdx = MemoPlanMath.dayIndex(p.startEpochDay, today)
-        val quota = MemoPlanMath.quotaToday(undone.size, p.totalDays, dayIdx)
+        val ramp = p.ramp == 1
+        val dayState = MemoPlanMath.state(p.startEpochDay, p.totalDays, p.studyDaysMask, today)
+        val elapsed = MemoPlanMath.sessionsElapsed(p.startEpochDay, p.studyDaysMask, today)
+        val quota = MemoPlanMath.quotaToday(undone.size, p.totalDays, ramp, p.startEpochDay, p.studyDaysMask, today)
         val todays = undone.take(quota)
+        val endDay = MemoPlanMath.endDate(p.startEpochDay, p.totalDays, p.studyDaysMask)
+        val todayWords = todays.sumOf { MemoPlanMath.words(it.text) }
         val learnedToday = done.count { it.doneEpochDay == today }
         val reviewItems = if (p.reviewMode == MemoPlanMath.REVIEW_MANUAL) {
             val positions = MemoPlanMath.manualReview(done.filter { it.doneEpochDay < today }.map { it.position }, p.reviewCount)
@@ -68,12 +72,55 @@ fun MemoPlanScreen(planId: Long, onBack: () -> Unit, onOpenMemo: () -> Unit) {
                     Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text("حفظت ${done.size} من ${items.size}", style = MaterialTheme.typography.titleMedium)
                         Text(
-                            "اليوم ${(dayIdx + 1).coerceAtMost(p.totalDays)} من ${p.totalDays}" +
-                                if (dayIdx >= p.totalDays && undone.isNotEmpty()) " — تجاوزت المدة، والباقي كله اليوم" else "",
+                            when (dayState) {
+                                MemoPlanMath.NOT_STARTED -> "تبدأ الخطة في ${dayLabel(p.startEpochDay)}"
+                                MemoPlanMath.REST_DAY -> "اليوم يوم راحة، وتنتهي الخطة في ${dayLabel(endDay)}"
+                                MemoPlanMath.OVER -> if (undone.isNotEmpty()) "تجاوزت المدة، والباقي كله اليوم" else "انتهت المدة"
+                                else -> "يوم الحفظ ${elapsed + 1} من ${p.totalDays} — تنتهي في ${dayLabel(endDay)}"
+                            },
                             style = MaterialTheme.typography.bodyMedium
+                        )
+                        if (todays.isNotEmpty()) Text(
+                            "الوقت التقريبي لحفظ اليوم: ${MemoPlanMath.newMinutes(todayWords)} دقيقة",
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         if (learnedToday > 0) Text("حفظت اليوم: $learnedToday", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
                     }
+                }
+            }
+            item {
+                var recalcOpen by remember { mutableStateOf(false) }
+                OutlinedButton(onClick = { recalcOpen = true }, enabled = undone.isNotEmpty()) { Text("أعد الحساب") }
+                if (recalcOpen) {
+                    var daysText by remember { mutableStateOf((p.totalDays - elapsed).coerceAtLeast(1).toString()) }
+                    var newMask by remember { mutableStateOf(p.studyDaysMask) }
+                    val newDays = daysText.toIntOrNull()?.takeIf { it > 0 }
+                    androidx.compose.material3.AlertDialog(
+                        onDismissRequest = { recalcOpen = false },
+                        title = { Text("إعادة حساب الخطة") },
+                        text = {
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text("الباقي ${undone.size} نصاً، يُوزَّع من اليوم على أيام حفظ جديدة بورد متساوٍ.", style = MaterialTheme.typography.bodyMedium)
+                                androidx.compose.material3.OutlinedTextField(
+                                    value = daysText, onValueChange = { daysText = it.filter(Char::isDigit).take(4) },
+                                    label = { Text("عدد أيام الحفظ من اليوم") }, singleLine = true,
+                                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number)
+                                )
+                                StudyDayChips(newMask) { newMask = it }
+                                if (newDays != null) {
+                                    val end = MemoPlanMath.endDate(today, newDays, newMask)
+                                    Text("الورد الجديد: حتى ${MemoPlanMath.perDayFor(undone.size, newDays)} يومياً، وتنتهي في ${dayLabel(end)}.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary)
+                                }
+                            }
+                        },
+                        confirmButton = {
+                            Button(enabled = newDays != null, onClick = {
+                                scope.launch { repo.reschedule(p.id, today, newDays ?: 1, newMask) }
+                                recalcOpen = false
+                            }) { Text("أعد الحساب") }
+                        },
+                        dismissButton = { TextButton(onClick = { recalcOpen = false }) { Text("إلغاء") } }
+                    )
                 }
             }
             item {

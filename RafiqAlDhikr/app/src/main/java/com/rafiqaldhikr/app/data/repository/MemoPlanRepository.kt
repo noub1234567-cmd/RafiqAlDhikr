@@ -20,13 +20,15 @@ class MemoPlanRepository(database: AppDatabase, private val tools: PersonalTools
 
     suspend fun createPlan(
         profileId: Long, title: String, sourceId: String, groupTitle: String,
-        seeds: List<PlanSeed>, today: Long, totalDays: Int, reviewMode: Int, reviewCount: Int
+        seeds: List<PlanSeed>, startEpochDay: Long, totalDays: Int, reviewMode: Int, reviewCount: Int,
+        studyDaysMask: Int = MemoPlanMath.ALL_DAYS, ramp: Boolean = false
     ): Long {
         val planId = dao.insertPlan(
             MemoPlanEntity(
                 profileId = profileId, title = title.trim(), sourceId = sourceId, groupTitle = groupTitle,
-                startEpochDay = today, totalDays = totalDays.coerceAtLeast(1), reviewMode = reviewMode,
-                reviewCount = reviewCount.coerceAtLeast(1), createdAtMillis = System.currentTimeMillis()
+                startEpochDay = startEpochDay, totalDays = totalDays.coerceAtLeast(1), reviewMode = reviewMode,
+                reviewCount = reviewCount.coerceAtLeast(1), createdAtMillis = System.currentTimeMillis(),
+                studyDaysMask = MemoPlanMath.normalizeMask(studyDaysMask), ramp = if (ramp) 1 else 0
             )
         )
         dao.insertItems(
@@ -47,6 +49,10 @@ class MemoPlanRepository(database: AppDatabase, private val tools: PersonalTools
             tools.addMemo(plan.profileId, item.title, item.text, item.source, today + 1)
         }
     }
+
+    /** Recalculate: what is left is spread over [sessions] study days counted from [today], with an even load. */
+    suspend fun reschedule(planId: Long, today: Long, sessions: Int, mask: Int) =
+        dao.reschedule(planId, today, sessions.coerceAtLeast(1), MemoPlanMath.normalizeMask(mask), 0)
 
     suspend fun undo(item: MemoPlanItemEntity) = dao.setDone(item.id, -1)
 
