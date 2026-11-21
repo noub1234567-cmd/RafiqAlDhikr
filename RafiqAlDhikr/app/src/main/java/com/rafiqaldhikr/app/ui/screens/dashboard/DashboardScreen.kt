@@ -116,6 +116,8 @@ fun DashboardScreen(
                 }
             }
 
+            item { com.rafiqaldhikr.app.ui.screens.tools.TodayPlansCard(onNavigate) }
+
             item {
                 val ctx = androidx.compose.ui.platform.LocalContext.current
                 val keys = remember { com.rafiqaldhikr.app.ui.screens.dualibrary.suggestedNowKeys(ctx) }

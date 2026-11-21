@@ -11,6 +11,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
+import com.rafiqaldhikr.app.core.dua.ReadingPrefs
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
@@ -26,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.isSpecified
 import com.rafiqaldhikr.app.core.dua.DuaItem
 import com.rafiqaldhikr.app.core.dua.DuaLibrary
 import com.rafiqaldhikr.app.core.dua.DuaSectionDef
@@ -48,6 +53,8 @@ fun DuaSectionScreen(sectionId: String, onBack: () -> Unit) {
     var query by remember { mutableStateOf("") }
     val expanded = remember { mutableStateMapOf<String, Boolean>() }
     val clipboard = LocalClipboardManager.current
+    var fontScale by remember { mutableStateOf(ReadingPrefs.scale(context)) }
+    val listState = rememberLazyListState()
 
     Column(modifier = Modifier.fillMaxSize()) {
         RafiqTopBar(title = section?.title ?: "الأدعية", onBackClick = onBack)
@@ -64,13 +71,27 @@ fun DuaSectionScreen(sectionId: String, onBack: () -> Unit) {
             return@Column
         }
 
-        OutlinedTextField(
-            value = query,
-            onValueChange = { query = it },
-            label = { Text("بحث في القسم") },
-            singleLine = true,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
-        )
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            OutlinedTextField(
+                value = query,
+                onValueChange = { query = it },
+                label = { Text("بحث في القسم") },
+                singleLine = true,
+                modifier = Modifier.weight(1f)
+            )
+            TextButton(
+                onClick = { fontScale = ReadingPrefs.step(context, -1) },
+                enabled = fontScale > ReadingPrefs.scales.first()
+            ) { Text("أ-") }
+            TextButton(
+                onClick = { fontScale = ReadingPrefs.step(context, 1) },
+                enabled = fontScale < ReadingPrefs.scales.last()
+            ) { Text("أ+") }
+        }
         val q = query.trim()
         val groups = remember(section, q) {
             val pq = DuaLibrary.plain(q)
@@ -81,7 +102,33 @@ fun DuaSectionScreen(sectionId: String, onBack: () -> Unit) {
             }.filter { it.second.isNotEmpty() }
         }
 
+        // The list's keys in order, for a given set of opened chapters (used to remember and restore the reading spot).
+        fun listKeys(isOpen: (String) -> Boolean): List<String> = buildList {
+            groups.forEach { (g, items) ->
+                add("h_${g.title}")
+                if (isOpen(g.title)) items.indices.forEach { add("i_${g.title}_$it") }
+            }
+        }
+        LaunchedEffect(section.id) {
+            val saved = ReadingPrefs.position(context, sectionId) ?: return@LaunchedEffect
+            val g = groups.firstOrNull { saved == "h_${it.first.title}" || saved.startsWith("i_${it.first.title}_") }
+                ?: return@LaunchedEffect
+            expanded[g.first.title] = true
+            androidx.compose.runtime.withFrameNanos { }
+            val keys = listKeys { expanded[it] ?: (section.groups.size == 1) }
+            val at = keys.indexOf(saved)
+            if (at >= 0) listState.scrollToItem(at)
+        }
+        LaunchedEffect(section.id, q) {
+            if (q.isNotEmpty()) return@LaunchedEffect
+            snapshotFlow { listState.firstVisibleItemIndex }.collect { idx ->
+                val keys = listKeys { expanded[it] ?: (section.groups.size == 1) }
+                keys.getOrNull(idx)?.let { ReadingPrefs.savePosition(context, sectionId, it) }
+            }
+        }
+
         LazyColumn(
+            state = listState,
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -102,7 +149,7 @@ fun DuaSectionScreen(sectionId: String, onBack: () -> Unit) {
                 }
                 if (open) {
                     items.forEachIndexed { i, d ->
-                        item(key = "i_${g.title}_$i") { ItemCard(d, DuaLibrary.saveTitle(g, d), section.title) }
+                        item(key = "i_${g.title}_$i") { ItemCard(d, DuaLibrary.saveTitle(g, d), section.title, fontScale) }
                     }
                 }
             }
@@ -111,7 +158,7 @@ fun DuaSectionScreen(sectionId: String, onBack: () -> Unit) {
 }
 
 @Composable
-internal fun ItemCard(d: DuaItem, saveTitle: String, sectionTitle: String) {
+internal fun ItemCard(d: DuaItem, saveTitle: String, sectionTitle: String, fontScale: Float = 1f) {
     RafiqCard {
         Column(modifier = Modifier.padding(14.dp)) {
             if (d.title.isNotBlank()) Text(d.title, style = MaterialTheme.typography.titleSmall)
@@ -119,7 +166,14 @@ internal fun ItemCard(d: DuaItem, saveTitle: String, sectionTitle: String) {
                 Text(d.note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             Spacer(Modifier.height(4.dp))
-            Text(d.text, style = MaterialTheme.typography.bodyLarge)
+            val body = MaterialTheme.typography.bodyLarge
+            Text(
+                d.text,
+                style = if (fontScale == 1f) body else body.copy(
+                    fontSize = body.fontSize * fontScale,
+                    lineHeight = if (body.lineHeight.isSpecified) body.lineHeight * fontScale else body.lineHeight
+                )
+            )
             if (d.source.isNotBlank()) {
                 Text(d.source, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.outline)
             }

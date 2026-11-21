@@ -104,9 +104,11 @@ object MemoPlanMath {
     const val REST_DAY = 1
     const val ACTIVE = 2
     const val OVER = 3
+    const val PAUSED = 4
 
     /** Where [today] stands in the plan. */
-    fun state(startEpochDay: Long, sessions: Int, mask: Int, today: Long): Int = when {
+    fun state(startEpochDay: Long, sessions: Int, mask: Int, today: Long, paused: Boolean = false): Int = when {
+        paused -> PAUSED
         today < startEpochDay -> NOT_STARTED
         !isStudyDay(mask, today) -> REST_DAY
         sessionsElapsed(startEpochDay, mask, today) >= sessions -> OVER
@@ -117,14 +119,20 @@ object MemoPlanMath {
      * Items to learn today: what is still undone, spread by weight over the sessions that remain from today.
      * Zero before the start and on rest days; everything that is left once the plan has run out.
      */
-    fun quotaToday(remaining: Int, sessions: Int, ramp: Boolean, startEpochDay: Long, mask: Int, today: Long): Int {
+    fun quotaToday(
+        remaining: Int, sessions: Int, ramp: Boolean, startEpochDay: Long, mask: Int, today: Long, paused: Boolean = false
+    ): Int {
         if (remaining <= 0) return 0
-        return when (state(startEpochDay, sessions, mask, today)) {
-            NOT_STARTED, REST_DAY -> 0
+        return when (state(startEpochDay, sessions, mask, today, paused)) {
+            NOT_STARTED, REST_DAY, PAUSED -> 0
             OVER -> remaining
             else -> share(remaining, weights(sessions, ramp), sessionsElapsed(startEpochDay, mask, today))
         }
     }
+
+    /** Study sessions still ahead of [today] (the whole plan before it starts). */
+    fun sessionsLeft(startEpochDay: Long, sessions: Int, mask: Int, today: Long): Int =
+        (sessions - sessionsElapsed(startEpochDay, mask, today)).coerceAtLeast(1)
 
     /** Words in a text, for the time estimates. */
     fun words(text: String): Int = text.split(Regex("\\s+")).count { it.isNotBlank() }
