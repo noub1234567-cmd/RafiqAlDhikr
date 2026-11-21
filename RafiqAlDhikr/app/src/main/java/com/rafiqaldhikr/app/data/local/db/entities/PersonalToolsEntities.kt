@@ -83,3 +83,31 @@ data class DuaMemoEntity(
     val lastEpochDay: Long,
     val createdAtMillis: Long
 )
+
+/** A bookmarked spot in a library section; [locator] is the list key used to scroll back to it. */
+@Serializable
+@Entity(
+    tableName = "bookmarks",
+    foreignKeys = [
+        ForeignKey(
+            entity = UserProfileEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["profileId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [Index(value = ["profileId", "itemKey"], unique = true)]
+)
+data class BookmarkEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+    val profileId: Long,
+    val itemKey: String,
+    val sectionId: String,
+    val sectionTitle: String,
+    val locator: String,
+    val title: String,
+    val text: String,
+    val source: String,
+    val createdAtMillis: Long
+)

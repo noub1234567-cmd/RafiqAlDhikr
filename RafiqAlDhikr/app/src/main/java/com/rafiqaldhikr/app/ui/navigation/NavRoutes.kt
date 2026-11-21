@@ -14,6 +14,7 @@ sealed class NavRoute(val route: String, val labelAr: String) {
     data object DuaSearch : NavRoute("dua_search", "بحث في الأذكار والأدعية")
     data object DuaNow : NavRoute("dua_now", "ماذا أقول الآن؟")
     data object Favorites : NavRoute("favorites", "مفضلتي")
+    data object Bookmarks : NavRoute("bookmarks", "إشاراتي المرجعية")
     data object NightReview : NavRoute("night_review", "محاسبة النفس")
     data object DuaMemo : NavRoute("dua_memo", "حفظ الأذكار والأحاديث")
     data object Jumua : NavRoute("jumua", "سنن الجمعة")

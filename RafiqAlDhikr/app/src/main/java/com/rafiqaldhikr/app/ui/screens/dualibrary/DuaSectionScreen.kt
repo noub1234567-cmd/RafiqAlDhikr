@@ -37,6 +37,9 @@ import com.rafiqaldhikr.app.core.dua.DuaSectionDef
 import androidx.compose.runtime.produceState
 import androidx.compose.ui.platform.LocalContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import androidx.compose.material.icons.filled.Bookmark
+import androidx.compose.material.icons.filled.BookmarkBorder
 import kotlinx.coroutines.withContext
 import com.rafiqaldhikr.app.ui.components.DuaActionsRow
 import com.rafiqaldhikr.app.ui.components.RafiqCard
@@ -149,7 +152,11 @@ fun DuaSectionScreen(sectionId: String, onBack: () -> Unit) {
                 }
                 if (open) {
                     items.forEachIndexed { i, d ->
-                        item(key = "i_${g.title}_$i") { ItemCard(d, DuaLibrary.saveTitle(g, d), section.title, fontScale) }
+                        item(key = "i_${g.title}_$i") { ItemCard(
+                            d, DuaLibrary.saveTitle(g, d), section.title, fontScale,
+                            BookmarkRef(sectionId, "i_${g.title}_${g.items.indexOf(d)}")
+                        )
+                        }
                     }
                 }
             }
@@ -158,10 +165,15 @@ fun DuaSectionScreen(sectionId: String, onBack: () -> Unit) {
 }
 
 @Composable
-internal fun ItemCard(d: DuaItem, saveTitle: String, sectionTitle: String, fontScale: Float = 1f) {
+internal fun ItemCard(
+    d: DuaItem, saveTitle: String, sectionTitle: String, fontScale: Float = 1f, bookmark: BookmarkRef? = null
+) {
     RafiqCard {
         Column(modifier = Modifier.padding(14.dp)) {
-            if (d.title.isNotBlank()) Text(d.title, style = MaterialTheme.typography.titleSmall)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(d.title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+                if (bookmark != null) BookmarkButton(bookmark, sectionTitle, d)
+            }
             if (d.note.isNotBlank()) {
                 Text(d.note, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
@@ -179,5 +191,34 @@ internal fun ItemCard(d: DuaItem, saveTitle: String, sectionTitle: String, fontS
             }
             DuaActionsRow(text = d.text, source = d.source, saveTitle = saveTitle, saveCategory = "من المكتبة: $sectionTitle")
         }
+    }
+}
+
+/** Where a text lives in the library: its section and the list key used to scroll back to it. */
+internal data class BookmarkRef(val sectionId: String, val locator: String)
+
+@Composable
+private fun BookmarkButton(ref: BookmarkRef, sectionTitle: String, d: DuaItem) {
+    val container = com.rafiqaldhikr.app.ui.screens.tools.rememberContainer()
+    val profileId by com.rafiqaldhikr.app.ui.screens.tools.activeProfileIdState(container)
+    val scope = androidx.compose.runtime.rememberCoroutineScope()
+    val context = LocalContext.current
+    val tools = container.personalToolsRepository
+    var marked by remember(ref, profileId) { mutableStateOf(false) }
+    LaunchedEffect(ref, profileId) {
+        marked = profileId?.let { tools.isBookmarked(it, ref.sectionId, ref.locator) } ?: false
+    }
+    androidx.compose.material3.IconButton(onClick = {
+        val pid = profileId ?: return@IconButton
+        scope.launch {
+            marked = tools.toggleBookmark(pid, ref.sectionId, sectionTitle, ref.locator, d.title, d.text, d.source)
+            android.widget.Toast.makeText(context, if (marked) "أُضيفت إشارة مرجعية" else "أُزيلت الإشارة", android.widget.Toast.LENGTH_SHORT).show()
+        }
+    }) {
+        androidx.compose.material3.Icon(
+            if (marked) androidx.compose.material.icons.Icons.Filled.Bookmark else androidx.compose.material.icons.Icons.Filled.BookmarkBorder,
+            contentDescription = "إشارة مرجعية",
+            tint = if (marked) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }

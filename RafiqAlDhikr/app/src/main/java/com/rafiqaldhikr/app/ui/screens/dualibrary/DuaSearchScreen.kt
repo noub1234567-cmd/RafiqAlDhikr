@@ -66,7 +66,10 @@ fun DuaSearchScreen(onBack: () -> Unit) {
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.padding(bottom = 4.dp)
                     )
-                    ItemCard(h.item, DuaLibrary.saveTitle(h.group, h.item), h.sectionTitle)
+                    ItemCard(
+                        h.item, DuaLibrary.saveTitle(h.group, h.item), h.sectionTitle,
+                        bookmark = BookmarkRef(h.sectionId, "i_${h.group.title}_${h.group.items.indexOf(h.item)}")
+                    )
                 }
             }
         }
