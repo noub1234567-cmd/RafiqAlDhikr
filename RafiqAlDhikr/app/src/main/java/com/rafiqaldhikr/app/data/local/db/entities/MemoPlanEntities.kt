@@ -39,7 +39,10 @@ data class MemoPlanEntity(
     val studyDaysMask: Int = 127,
     /** 1 = start with a lighter load that rises over the first week. */
     @ColumnInfo(defaultValue = "0")
-    val ramp: Int = 0
+    val ramp: Int = 0,
+    /** -1 = running; otherwise the plan is paused with this many study sessions still ahead. */
+    @ColumnInfo(defaultValue = "-1")
+    val pausedSessions: Int = -1
 )
 
 /** One text of a plan with its own copy of the wording, so the plan survives library changes. */

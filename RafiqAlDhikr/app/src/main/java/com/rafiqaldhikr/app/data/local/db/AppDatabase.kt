@@ -75,7 +75,7 @@ import com.rafiqaldhikr.app.data.local.db.entities.WorshipActivityEntity
         MemoPlanEntity::class,
         MemoPlanItemEntity::class
     ],
-    version = 7,
+    version = 8,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -156,13 +156,23 @@ abstract class AppDatabase : RoomDatabase() {
             }
         }
 
+        /** Version 8 lets a plan be paused and resumed; running plans are unchanged. */
+        val MIGRATION_7_8 = object : Migration(7, 8) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(MEMO_PLANS_ADD_PAUSED_SQL)
+            }
+        }
+
+        const val MEMO_PLANS_ADD_PAUSED_SQL =
+            "ALTER TABLE `memo_plans` ADD COLUMN `pausedSessions` INTEGER NOT NULL DEFAULT -1"
+
         const val MEMO_PLANS_ADD_STUDY_DAYS_SQL =
             "ALTER TABLE `memo_plans` ADD COLUMN `studyDaysMask` INTEGER NOT NULL DEFAULT 127"
 
         const val MEMO_PLANS_ADD_RAMP_SQL =
             "ALTER TABLE `memo_plans` ADD COLUMN `ramp` INTEGER NOT NULL DEFAULT 0"
 
-        /** The table as version 6 created it (the version 7 columns are added by [MIGRATION_6_7]). */
+        /** The table as version 6 created it (the later columns are added by [MIGRATION_6_7] and [MIGRATION_7_8]). */
         const val MEMO_PLANS_CREATE_SQL =
             "CREATE TABLE IF NOT EXISTS `memo_plans` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
                 "`profileId` INTEGER NOT NULL, `title` TEXT NOT NULL, `sourceId` TEXT NOT NULL, " +
@@ -270,7 +280,7 @@ abstract class AppDatabase : RoomDatabase() {
                 AppDatabase::class.java,
                 DATABASE_NAME
             )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8)
                 .build()
         }
     }

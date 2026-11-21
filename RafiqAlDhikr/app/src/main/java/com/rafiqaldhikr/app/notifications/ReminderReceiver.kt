@@ -223,7 +223,7 @@ class ReminderReceiver : BroadcastReceiver() {
                     ?.let { com.rafiqaldhikr.app.core.special.SpecialReminders.isEnabled(app, it) } == true
             ReminderScheduler.KIND_MEMO_PLAN ->
                 com.rafiqaldhikr.app.core.memorization.MemoPlanReminders.minutes(app, targetId) >= 0 &&
-                    db.memoPlanDao().getAllPlans().any { it.id == targetId }
+                    db.memoPlanDao().getAllPlans().any { it.id == targetId && it.pausedSessions < 0 }
             else -> true
         }
     }

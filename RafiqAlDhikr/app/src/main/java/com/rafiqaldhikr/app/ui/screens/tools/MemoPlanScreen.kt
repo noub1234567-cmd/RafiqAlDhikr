@@ -49,9 +49,10 @@ fun MemoPlanScreen(planId: Long, onBack: () -> Unit, onOpenMemo: () -> Unit) {
         val undone = items.filter { it.doneEpochDay < 0 }
         val done = items.filter { it.doneEpochDay >= 0 }
         val ramp = p.ramp == 1
-        val dayState = MemoPlanMath.state(p.startEpochDay, p.totalDays, p.studyDaysMask, today)
+        val paused = p.pausedSessions >= 0
+        val dayState = MemoPlanMath.state(p.startEpochDay, p.totalDays, p.studyDaysMask, today, paused)
         val elapsed = MemoPlanMath.sessionsElapsed(p.startEpochDay, p.studyDaysMask, today)
-        val quota = MemoPlanMath.quotaToday(undone.size, p.totalDays, ramp, p.startEpochDay, p.studyDaysMask, today)
+        val quota = MemoPlanMath.quotaToday(undone.size, p.totalDays, ramp, p.startEpochDay, p.studyDaysMask, today, paused)
         val todays = undone.take(quota)
         val endDay = MemoPlanMath.endDate(p.startEpochDay, p.totalDays, p.studyDaysMask)
         val todayWords = todays.sumOf { MemoPlanMath.words(it.text) }
@@ -73,6 +74,7 @@ fun MemoPlanScreen(planId: Long, onBack: () -> Unit, onOpenMemo: () -> Unit) {
                         Text("حفظت ${done.size} من ${items.size}", style = MaterialTheme.typography.titleMedium)
                         Text(
                             when (dayState) {
+                                MemoPlanMath.PAUSED -> "الخطة متوقفة مؤقتاً، وتبقّى ${p.pausedSessions} أيام حفظ تُستأنف من يوم الاستئناف"
                                 MemoPlanMath.NOT_STARTED -> "تبدأ الخطة في ${dayLabel(p.startEpochDay)}"
                                 MemoPlanMath.REST_DAY -> "اليوم يوم راحة، وتنتهي الخطة في ${dayLabel(endDay)}"
                                 MemoPlanMath.OVER -> if (undone.isNotEmpty()) "تجاوزت المدة، والباقي كله اليوم" else "انتهت المدة"
@@ -90,7 +92,11 @@ fun MemoPlanScreen(planId: Long, onBack: () -> Unit, onOpenMemo: () -> Unit) {
             }
             item {
                 var recalcOpen by remember { mutableStateOf(false) }
-                OutlinedButton(onClick = { recalcOpen = true }, enabled = undone.isNotEmpty()) { Text("أعد الحساب") }
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(onClick = { recalcOpen = true }, enabled = undone.isNotEmpty()) { Text("أعد الحساب") }
+                    if (paused) Button(onClick = { scope.launch { repo.resume(p, today) } }) { Text("استأنف الخطة") }
+                    else OutlinedButton(onClick = { scope.launch { repo.pause(p, today) } }, enabled = undone.isNotEmpty()) { Text("إيقاف مؤقت") }
+                }
                 if (recalcOpen) {
                     var daysText by remember { mutableStateOf((p.totalDays - elapsed).coerceAtLeast(1).toString()) }
                     var newMask by remember { mutableStateOf(p.studyDaysMask) }

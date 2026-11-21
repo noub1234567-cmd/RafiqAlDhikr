@@ -54,6 +54,16 @@ class MemoPlanRepository(database: AppDatabase, private val tools: PersonalTools
     suspend fun reschedule(planId: Long, today: Long, sessions: Int, mask: Int) =
         dao.reschedule(planId, today, sessions.coerceAtLeast(1), MemoPlanMath.normalizeMask(mask), 0)
 
+    /** Pause: the plan stops counting days and remembers how many study sessions were still ahead. */
+    suspend fun pause(plan: MemoPlanEntity, today: Long) {
+        val left = MemoPlanMath.sessionsLeft(plan.startEpochDay, plan.totalDays, plan.studyDaysMask, today)
+        dao.setPaused(plan.id, left)
+    }
+
+    /** Resume from [today] with the sessions that were left, at an even load. */
+    suspend fun resume(plan: MemoPlanEntity, today: Long) =
+        dao.resume(plan.id, today, plan.pausedSessions.coerceAtLeast(1))
+
     suspend fun undo(item: MemoPlanItemEntity) = dao.setDone(item.id, -1)
 
     suspend fun deletePlan(id: Long) = dao.deletePlan(id)

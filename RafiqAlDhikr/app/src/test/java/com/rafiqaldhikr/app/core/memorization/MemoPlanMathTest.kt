@@ -87,4 +87,14 @@ class MemoPlanMathTest {
         assertEquals(listOf(7, 8, 9), MemoPlanMath.manualReview(listOf(9, 1, 8, 7, 2), 3))
         assertEquals(emptyList<Int>(), MemoPlanMath.manualReview(emptyList(), 5))
     }
+
+    @Test fun pausedPlanAsksNothingAndKeepsRemainingSessions() {
+        val start = 20000L
+        assertEquals(MemoPlanMath.PAUSED, MemoPlanMath.state(start, 10, 127, start + 3, paused = true))
+        assertEquals(0, MemoPlanMath.quotaToday(50, 10, false, start, 127, start + 3, paused = true))
+        // 3 of 10 daily sessions gone -> 7 left; before the start all 10 are still ahead
+        assertEquals(7, MemoPlanMath.sessionsLeft(start, 10, 127, start + 3))
+        assertEquals(10, MemoPlanMath.sessionsLeft(start, 10, 127, start - 2))
+        assertEquals(1, MemoPlanMath.sessionsLeft(start, 10, 127, start + 50))
+    }
 }

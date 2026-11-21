@@ -34,8 +34,14 @@ interface MemoPlanDao {
     @Query("UPDATE memo_plan_items SET doneEpochDay = :day WHERE id = :id")
     suspend fun setDone(id: Long, day: Long)
 
-    @Query("UPDATE memo_plans SET startEpochDay = :start, totalDays = :totalDays, studyDaysMask = :mask, ramp = :ramp WHERE id = :id")
+    @Query("UPDATE memo_plans SET startEpochDay = :start, totalDays = :totalDays, studyDaysMask = :mask, ramp = :ramp, pausedSessions = -1 WHERE id = :id")
     suspend fun reschedule(id: Long, start: Long, totalDays: Int, mask: Int, ramp: Int)
+
+    @Query("UPDATE memo_plans SET pausedSessions = :sessions WHERE id = :id")
+    suspend fun setPaused(id: Long, sessions: Int)
+
+    @Query("UPDATE memo_plans SET startEpochDay = :start, totalDays = :totalDays, ramp = 0, pausedSessions = -1 WHERE id = :id")
+    suspend fun resume(id: Long, start: Long, totalDays: Int)
 
     @Query("DELETE FROM memo_plans WHERE id = :id")
     suspend fun deletePlan(id: Long)
