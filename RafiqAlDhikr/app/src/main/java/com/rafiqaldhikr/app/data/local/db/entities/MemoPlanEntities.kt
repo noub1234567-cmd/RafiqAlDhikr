@@ -1,5 +1,6 @@
 package com.rafiqaldhikr.app.data.local.db.entities
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.ForeignKey
 import androidx.room.Index
@@ -32,7 +33,13 @@ data class MemoPlanEntity(
     /** 0 = automatic spaced repetition, 1 = manual (review the last [reviewCount] learned items daily). */
     val reviewMode: Int,
     val reviewCount: Int,
-    val createdAtMillis: Long
+    val createdAtMillis: Long,
+    /** Study weekdays: bit i is weekday i with Monday = 0; 127 = every day. [totalDays] counts study days only. */
+    @ColumnInfo(defaultValue = "127")
+    val studyDaysMask: Int = 127,
+    /** 1 = start with a lighter load that rises over the first week. */
+    @ColumnInfo(defaultValue = "0")
+    val ramp: Int = 0
 )
 
 /** One text of a plan with its own copy of the wording, so the plan survives library changes. */

@@ -1,9 +1,9 @@
 """Fail if the migration SQL in AppDatabase.kt differs from what Room generated for the same tables."""
 import json, re, sys, glob
 
-schemas = sorted(glob.glob("RafiqAlDhikr/app/schemas/**/6.json", recursive=True))
+schemas = sorted(glob.glob("RafiqAlDhikr/app/schemas/**/7.json", recursive=True))
 if not schemas:
-    sys.exit("no exported schema 6.json found")
+    sys.exit("no exported schema 7.json found")
 db = json.load(open(schemas[0]))["database"]
 src = open("RafiqAlDhikr/app/src/main/java/com/rafiqaldhikr/app/data/local/db/AppDatabase.kt", encoding="utf-8").read()
 
@@ -29,11 +29,22 @@ for table, create_const, index_const in (
 ):
     ent = next(e for e in db["entities"] if e["tableName"] == table)
     want_table = norm(ent["createSql"].replace("${TABLE_NAME}", table))
+    if table == "memo_plans":
+        # version 7 appended two columns by ALTER TABLE; the CREATE constant is the version 6 table
+        for col in ("studyDaysMask` INTEGER NOT NULL DEFAULT 127", "ramp` INTEGER NOT NULL DEFAULT 0"):
+            frag = norm(",`" + col)
+            if frag not in want_table:
+                ok = False; print("memo_plans: column missing in Room schema:", col)
+            want_table = want_table.replace(frag, "")
     want_index = norm(ent["indices"][0]["createSql"].replace("${TABLE_NAME}", table))
     if want_table != norm(kotlin_const(create_const)):
         ok = False; print(table, "TABLE MISMATCH\n room:", want_table, "\n code:", norm(kotlin_const(create_const)))
     if want_index != norm(kotlin_const(index_const)):
         ok = False; print(table, "INDEX MISMATCH\n room:", want_index, "\n code:", norm(kotlin_const(index_const)))
+for const, col in (("MEMO_PLANS_ADD_STUDY_DAYS_SQL", "studyDaysMask` INTEGER NOT NULL DEFAULT 127"),
+                   ("MEMO_PLANS_ADD_RAMP_SQL", "ramp` INTEGER NOT NULL DEFAULT 0")):
+    if norm(kotlin_const(const)) != norm("ALTER TABLE `memo_plans` ADD COLUMN `" + col):
+        ok = False; print(const, "MISMATCH:", kotlin_const(const))
 if not ok:
     sys.exit(1)
 print("migration SQL matches Room's generated schema")

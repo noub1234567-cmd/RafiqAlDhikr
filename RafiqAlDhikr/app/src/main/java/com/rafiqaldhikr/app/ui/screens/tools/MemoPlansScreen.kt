@@ -70,13 +70,20 @@ fun MemoPlansScreen(onBack: () -> Unit, onNew: () -> Unit, onOpen: (Long) -> Uni
             items(plans, key = { it.id }) { plan ->
                 val mine = items.filter { it.planId == plan.id }
                 val done = mine.count { it.doneEpochDay >= 0 }
-                val quota = MemoPlanMath.quotaToday(mine.size - done, plan.totalDays, MemoPlanMath.dayIndex(plan.startEpochDay, today))
+                val remaining = mine.size - done
+                val quota = MemoPlanMath.quotaToday(remaining, plan.totalDays, plan.ramp == 1, plan.startEpochDay, plan.studyDaysMask, today)
+                val dayState = MemoPlanMath.state(plan.startEpochDay, plan.totalDays, plan.studyDaysMask, today)
                 RafiqCard(onClick = { onOpen(plan.id) }) {
                     Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(plan.title, style = MaterialTheme.typography.titleMedium)
                         Text("حفظت $done من ${mine.size}", style = MaterialTheme.typography.bodyMedium)
                         Text(
-                            if (mine.isNotEmpty() && done >= mine.size) "أتممت الخطة" else "المطلوب اليوم: $quota",
+                            if (mine.isNotEmpty() && done >= mine.size) "أتممت الخطة"
+                            else when (dayState) {
+                                MemoPlanMath.NOT_STARTED -> "تبدأ في ${dayLabel(plan.startEpochDay)}"
+                                MemoPlanMath.REST_DAY -> "اليوم يوم راحة"
+                                else -> "المطلوب اليوم: $quota"
+                            },
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.primary
                         )
