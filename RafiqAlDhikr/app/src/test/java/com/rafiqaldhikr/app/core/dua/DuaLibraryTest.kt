@@ -83,15 +83,15 @@ class DuaLibraryTest {
         assertTrue(items.all { it.source.startsWith("التخريج:") && it.note.startsWith("فضل") })
     }
 
-    @Test fun sunanHasFiftySunnahsAndThreeAthar() {
+    @Test fun sunanHasFiftySunnahsNineAtharAndNotes() {
         val groups = load(DuaLibrary.SUNAN)
-        assertEquals(7, groups.size)
-        val sunnahs = groups.dropLast(1).flatMap { it.items }
+        assertEquals(8, groups.size)
+        val sunnahs = groups.take(6).flatMap { it.items }
         assertEquals(50, sunnahs.size)
         assertTrue(sunnahs.all { it.source.contains("المصدر:") && it.source.contains("الحكم:") && it.note.startsWith("كيفية العمل:") })
-        val athar = groups.last().items.filter { it.title.startsWith("الأثر") }
-        assertEquals(3, athar.size)
-        assertTrue(athar.all { it.source.contains("المصدر:") && it.note.startsWith("الفائدة:") })
+        val athar = groups[6].items.filter { it.title.startsWith("الأثر") }
+        assertEquals(9, athar.size)
+        assertTrue(athar.all { it.source.contains("المصدر:") && it.note.startsWith("الفائدة:") || it.note.startsWith("الفوائد:") })
     }
 
     @Test fun nawawiHasFiftyHadithsWithoutLeftovers() {
