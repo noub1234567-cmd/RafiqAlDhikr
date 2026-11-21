@@ -38,6 +38,7 @@ fun DuaHubScreen(
     onOpenQuiz: () -> Unit,
     onOpenQuizMode: (String) -> Unit,
     onOpenFavorites: () -> Unit,
+    onOpenBookmarks: () -> Unit,
     onOpenMemo: () -> Unit,
     onOpenPlans: () -> Unit
 ) {
@@ -90,6 +91,7 @@ fun DuaHubScreen(
                             OutlinedButton(onClick = onOpenPersonalNotebook) { Text("دفتر الأدعية") }
                             OutlinedButton(onClick = onOpenFavorites) { Text("مفضلتي") }
                         }
+                        OutlinedButton(onClick = onOpenBookmarks) { Text("إشاراتي المرجعية") }
                         OutlinedButton(onClick = onOpenMemo) { Text("حفظ الأذكار والأحاديث") }
                         OutlinedButton(onClick = onOpenPlans) { Text("خطط الحفظ") }
                     }

@@ -6,6 +6,7 @@ import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
 import com.rafiqaldhikr.app.data.local.db.entities.DuaFavoriteEntity
+import com.rafiqaldhikr.app.data.local.db.entities.BookmarkEntity
 import com.rafiqaldhikr.app.data.local.db.entities.DuaMemoEntity
 import com.rafiqaldhikr.app.data.local.db.entities.NightReviewEntity
 import kotlinx.coroutines.flow.Flow
@@ -71,4 +72,23 @@ interface PersonalToolsDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAllMemos(items: List<DuaMemoEntity>)
+
+    // Bookmarks
+    @Query("SELECT * FROM bookmarks WHERE profileId = :profileId ORDER BY createdAtMillis DESC, id DESC")
+    fun observeBookmarks(profileId: Long): Flow<List<BookmarkEntity>>
+
+    @Query("SELECT * FROM bookmarks WHERE profileId = :profileId AND itemKey = :itemKey LIMIT 1")
+    suspend fun getBookmark(profileId: Long, itemKey: String): BookmarkEntity?
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertBookmark(entity: BookmarkEntity): Long
+
+    @Query("DELETE FROM bookmarks WHERE id = :id")
+    suspend fun deleteBookmark(id: Long)
+
+    @Query("SELECT * FROM bookmarks")
+    suspend fun getAllBookmarks(): List<BookmarkEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAllBookmarks(items: List<BookmarkEntity>)
 }

@@ -3,6 +3,7 @@ package com.rafiqaldhikr.app.data.repository
 import com.rafiqaldhikr.app.core.dua.DuaLibrary
 import com.rafiqaldhikr.app.core.dua.DuaMemoSchedule
 import com.rafiqaldhikr.app.data.local.db.AppDatabase
+import com.rafiqaldhikr.app.data.local.db.entities.BookmarkEntity
 import com.rafiqaldhikr.app.data.local.db.entities.DuaFavoriteEntity
 import com.rafiqaldhikr.app.data.local.db.entities.DuaMemoEntity
 import com.rafiqaldhikr.app.data.local.db.entities.NightReviewEntity
@@ -34,6 +35,35 @@ class PersonalToolsRepository(database: AppDatabase) {
         )
         return true
     }
+
+    // Bookmarks on library texts
+    fun observeBookmarks(profileId: Long): Flow<List<BookmarkEntity>> = dao.observeBookmarks(profileId)
+
+    suspend fun isBookmarked(profileId: Long, sectionId: String, locator: String): Boolean =
+        dao.getBookmark(profileId, "$sectionId|$locator") != null
+
+    /** Adds the bookmark, or removes it if it is already there; returns the new state. */
+    suspend fun toggleBookmark(
+        profileId: Long, sectionId: String, sectionTitle: String, locator: String,
+        title: String, text: String, source: String
+    ): Boolean {
+        val key = "$sectionId|$locator"
+        val existing = dao.getBookmark(profileId, key)
+        if (existing != null) {
+            dao.deleteBookmark(existing.id)
+            return false
+        }
+        dao.insertBookmark(
+            BookmarkEntity(
+                profileId = profileId, itemKey = key, sectionId = sectionId, sectionTitle = sectionTitle,
+                locator = locator, title = title.trim(), text = text.trim(), source = source.trim(),
+                createdAtMillis = System.currentTimeMillis()
+            )
+        )
+        return true
+    }
+
+    suspend fun deleteBookmark(id: Long) = dao.deleteBookmark(id)
 
     // Night reviews
     fun observeReviews(profileId: Long): Flow<List<NightReviewEntity>> = dao.observeReviews(profileId)
