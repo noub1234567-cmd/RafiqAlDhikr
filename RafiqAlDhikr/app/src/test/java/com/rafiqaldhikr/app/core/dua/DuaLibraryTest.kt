@@ -50,7 +50,7 @@ class DuaLibraryTest {
 
     @Test fun twentySectionsWithUniqueIds() {
         val ids = DuaLibrary.skeleton.map { it.id }
-        assertEquals(20, ids.size)
+        assertEquals(21, ids.size)
         assertEquals(ids.size, ids.toSet().size)
     }
 
@@ -106,12 +106,13 @@ class DuaLibraryTest {
         assertEquals(61, n(DuaLibrary.N_TUHFA) - 1) // 61 verses plus one commentary item
         assertEquals(154, n(DuaLibrary.N_AJRUMIYYA))
         assertEquals(34, n(DuaLibrary.N_BAYQUNIYYA))
+        assertEquals(91, n(DuaLibrary.N_RISALA))
         assertEquals(12, load(DuaLibrary.M_NAWAQID).size)
         assertEquals(5, load(DuaLibrary.M_QAWAID).size)
         for (id in DuaQuiz.MATN_SECTIONS) {
             assertTrue(id, load(id).all { g -> g.items.isNotEmpty() && g.items.all { it.text.isNotBlank() } })
         }
-        for (id in listOf(DuaLibrary.N_AJRUMIYYA, DuaLibrary.N_BAYQUNIYYA)) {
+        for (id in listOf(DuaLibrary.N_AJRUMIYYA, DuaLibrary.N_BAYQUNIYYA, DuaLibrary.N_RISALA)) {
             assertTrue(id, load(id).flatMap { it.items }.all { it.text.contains("\n") })
         }
     }

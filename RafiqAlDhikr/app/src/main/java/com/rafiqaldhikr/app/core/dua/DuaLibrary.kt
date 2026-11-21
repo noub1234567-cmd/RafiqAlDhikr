@@ -51,6 +51,7 @@ object DuaLibrary {
     const val N_TUHFA = "n_tuhfa"
     const val N_AJRUMIYYA = "n_ajrumiyya"
     const val N_BAYQUNIYYA = "n_bayquniyya"
+    const val N_RISALA = "n_risala"
 
     /** The sections without their content, for showing the buttons immediately. */
     val skeleton: List<DuaSectionDef> = listOf(
@@ -73,7 +74,8 @@ object DuaLibrary {
         DuaSectionDef(M_AJRUMIYYA, "متن الآجرومية", "في النحو لابن آجروم (غير مشكّل)"),
         DuaSectionDef(N_TUHFA, "تحفة الأطفال", "نظم في أحكام التجويد للجمزوري (٦١ بيتاً) مع شرح مختصر"),
         DuaSectionDef(N_AJRUMIYYA, "نظم الآجرومية", "نظم متن الآجرومية في النحو (١٥٤ بيتاً)"),
-        DuaSectionDef(N_BAYQUNIYYA, "المنظومة البيقونية", "نظم في مصطلح الحديث للإمام عمر البيقوني (٣٤ بيتاً)")
+        DuaSectionDef(N_BAYQUNIYYA, "المنظومة البيقونية", "نظم في مصطلح الحديث للإمام عمر البيقوني (٣٤ بيتاً)"),
+        DuaSectionDef(N_RISALA, "نظم مقدمة الرسالة", "نظم مقدمة رسالة ابن أبي زيد القيرواني في العقيدة (٩١ بيتاً)")
     )
 
     /** A box on the hub that opens the list of sections it holds. */
@@ -84,7 +86,7 @@ object DuaLibrary {
             listOf(LIBRARY, PRAISE, ISTIGHFAR, PROPHET, QURAN, VIRTUE, CONDITIONS)),
         Category("hadith", "الأحاديث", "الأربعون النووية والسنن المهجورة", listOf(NAWAWI, SUNAN)),
         Category("matn", "المتون", "متون طالب العلم", listOf(M_QAWAID, M_NAWAQID, M_USUL, M_SHURUT, M_KASHF, M_ASHMAWIYYA, M_AKHDARI, M_AJRUMIYYA)),
-        Category("nazm", "النظم", "منظومات للحفظ في التجويد والنحو والحديث", listOf(N_TUHFA, N_AJRUMIYYA, N_BAYQUNIYYA))
+        Category("nazm", "النظم", "منظومات للحفظ في التجويد والنحو والحديث والعقيدة", listOf(N_TUHFA, N_AJRUMIYYA, N_BAYQUNIYYA, N_RISALA))
     )
 
     private val json = Json { ignoreUnknownKeys = true }
