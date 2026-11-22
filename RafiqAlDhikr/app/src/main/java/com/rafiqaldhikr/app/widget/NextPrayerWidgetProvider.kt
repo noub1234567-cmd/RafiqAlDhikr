@@ -74,7 +74,7 @@ class NextPrayerWidgetProvider : AppWidgetProvider() {
                     for ((p, id) in cells) {
                         val t = times.getValue(p)
                         views.setTextViewText(id, "${p.labelAr}\n%02d:%02d".format(t.hour, t.minute))
-                        views.setTextColor(id, if (p == prayer) Color.parseColor("#0E4D3A") else Color.parseColor("#2B2B2B"))
+                        views.setTextColor(id, if (p == prayer) Color.parseColor("#1D4270") else Color.parseColor("#2B2B2B"))
                     }
                 }
             }

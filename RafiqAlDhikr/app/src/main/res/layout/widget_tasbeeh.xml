@@ -16,7 +16,7 @@
         android:layout_height="wrap_content"
         android:gravity="center"
         android:text="المسبحة"
-        android:textColor="#0E4D3A"
+        android:textColor="#1D4270"
         android:textSize="15sp"
         android:textStyle="bold" />
 
