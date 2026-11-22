@@ -58,7 +58,7 @@ fun MoreScreen(
             MoreMenuItem("جدول العبادات الأسبوعي", "جدول بصفوفك وأيام الأسبوع مع منبّه لكل خانة وتقرير بما أنجزت", Icons.Default.CalendarMonth, NavRoute.Planner.route),
             MoreMenuItem("العبادات والنوافل والأهداف", "الضحى، قيام الليل، الصدقة، الجمعة، والأهداف المخصصة", Icons.Default.Checklist, NavRoute.WorshipActs.route),
             MoreMenuItem("المسبحة والاستغفار", "عدّاد إلكتروني وأذكار مخصصة وسجل يومي", Icons.Default.Fingerprint, NavRoute.Tasbeeh.route),
-            MoreMenuItem("سنن الجمعة", "قائمة بما تفعله يوم الجمعة تُعلَّم بنقرة", Icons.Default.Checklist, NavRoute.Jumua.route)
+            MoreMenuItem("سنن الجمعة", "ثماني سنن للجمعة تُعلَّم بنقرة، ولكل سنة نصها", Icons.Default.Checklist, NavRoute.Jumua.route)
         ),
         "القرآن والحفظ" to listOf(
             MoreMenuItem("ختمة القرآن", "موضع القراءة بالسورة والآية والورد اليومي لإنهاء الختمة", Icons.Default.CheckCircle, NavRoute.Khatma.route),

@@ -9,7 +9,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.TextButton
+import com.rafiqaldhikr.app.core.jumua.JumuaItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -36,6 +41,16 @@ fun JumuaScreen(onBack: () -> Unit) {
     val friday = JumuaChecklist.fridayFor(today)
     val editable = JumuaChecklist.isFriday(today)
     var checked by remember(profileId) { mutableStateOf(profileId?.let { JumuaChecklist.checked(context, it, friday) } ?: emptySet()) }
+
+    var opened by remember { mutableStateOf<JumuaItem?>(null) }
+    opened?.let { item ->
+        AlertDialog(
+            onDismissRequest = { opened = null },
+            title = { Text(item.label) },
+            text = { Text(item.text, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.verticalScroll(rememberScrollState())) },
+            confirmButton = { TextButton(onClick = { opened = null }) { Text("إغلاق") } }
+        )
+    }
 
     Column(modifier = Modifier.fillMaxSize()) {
         RafiqTopBar(title = "سنن الجمعة", onBackClick = onBack)
@@ -72,7 +87,8 @@ fun JumuaScreen(onBack: () -> Unit) {
                             enabled = editable && profileId != null,
                             onCheckedChange = { profileId?.let { pid -> checked = JumuaChecklist.toggle(context, pid, friday, item.key) } }
                         )
-                        Text(item.label, style = MaterialTheme.typography.bodyLarge)
+                        Text(item.label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                        TextButton(onClick = { opened = item }) { Text("النص") }
                     }
                 }
             }
