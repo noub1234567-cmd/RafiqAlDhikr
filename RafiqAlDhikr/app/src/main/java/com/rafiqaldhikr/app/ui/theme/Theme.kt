@@ -14,16 +14,17 @@ import androidx.compose.ui.unit.LayoutDirection
 import com.rafiqaldhikr.app.core.model.ThemeMode
 
 private val LightColorScheme = lightColorScheme(
-    primary = EmeraldPrimaryLight,
-    onPrimary = OnEmeraldLight,
-    primaryContainer = EmeraldContainerLight,
-    onPrimaryContainer = OnEmeraldContainerLight,
+    primary = BluePrimaryLight,
+    onPrimary = OnBluePrimaryLight,
+    primaryContainer = BlueContainerLight,
+    onPrimaryContainer = OnBlueContainerLight,
     secondary = GoldSecondaryLight,
     onSecondary = OnGoldLight,
     secondaryContainer = GoldContainerLight,
     onSecondaryContainer = OnGoldContainerLight,
-    tertiary = TealTertiaryLight,
-    tertiaryContainer = TealContainerLight,
+    tertiary = SlateTertiaryLight,
+    onTertiary = OnBluePrimaryLight,
+    tertiaryContainer = SlateContainerLight,
     background = BackgroundLight,
     onBackground = OnBackgroundLight,
     surface = SurfaceLight,
@@ -37,20 +38,22 @@ private val LightColorScheme = lightColorScheme(
     surfaceContainerHighest = SurfaceContainerHighestLight,
     surfaceDim = SurfaceDimLight,
     surfaceBright = SurfaceBrightLight,
-    outline = OutlineLight
+    outline = OutlineLight,
+    outlineVariant = OutlineVariantLight
 )
 
 private val DarkColorScheme = darkColorScheme(
-    primary = EmeraldPrimaryDark,
-    onPrimary = OnEmeraldDark,
-    primaryContainer = EmeraldContainerDark,
-    onPrimaryContainer = OnEmeraldContainerDark,
+    primary = GoldPrimaryDark,
+    onPrimary = OnGoldPrimaryDark,
+    primaryContainer = BlueContainerDark,
+    onPrimaryContainer = OnBlueContainerDark,
     secondary = GoldSecondaryDark,
-    onSecondary = OnGoldDark,
+    onSecondary = OnGoldSecondaryDark,
     secondaryContainer = GoldContainerDark,
     onSecondaryContainer = OnGoldContainerDark,
-    tertiary = TealTertiaryDark,
-    tertiaryContainer = TealContainerDark,
+    tertiary = SlateTertiaryDark,
+    onTertiary = OnGoldPrimaryDark,
+    tertiaryContainer = SlateContainerDark,
     background = BackgroundDark,
     onBackground = OnBackgroundDark,
     surface = SurfaceDark,
@@ -64,7 +67,8 @@ private val DarkColorScheme = darkColorScheme(
     surfaceContainerHighest = SurfaceContainerHighestDark,
     surfaceDim = SurfaceDimDark,
     surfaceBright = SurfaceBrightDark,
-    outline = OutlineDark
+    outline = OutlineDark,
+    outlineVariant = OutlineVariantDark
 )
 
 /** Classic, slightly squarer corners than the Material defaults. */

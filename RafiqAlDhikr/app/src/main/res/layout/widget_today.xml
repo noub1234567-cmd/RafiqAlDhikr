@@ -14,7 +14,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="رفيق الذكر"
-        android:textColor="#0E4D3A"
+        android:textColor="#1D4270"
         android:textSize="16sp"
         android:textStyle="bold" />
 
@@ -46,5 +46,5 @@
         android:layout_marginTop="8dp"
         android:max="100"
         android:progress="0"
-        android:progressTint="#0E4D3A" />
+        android:progressTint="#1D4270" />
 </LinearLayout>
