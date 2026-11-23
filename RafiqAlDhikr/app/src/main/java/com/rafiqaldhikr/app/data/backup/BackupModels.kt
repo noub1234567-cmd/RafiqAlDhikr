@@ -72,7 +72,10 @@ data class BackupPayload(
     val memoPlanItems: List<com.rafiqaldhikr.app.data.local.db.entities.MemoPlanItemEntity> = emptyList(),
     @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
     @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
-    val bookmarks: List<com.rafiqaldhikr.app.data.local.db.entities.BookmarkEntity> = emptyList()
+    val bookmarks: List<com.rafiqaldhikr.app.data.local.db.entities.BookmarkEntity> = emptyList(),
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    @kotlinx.serialization.EncodeDefault(kotlinx.serialization.EncodeDefault.Mode.NEVER)
+    val testResults: List<com.rafiqaldhikr.app.data.local.db.entities.TestResultEntity> = emptyList()
 )
 
 @Serializable

@@ -31,6 +31,7 @@ import com.rafiqaldhikr.app.data.local.db.entities.MemorizationPlanEntity
 import com.rafiqaldhikr.app.data.local.db.entities.MemorizationSessionEntity
 import com.rafiqaldhikr.app.data.local.db.entities.KhatmaEntity
 import com.rafiqaldhikr.app.data.local.db.entities.BookmarkEntity
+import com.rafiqaldhikr.app.data.local.db.entities.TestResultEntity
 import com.rafiqaldhikr.app.data.local.db.entities.DuaFavoriteEntity
 import com.rafiqaldhikr.app.data.local.db.entities.DuaMemoEntity
 import com.rafiqaldhikr.app.data.local.db.entities.MemoPlanEntity
@@ -74,10 +75,11 @@ import com.rafiqaldhikr.app.data.local.db.entities.WorshipActivityEntity
         NightReviewEntity::class,
         DuaMemoEntity::class,
         BookmarkEntity::class,
+        TestResultEntity::class,
         MemoPlanEntity::class,
         MemoPlanItemEntity::class
     ],
-    version = 9,
+    version = 10,
     exportSchema = true
 )
 @TypeConverters(Converters::class)
@@ -157,6 +159,23 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL(MEMO_PLANS_ADD_RAMP_SQL)
             }
         }
+
+        /** Version 10 keeps the results of memorization tests. */
+        val MIGRATION_9_10 = object : Migration(9, 10) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL(TEST_RESULTS_CREATE_SQL)
+                db.execSQL(TEST_RESULTS_INDEX_SQL)
+            }
+        }
+
+        const val TEST_RESULTS_CREATE_SQL =
+            "CREATE TABLE IF NOT EXISTS `test_results` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                "`profileId` INTEGER NOT NULL, `createdAtMillis` INTEGER NOT NULL, `scopeLabel` TEXT NOT NULL, " +
+                "`total` INTEGER NOT NULL, `correct` INTEGER NOT NULL, `wrongJson` TEXT NOT NULL, " +
+                "FOREIGN KEY(`profileId`) REFERENCES `user_profiles`(`id`) ON UPDATE NO ACTION ON DELETE CASCADE )"
+
+        const val TEST_RESULTS_INDEX_SQL =
+            "CREATE INDEX IF NOT EXISTS `index_test_results_profileId` ON `test_results` (`profileId`)"
 
         /** Version 9 adds bookmarks on library texts. */
         val MIGRATION_8_9 = object : Migration(8, 9) {
@@ -301,7 +320,7 @@ abstract class AppDatabase : RoomDatabase() {
                 AppDatabase::class.java,
                 DATABASE_NAME
             )
-                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9)
+                .addMigrations(MIGRATION_1_2, MIGRATION_2_3, MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6, MIGRATION_6_7, MIGRATION_7_8, MIGRATION_8_9, MIGRATION_9_10)
                 .build()
         }
     }

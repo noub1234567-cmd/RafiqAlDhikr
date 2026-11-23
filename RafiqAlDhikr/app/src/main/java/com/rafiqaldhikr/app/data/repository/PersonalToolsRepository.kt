@@ -4,6 +4,10 @@ import com.rafiqaldhikr.app.core.dua.DuaLibrary
 import com.rafiqaldhikr.app.core.dua.DuaMemoSchedule
 import com.rafiqaldhikr.app.data.local.db.AppDatabase
 import com.rafiqaldhikr.app.data.local.db.entities.BookmarkEntity
+import com.rafiqaldhikr.app.data.local.db.entities.TestResultEntity
+import com.rafiqaldhikr.app.core.dua.WrongAnswer
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.Json
 import com.rafiqaldhikr.app.data.local.db.entities.DuaFavoriteEntity
 import com.rafiqaldhikr.app.data.local.db.entities.DuaMemoEntity
 import com.rafiqaldhikr.app.data.local.db.entities.NightReviewEntity
@@ -64,6 +68,21 @@ class PersonalToolsRepository(database: AppDatabase) {
     }
 
     suspend fun deleteBookmark(id: Long) = dao.deleteBookmark(id)
+
+    // Memorization test results
+    fun observeTestResults(profileId: Long): Flow<List<TestResultEntity>> = dao.observeTestResults(profileId)
+
+    suspend fun saveTestResult(profileId: Long, scopeLabel: String, total: Int, wrong: List<WrongAnswer>) {
+        dao.insertTestResult(
+            TestResultEntity(
+                profileId = profileId, createdAtMillis = System.currentTimeMillis(), scopeLabel = scopeLabel,
+                total = total, correct = total - wrong.size,
+                wrongJson = Json.encodeToString(ListSerializer(WrongAnswer.serializer()), wrong)
+            )
+        )
+    }
+
+    suspend fun deleteTestResult(id: Long) = dao.deleteTestResult(id)
 
     // Night reviews
     fun observeReviews(profileId: Long): Flow<List<NightReviewEntity>> = dao.observeReviews(profileId)

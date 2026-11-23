@@ -158,6 +158,7 @@ fun RafiqNavHost(container: AppContainer) {
                         onOpenQuiz = { navController.navigate(NavRoute.DuaQuiz.route) { launchSingleTop = true } },
                         onOpenQuizMode = { navController.navigate(NavRoute.DuaQuizMode.create(it)) { launchSingleTop = true } },
                         onOpenFavorites = { navController.navigate(NavRoute.Favorites.route) { launchSingleTop = true } },
+                        onOpenTest = { navController.navigate(NavRoute.TestYourself.route) { launchSingleTop = true } },
                         onOpenBookmarks = { navController.navigate(NavRoute.Bookmarks.route) { launchSingleTop = true } },
                         onOpenMemo = { navController.navigate(NavRoute.DuaMemo.route) { launchSingleTop = true } },
                         onOpenPlans = { navController.navigate(NavRoute.MemoPlans.route) { launchSingleTop = true } }
@@ -198,6 +199,9 @@ fun RafiqNavHost(container: AppContainer) {
                         onBack = { navController.popBackStack() },
                         mode = entry.arguments?.getString("mode").orEmpty()
                     )
+                }
+                composable(NavRoute.TestYourself.route) {
+                    com.rafiqaldhikr.app.ui.screens.dualibrary.TestYourselfScreen(onBack = { navController.popBackStack() })
                 }
                 composable(NavRoute.DuaQuiz.route) {
                     com.rafiqaldhikr.app.ui.screens.dualibrary.DuaQuizScreen(onBack = { navController.popBackStack() })

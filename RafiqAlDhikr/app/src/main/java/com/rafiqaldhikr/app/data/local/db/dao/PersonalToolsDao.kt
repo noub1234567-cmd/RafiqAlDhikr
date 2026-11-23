@@ -7,6 +7,7 @@ import androidx.room.Query
 import androidx.room.Update
 import com.rafiqaldhikr.app.data.local.db.entities.DuaFavoriteEntity
 import com.rafiqaldhikr.app.data.local.db.entities.BookmarkEntity
+import com.rafiqaldhikr.app.data.local.db.entities.TestResultEntity
 import com.rafiqaldhikr.app.data.local.db.entities.DuaMemoEntity
 import com.rafiqaldhikr.app.data.local.db.entities.NightReviewEntity
 import kotlinx.coroutines.flow.Flow
@@ -91,4 +92,20 @@ interface PersonalToolsDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAllBookmarks(items: List<BookmarkEntity>)
+
+    // Memorization test results
+    @Query("SELECT * FROM test_results WHERE profileId = :profileId ORDER BY createdAtMillis DESC, id DESC")
+    fun observeTestResults(profileId: Long): Flow<List<TestResultEntity>>
+
+    @Insert
+    suspend fun insertTestResult(entity: TestResultEntity): Long
+
+    @Query("DELETE FROM test_results WHERE id = :id")
+    suspend fun deleteTestResult(id: Long)
+
+    @Query("SELECT * FROM test_results")
+    suspend fun getAllTestResults(): List<TestResultEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAllTestResults(items: List<TestResultEntity>)
 }
