@@ -111,3 +111,28 @@ data class BookmarkEntity(
     val source: String,
     val createdAtMillis: Long
 )
+
+/** A finished memorization test: the counts and the wrong answers as JSON, so the report can be reopened. */
+@Serializable
+@Entity(
+    tableName = "test_results",
+    foreignKeys = [
+        ForeignKey(
+            entity = UserProfileEntity::class,
+            parentColumns = ["id"],
+            childColumns = ["profileId"],
+            onDelete = ForeignKey.CASCADE
+        )
+    ],
+    indices = [Index(value = ["profileId"])]
+)
+data class TestResultEntity(
+    @PrimaryKey(autoGenerate = true)
+    val id: Long = 0,
+    val profileId: Long,
+    val createdAtMillis: Long,
+    val scopeLabel: String,
+    val total: Int,
+    val correct: Int,
+    val wrongJson: String
+)

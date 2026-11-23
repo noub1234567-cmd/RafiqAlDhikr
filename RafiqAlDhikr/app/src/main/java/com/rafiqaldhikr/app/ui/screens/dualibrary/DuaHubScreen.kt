@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -39,6 +40,7 @@ fun DuaHubScreen(
     onOpenQuizMode: (String) -> Unit,
     onOpenFavorites: () -> Unit,
     onOpenBookmarks: () -> Unit,
+    onOpenTest: () -> Unit,
     onOpenMemo: () -> Unit,
     onOpenPlans: () -> Unit
 ) {
@@ -74,7 +76,9 @@ fun DuaHubScreen(
                 RafiqCard {
                     Column(modifier = Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text("اختبر حفظك", style = MaterialTheme.typography.titleMedium)
-                        Text("أكمل النص من أربعة خيارات، عشرة أسئلة في كل جولة", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("اختبار على ما حفظته: يخفي أجزاء من النصوص عشوائياً ويحفظ نتائجك وأخطاءك", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Button(onClick = onOpenTest, modifier = Modifier.fillMaxWidth()) { Text("اختبر حفظك") }
+                        Text("اختبارات سريعة (عشرة أسئلة)", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedButton(onClick = onOpenQuiz) { Text("الأذكار") }
                             OutlinedButton(onClick = { onOpenQuizMode("matn") }) { Text("المتون") }

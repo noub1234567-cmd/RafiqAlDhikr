@@ -18,6 +18,7 @@ sealed class NavRoute(val route: String, val labelAr: String) {
     data object NightReview : NavRoute("night_review", "محاسبة النفس")
     data object DuaMemo : NavRoute("dua_memo", "حفظ الأذكار والأحاديث")
     data object Jumua : NavRoute("jumua", "سنن الجمعة")
+    data object TestYourself : NavRoute("test_yourself", "اختبر حفظك")
     data object DuaQuiz : NavRoute("dua_quiz", "اختبار الأذكار")
     data object MemoPlans : NavRoute("memo_plans", "خطط الحفظ")
     data object MemoPlanNew : NavRoute("memo_plan_new", "خطة حفظ جديدة")

@@ -1,9 +1,9 @@
 """Fail if the migration SQL in AppDatabase.kt differs from what Room generated for the same tables."""
 import json, re, sys, glob
 
-schemas = sorted(glob.glob("RafiqAlDhikr/app/schemas/**/9.json", recursive=True))
+schemas = sorted(glob.glob("RafiqAlDhikr/app/schemas/**/10.json", recursive=True))
 if not schemas:
-    sys.exit("no exported schema 9.json found")
+    sys.exit("no exported schema 10.json found")
 db = json.load(open(schemas[0]))["database"]
 src = open("RafiqAlDhikr/app/src/main/java/com/rafiqaldhikr/app/data/local/db/AppDatabase.kt", encoding="utf-8").read()
 
@@ -27,6 +27,7 @@ for table, create_const, index_const in (
     ("memo_plans", "MEMO_PLANS_CREATE_SQL", "MEMO_PLANS_INDEX_SQL"),
     ("memo_plan_items", "MEMO_PLAN_ITEMS_CREATE_SQL", "MEMO_PLAN_ITEMS_INDEX_SQL"),
     ("bookmarks", "BOOKMARKS_CREATE_SQL", "BOOKMARKS_INDEX_SQL"),
+    ("test_results", "TEST_RESULTS_CREATE_SQL", "TEST_RESULTS_INDEX_SQL"),
 ):
     ent = next(e for e in db["entities"] if e["tableName"] == table)
     want_table = norm(ent["createSql"].replace("${TABLE_NAME}", table))
