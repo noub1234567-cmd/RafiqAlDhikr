@@ -41,6 +41,9 @@ object MemoTest {
     /** Text with at least this many words is "long": a run of five or six words is hidden somewhere inside it. */
     const val LONG_WORDS = 14
     private const val MIN_CLOZE_WORDS = 5
+
+    /** Sections that are advice rather than text to memorize, so they never appear in the test. */
+    val EXCLUDED = setOf(DuaLibrary.CONDITIONS)
     private const val MARK = "[ ………… ]"
 
     class Item(
