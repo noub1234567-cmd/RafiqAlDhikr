@@ -63,7 +63,9 @@ fun TestYourselfScreen(onBack: () -> Unit) {
     val container = rememberContainer()
     val scope = rememberCoroutineScope()
     val profileId by activeProfileIdState(container)
-    val sections by produceState(DuaLibrary.skeleton) { value = withContext(Dispatchers.Default) { DuaLibrary.sections(context) } }
+    val sections by produceState(DuaLibrary.skeleton.filter { it.id !in MemoTest.EXCLUDED }) {
+        value = withContext(Dispatchers.Default) { DuaLibrary.sections(context).filter { it.id !in MemoTest.EXCLUDED } }
+    }
     val planItems = profileList(profileId) { container.memoPlanRepository.observeAllItems(it) }
     val results = profileList(profileId) { container.personalToolsRepository.observeTestResults(it) }
 
