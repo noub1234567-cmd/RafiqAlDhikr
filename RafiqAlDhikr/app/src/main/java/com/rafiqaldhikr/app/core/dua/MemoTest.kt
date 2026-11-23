@@ -164,7 +164,14 @@ object MemoTest {
             .map { startOf(Item(item.sectionId, item.sectionTitle, item.group, it, item.group.items[it])) }.shuffled(random)
         val others = candidates(universe, item, random).map { startOf(it) }
         val opts = optionsOf(correct, sameGroup + others, random) ?: return null
-        return question(KIND_NEXT, "ما الذي يلي هذا النص؟", snippet(item, 20), opts, item.item.text + "\n\n— ثم —\n" + nxt.text, item)
+        // A verse is shown whole (both hemistichs) and the answer is the first hemistich of the next verse.
+        val isVerse = item.verse != null
+        return question(
+            KIND_NEXT,
+            if (isVerse) "ما صدر البيت الذي يلي هذا البيت؟" else "ما الذي يلي هذا النص؟",
+            if (isVerse) item.item.text.trim() else snippet(item, 20),
+            opts, item.item.text + "\n\n— ثم —\n" + nxt.text, item
+        )
     }
 
     private fun categoryOf(sectionId: String) = DuaLibrary.categories.firstOrNull { sectionId in it.sectionIds }?.id
