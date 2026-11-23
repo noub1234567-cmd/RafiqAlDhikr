@@ -75,6 +75,14 @@ class MemoTestTest {
         assertTrue(first.next!!.text.startsWith(q.options[q.correctIndex].removeSuffix("…").trim()))
     }
 
+    @Test fun nextForAVerseShowsTheWholeVerseAndAsksForTheNextVersesFirstHemistich() {
+        val verse = universe.first { it.sectionId == DuaLibrary.N_TUHFA }
+        val q = MemoTest.next(verse, universe, Random(2))!!
+        assertTrue(q.prompt.contains(verse.verse!![0]) && q.prompt.contains(verse.verse!![1]))
+        assertEquals(verse.group.items[1].text.split("\n")[0].trim(), q.options[q.correctIndex])
+        assertTrue(q.instruction.contains("البيت"))
+    }
+
     @Test fun generateGivesOneQuestionPerChosenTextWithOneCorrectOption() {
         val scope = universe.filter { it.sectionId == DuaLibrary.NAWAWI }
         val qs = MemoTest.generate(scope, universe, sections, 5, Random(7))

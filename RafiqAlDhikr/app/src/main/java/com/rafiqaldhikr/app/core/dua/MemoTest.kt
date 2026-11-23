@@ -164,7 +164,11 @@ object MemoTest {
             .map { startOf(Item(item.sectionId, item.sectionTitle, item.group, it, item.group.items[it])) }.shuffled(random)
         val others = candidates(universe, item, random).map { startOf(it) }
         val opts = optionsOf(correct, sameGroup + others, random) ?: return null
-        return question(KIND_NEXT, "ما الذي يلي هذا النص؟", snippet(item, 20), opts, item.item.text + "\n\n— ثم —\n" + nxt.text, item)
+        // A verse is shown whole (both hemistichs), so it is clear that the question is about the next verse.
+        val (instruction, prompt) =
+            if (item.verse != null) "ما صدر البيت الذي يلي هذا البيت؟" to item.verse.joinToString("\n")
+            else "ما الذي يلي هذا النص؟" to snippet(item, 20)
+        return question(KIND_NEXT, instruction, prompt, opts, item.item.text + "\n\n— ثم —\n" + nxt.text, item)
     }
 
     private fun categoryOf(sectionId: String) = DuaLibrary.categories.firstOrNull { sectionId in it.sectionIds }?.id
